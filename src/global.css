@@ -2,82 +2,68 @@
 @import 'uniwind';
 @import 'heroui-native/styles';
 
+/* 
+  Professional Global Design System - JJ's Kitchen 
+  Using Explicit Theme Tokens for 100% Reliability in React Native.
+*/
+
 :root {
-  /* Light Theme Colors (Default) */
-  --background: #EFE3CA;
-  --foreground: #170C79;
-  --surface: #ffffff;
-  
+  /* Primary Branding */
   --primary: #170C79;
+  --primary-dark: #8E05C2;
   --primary-foreground: #ffffff;
   
-  --accent: #56B6C6;
-  --accent-foreground: #ffffff;
+  /* Layout Colors */
+  --background: #EFE3CA;
+  --background-dark: #000000;
   
-  --default: #8ACBD0;
-  --default-foreground: #170C79;
+  --surface: #ffffff;
+  --surface-dark: #3E065F;
+  --surface-foreground: #170C79;
+  --surface-foreground-dark: #ffffff;
   
-  --danger: #ef4444;
-  --danger-foreground: #ffffff;
-  --success: #22c55e;
-  --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
+  /* Typography & UI */
+  --foreground: #170C79;
+  --foreground-dark: #ffffff;
   
   --muted: #6B7280;
+  --muted-dark: #9ca3af;
+  
   --border: #d1d5db;
-  --separator: #e5e7eb;
-
-  /* Explicit Color Tokens for Reanimated hooks */
-  --color-primary: #170C79;
-  --color-accent: #56B6C6;
-  --color-danger: #ef4444;
-  --color-default: #8ACBD0;
-  --color-surface: #ffffff;
-  --color-background: #EFE3CA;
+  --border-dark: #4b5563;
+  
+  /* Feature Specific */
+  --slot-bg: #F9FAFB;
+  --slot-bg-dark: #1F2937;
 }
 
-.dark {
-  /* Dark Theme Colors */
-  --background: #000000;
-  --foreground: #ffffff;
-  --surface: #3E065F;
-  
-  --primary: #8E05C2;
-  --primary-foreground: #ffffff;
-  
-  --accent: #700B97;
-  --accent-foreground: #ffffff;
-  
-  --default: #3E065F;
-  --default-foreground: #ffffff;
-  
-  --muted: #9ca3af;
-  --border: #4b5563;
-  --separator: #374151;
-
-  /* Explicit Color Tokens for Reanimated hooks */
-  --color-primary: #8E05C2;
-  --color-accent: #700B97;
-  --color-danger: #ef4444;
-  --color-default: #3E065F;
-  --color-surface: #3E065F;
-  --color-background: #000000;
-}
-
-@theme inline static {
-  /* Branding */
+@theme inline {
+  /* Semantic Tokens mapped to explicit Light/Dark values */
   --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
   --color-primary-foreground: var(--primary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-default: var(--default);
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
   
+  --color-background: var(--background);
+  --color-background-dark: var(--background-dark);
+  
+  --color-surface: var(--surface);
+  --color-surface-dark: var(--surface-dark);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-surface-foreground-dark: var(--surface-foreground-dark);
+  
+  --color-foreground: var(--foreground);
+  --color-foreground-dark: var(--foreground-dark);
+  
+  --color-muted: var(--muted);
+  --color-muted-dark: var(--muted-dark);
+  
+  --color-border: var(--border);
+  --color-border-dark: var(--border-dark);
+  
+  --color-slot-bg: var(--slot-bg);
+  --color-slot-bg-dark: var(--slot-bg-dark);
+  
+  /* Spacing & Typography */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;

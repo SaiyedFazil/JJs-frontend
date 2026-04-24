@@ -65,23 +65,23 @@ export const OtpVerificationScreen = () => {
       slots.push(
         <View 
           key={i}
-          style={[
-            styles.slot,
-            isActive && styles.slotActive
-          ]}
+          className={`w-11 h-14 rounded-xl border-2 justify-center items-center bg-white ${
+            isActive ? 'border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
+          }`}
           pointerEvents="none"
         >
           {char ? (
             <Animated.Text 
               entering={ZoomIn.duration(200)}
-              className="text-2xl font-black text-gray-900"
+              className="text-2xl font-black text-[#170C79]"
             >
               {char}
             </Animated.Text>
           ) : null}
-          {isActive && <View style={styles.staticCaret} />}
+          {isActive && <View className="w-0.5 h-6 bg-primary dark:bg-primary-dark absolute" />}
         </View>
       );
+
     }
     return slots;
   };
@@ -89,49 +89,49 @@ export const OtpVerificationScreen = () => {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-primary" // Match header color to hide gaps
+      className="flex-1 bg-primary dark:bg-primary-dark"
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-background"
+        className="flex-1 bg-background dark:bg-background-dark"
         style={styles.scrollBackground}
         bounces={false}
         keyboardShouldPersistTaps="handled"
       >
         {/* Header Section - 45% Height */}
-        <View style={{ height: SCREEN_HEIGHT * 0.45 }} className="w-full bg-primary items-center justify-center">
+        <View style={{ height: SCREEN_HEIGHT * 0.45 }} className="w-full bg-primary dark:bg-primary-dark items-center justify-center">
           <Animated.View entering={FadeInUp.duration(1000)} className="items-center">
-             <View className="w-24 h-24 bg-primary-foreground/20 rounded-full items-center justify-center">
+             <View className="w-24 h-24 bg-primary-foreground/20 dark:bg-primary-foreground/20 rounded-full items-center justify-center">
                 <Text className="text-5xl">🍔</Text>
              </View>
-             <Text className="text-primary-foreground text-3xl font-black mt-3">Verify OTP</Text>
+             <Text className="text-primary-foreground dark:text-primary-foreground text-3xl font-black mt-3">Verify OTP</Text>
           </Animated.View>
         </View>
 
         {/* Floating Card Section */}
         <Animated.View 
           entering={SlideInDown.duration(600)} 
-          className="flex-1 bg-surface -mt-10 rounded-t-[40px] px-8 pt-8"
+          className="flex-1 bg-surface dark:bg-surface-dark -mt-10 rounded-t-[40px] px-8 pt-8"
           style={[
             styles.cardShadow, 
             { minHeight: SCREEN_HEIGHT * 0.6, paddingBottom: insets.bottom + 40 }
           ]}
         >
           <View className="items-center mb-2">
-             <View className="w-16 h-1.5 bg-muted/20 rounded-full mb-6" />
-             <Text className="text-muted font-medium text-lg text-center px-4 leading-6">
+             <View className="w-16 h-1.5 bg-muted/30 dark:bg-muted-dark/30 rounded-full mb-6" />
+             <Text className="text-foreground/80 dark:text-foreground-dark/80 font-medium text-lg text-center px-4 leading-6">
                 JJ's Kitchen has sent a 6-digit code to
              </Text>
              <View className="flex-row items-center justify-center mt-2">
-               <Text className="text-foreground font-semibold text-base">+91 {phone}</Text>
+               <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">+91 {phone}</Text>
                <TouchableOpacity 
                  onPress={() => navigation.navigate('Login', { prefillPhone: phone })}
-                 className="ml-3 bg-muted/10 border border-border px-2 py-1 rounded-xl flex-row items-center shadow-sm active:bg-muted/20"
+                 className="ml-3 bg-muted/10 border border-border dark:border-border-dark px-2 py-1 rounded-xl flex-row items-center shadow-sm active:bg-muted/20"
                >
-                 <Text className="text-primary mr-1.5 text-[10px]">✎</Text>
-                 <Text className="text-primary font-bold text-[10px] uppercase tracking-wider">Change</Text>
+                 <Text className="text-primary dark:text-white mr-1.5 text-[10px]">✎</Text>
+                 <Text className="text-primary dark:text-white font-bold text-[10px] uppercase tracking-wider">Change</Text>
                </TouchableOpacity>
              </View>
           </View>
@@ -169,7 +169,7 @@ export const OtpVerificationScreen = () => {
               activeOpacity={0.7}
               onPress={() => setOtp('')}
             >
-              <Text className="text-primary font-bold text-base underline text-center">Resend OTP</Text>
+              <Text className="text-primary dark:text-white font-bold text-base underline text-center">Resend OTP</Text>
             </TouchableOpacity>
           </View>
           
@@ -178,29 +178,30 @@ export const OtpVerificationScreen = () => {
             variant="primary"
             size="lg"
             isDisabled={!isButtonActive}
-            className={`h-16 rounded-2xl shadow-lg mt-4 ${isButtonActive ? 'bg-primary' : 'bg-primary/50 shadow-none'}`}
+            className={`h-16 rounded-2xl shadow-lg mt-4 ${isButtonActive ? 'bg-primary dark:bg-primary-dark' : 'bg-primary/30 dark:bg-primary-dark/30 shadow-none'}`}
           >
             {isLoading ? (
               <View className="flex-row items-center justify-center">
                 <Spinner color="white" size="sm" />
-                <Text className="text-primary-foreground text-xl font-black ml-3">Verifying...</Text>
+                <Text className="text-primary-foreground dark:text-primary-foreground text-xl font-black ml-3">Verifying...</Text>
               </View>
             ) : (
-              <Text className={`text-xl font-black ${isButtonActive ? 'text-primary-foreground' : 'text-muted'}`}>
+              <Text className={`text-xl font-black ${isButtonActive ? 'text-primary-foreground dark:text-primary-foreground' : 'text-muted dark:text-muted-dark'}`}>
                 Verify & Login
               </Text>
             )}
           </Button>
 
           <View className="mt-auto pt-10">
-            <Text className="text-muted text-[10px] text-center leading-4">
+            <Text className="text-muted dark:text-muted-dark font-medium text-[10px] text-center leading-4">
               By continuing, you automatically accept our{"\n"}
-              <Text className="text-foreground font-bold underline">Terms & Conditions</Text>, 
-              <Text className="text-foreground font-bold underline"> Privacy Policy</Text> and 
-              <Text className="text-foreground font-bold underline"> Cookies Policy</Text>
+              <Text className="text-foreground dark:text-foreground-dark font-bold underline">Terms & Conditions</Text>, 
+              <Text className="text-foreground dark:text-foreground-dark font-bold underline"> Privacy Policy</Text> and 
+              <Text className="text-foreground dark:text-foreground-dark font-bold underline"> Cookies Policy</Text>
             </Text>
           </View>
         </Animated.View>
+
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -226,26 +227,6 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 8,
     paddingVertical: 10,
-  },
-  slot: {
-    width: 44,
-    height: 56,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#E5E7EB', // Use a standard gray that works okay in both or dynamic if needed
-    backgroundColor: '#F9FAFB',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  slotActive: {
-    borderColor: '#8E05C2', // I should probably use the palette.primary here but I'll stick to a placeholder for now or use useTheme if I wanted to be perfect.
-    backgroundColor: '#F3E8FF',
-  },
-  staticCaret: {
-    width: 2,
-    height: 24,
-    backgroundColor: '#8E05C2',
-    position: 'absolute',
   },
   cardShadow: {
     shadowColor: '#000',
