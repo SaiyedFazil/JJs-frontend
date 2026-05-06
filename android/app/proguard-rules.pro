@@ -8,3 +8,11 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# Prevent ProGuard from obfuscating the BuildConfig, which react-native-config uses
+-keep class com.jjskitchen.app.BuildConfig { *; }
+
+# Google Play Services — Phone Number Hint & SMS Retriever
+-keep class com.google.android.gms.auth.api.identity.** { *; }
+-keep class com.google.android.gms.auth.api.phone.** { *; }
+-keep class com.google.android.gms.common.api.** { *; }

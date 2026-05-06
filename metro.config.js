@@ -8,9 +8,17 @@ const { withUniwindConfig } = require('uniwind/metro');
  *
  * @type {import('@react-native/metro-config').MetroConfig}
  */
-const config = {};
+const defaultConfig = getDefaultConfig(__dirname);
+const { sourceExts } = defaultConfig.resolver;
 
-const customConfig = mergeConfig(getDefaultConfig(__dirname), config);
+const config = {
+  resolver: {
+    // Add .mjs support for lucide-react-native and other ESM-based libraries
+    sourceExts: [...sourceExts, 'mjs'],
+  },
+};
+
+const customConfig = mergeConfig(defaultConfig, config);
 
 module.exports = withUniwindConfig(customConfig, {
   cssEntryFile: './src/global.css',

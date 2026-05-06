@@ -268,17 +268,23 @@ JJsKitchen/
 
 ---
 
-### Phase 8 – Backend Integration (Future Phase)
+### Phase 8 – Backend Integration (ACTIVE)
+- [x] Set up Axios client with base URL + interceptors
+- [ ] Implement Token management (MMKV storage)
+- [ ] Replace mock data with real API calls using React Query
+- [ ] Connect auth flow to real OTP API
+- [ ] Add Socket.IO for real-time order status
+- [ ] Integrate Google Maps for live rider tracking
+- [ ] Integrate Razorpay for real payments
+- [ ] Set up Firebase FCM for push notifications
 
-> ⚠️ This phase starts AFTER the backend developer provides API details.
-
-- Set up Axios client with base URL + interceptors
-- Replace mock data with real API calls using React Query
-- Connect auth flow to real OTP API
-- Add Socket.IO for real-time order status
-- Integrate Google Maps for live rider tracking
-- Integrate Razorpay for real payments
-- Set up Firebase FCM for push notifications
+**API Architecture Best Practices:**
+1. **Axios Instance**: Centralized configuration for base URL, timeout, and headers.
+2. **Interceptors**: Request interceptors for attaching Auth tokens; Response interceptors for global error handling and token refresh.
+3. **Endpoints Registry**: Centralized file for all API routes to avoid hardcoded strings.
+4. **Service Layer**: Feature-specific service files (e.g., `auth.service.ts`) to encapsulate API logic.
+5. **Type Safety**: Request/Response types for every endpoint using TypeScript interfaces.
+6. **Error Handling**: Standardized error response parsing.
 
 ---
 

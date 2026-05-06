@@ -1,56 +1,141 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, StyleSheet, Keyboard, TextInput, Dimensions } from 'react-native';
-import Animated, { SlideInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, StyleSheet, Keyboard, TextInput, Dimensions, NativeModules, NativeEventEmitter } from 'react-native';
+import Animated, { SlideInDown, FadeInUp, ZoomIn, useSharedValue, useAnimatedStyle, withTiming, FadeIn } from 'react-native-reanimated';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Spinner } from 'heroui-native';
+import { AuthService } from '@/services/auth.service';
+import { useAuthStore } from '@/store/auth.store';
+
+// ── Native modules ────────────────────────────────────────────────────────────
+const { SmsRetrieverModule } = NativeModules;
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const HEADER_HEIGHT = SCREEN_HEIGHT * 0.45;
+const MIN_HEADER_HEIGHT = 160;
+const CARD_OVERLAP = 40;     // -mt-10 = 10 * 4
+const MIN_CARD_OVERLAP = 35; // keep card rounded corners visible inside header
 
 type RootStackParamList = {
   Login: { prefillPhone?: string };
-  OtpVerification: { phone: string };
+  OtpVerification: { phone: string; authToken: string };
 };
 
 export const OtpVerificationScreen = () => {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
-  
+
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'OtpVerification'>>();
   const insets = useSafeAreaInsets();
-  const { phone } = route.params;
+  const { phone, authToken: preVerifyToken } = route.params;
+  const setAuth = useAuthStore((state) => state.setAuth);
 
-  // Professional Focus Management
+  const headerProgress = useSharedValue(1);
+
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    height: MIN_HEADER_HEIGHT + headerProgress.value * (HEADER_HEIGHT - MIN_HEADER_HEIGHT),
+    overflow: 'hidden' as const,
+  }));
+
+  const animatedCardStyle = useAnimatedStyle(() => ({
+    marginTop: -(MIN_CARD_OVERLAP + headerProgress.value * (CARD_OVERLAP - MIN_CARD_OVERLAP)),
+  }));
+
   useEffect(() => {
-    // 1. Sync state with hardware keyboard events
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      headerProgress.value = withTiming(0, { duration: 220 });
+    });
     const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
       inputRef.current?.blur();
       setIsFocused(false);
+      headerProgress.value = withTiming(1, { duration: 220 });
     });
 
-    // 2. Safe delay to ensure screen animation is 100% complete
     const timer = setTimeout(() => {
       inputRef.current?.focus();
     }, 800);
 
+    // ── SMS User Consent API — no hash needed, shows native consent dialog ──
+    let smsEventEmitter: NativeEventEmitter | null = null;
+    let smsReceivedSub: ReturnType<NativeEventEmitter['addListener']> | null = null;
+    let smsTimeoutSub: ReturnType<NativeEventEmitter['addListener']> | null = null;
+
+    const startSmsListener = async () => {
+      try {
+        // Start the User Consent listener (5-minute window)
+        await SmsRetrieverModule.startSmsRetriever();
+        console.log('📡 SMS User Consent listener started');
+
+        smsEventEmitter = new NativeEventEmitter(SmsRetrieverModule);
+
+        // Fired when user taps "Allow" on the native consent dialog
+        smsReceivedSub = smsEventEmitter.addListener('onSmsReceived', (event: { message?: string }) => {
+          console.log('📲 SMS User Consent received:', event?.message);
+          if (event?.message) {
+            const otpMatch = event.message.match(/\d{6}/);
+            if (otpMatch && otpMatch[0]) {
+              console.log('✅ OTP auto-filled:', otpMatch[0]);
+              setOtp(otpMatch[0]);
+              Keyboard.dismiss();
+            }
+          }
+        });
+
+        smsTimeoutSub = smsEventEmitter.addListener('onSmsTimeout', () => {
+          console.log('⏰ SMS User Consent timed out');
+        });
+      } catch (err) {
+        console.log('SMS User Consent error:', err);
+      }
+    };
+
+    if (Platform.OS === 'android') {
+      startSmsListener();
+    }
+
     return () => {
+      showSubscription.remove();
       hideSubscription.remove();
       clearTimeout(timer);
+      if (Platform.OS === 'android') {
+        smsReceivedSub?.remove();
+        smsTimeoutSub?.remove();
+        SmsRetrieverModule.stopSmsRetriever?.();
+      }
     };
-  }, []);
+  }, [headerProgress]);
 
-  const handleVerify = () => {
-    Keyboard.dismiss();
+  const handleVerify = async () => {
     if (otp.length === 6) {
       setIsLoading(true);
-      setTimeout(() => {
+      setError('');
+
+      try {
+        const response = await AuthService.verifyOtp(otp, preVerifyToken);
+        
+        if (response.status) {
+          // 1. Hide the loader immediately so the user sees progress
+          setIsLoading(false);
+          
+          // 2. Trigger global auth state change (switches to Home screen)
+          setAuth(response.data);
+          
+          console.log('🚀 Redirecting to Home...');
+          return; // Exit all logic for this component
+        } else {
+          setError(response.message || 'Invalid OTP');
+          setIsLoading(false);
+        }
+      } catch (err: any) {
+        console.error('Verify OTP Error:', err);
+        setError(err.message || 'Verification failed. Please try again.');
         setIsLoading(false);
-        console.log('OTP Verified');
-      }, 1500);
+      }
     }
   };
 
@@ -61,9 +146,9 @@ export const OtpVerificationScreen = () => {
     for (let i = 0; i < 6; i++) {
       const char = otp[i];
       const isActive = isFocused && i === otp.length;
-      
+
       slots.push(
-        <View 
+        <View
           key={i}
           className={`w-11 h-14 rounded-xl border-2 justify-center items-center bg-white ${
             isActive ? 'border-primary dark:border-primary-dark' : 'border-border dark:border-border-dark'
@@ -71,7 +156,7 @@ export const OtpVerificationScreen = () => {
           pointerEvents="none"
         >
           {char ? (
-            <Animated.Text 
+            <Animated.Text
               entering={ZoomIn.duration(200)}
               className="text-2xl font-black text-[#170C79]"
             >
@@ -81,42 +166,43 @@ export const OtpVerificationScreen = () => {
           {isActive && <View className="w-0.5 h-6 bg-primary dark:bg-primary-dark absolute" />}
         </View>
       );
-
     }
     return slots;
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       className="flex-1 bg-primary dark:bg-primary-dark"
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         className="flex-1 bg-background dark:bg-background-dark"
-        style={styles.scrollBackground}
         bounces={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header Section - 45% Height */}
-        <View style={{ height: SCREEN_HEIGHT * 0.45 }} className="w-full bg-primary dark:bg-primary-dark items-center justify-center">
+        {/* Header — collapses when keyboard opens */}
+        <Animated.View
+          style={animatedHeaderStyle}
+          className="w-full bg-primary dark:bg-primary-dark items-center justify-center"
+        >
           <Animated.View entering={FadeInUp.duration(1000)} className="items-center">
              <View className="w-24 h-24 bg-primary-foreground/20 dark:bg-primary-foreground/20 rounded-full items-center justify-center">
                 <Text className="text-5xl">🍔</Text>
              </View>
              <Text className="text-primary-foreground dark:text-primary-foreground text-3xl font-black mt-3">Verify OTP</Text>
           </Animated.View>
-        </View>
+        </Animated.View>
 
         {/* Floating Card Section */}
-        <Animated.View 
-          entering={SlideInDown.duration(600)} 
-          className="flex-1 bg-surface dark:bg-surface-dark -mt-10 rounded-t-[40px] px-8 pt-8"
+        <Animated.View
+          entering={SlideInDown.duration(600)}
+          className="flex-1 bg-surface dark:bg-surface-dark rounded-t-[40px] px-8 pt-8"
           style={[
-            styles.cardShadow, 
-            { minHeight: SCREEN_HEIGHT * 0.6, paddingBottom: insets.bottom + 40 }
+            styles.cardShadow,
+            { paddingBottom: insets.bottom + 40 },
+            animatedCardStyle,
           ]}
         >
           <View className="items-center mb-2">
@@ -126,7 +212,7 @@ export const OtpVerificationScreen = () => {
              </Text>
              <View className="flex-row items-center justify-center mt-2">
                <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">+91 {phone}</Text>
-               <TouchableOpacity 
+               <TouchableOpacity
                  onPress={() => navigation.navigate('Login', { prefillPhone: phone })}
                  className="ml-3 bg-muted/10 border border-border dark:border-border-dark px-2 py-1 rounded-xl flex-row items-center shadow-sm active:bg-muted/20"
                >
@@ -137,7 +223,7 @@ export const OtpVerificationScreen = () => {
           </View>
 
           <View className="items-center mb-2">
-            {/* Hidden TextInput - Minimal size for focus stability */}
+            {/* Hidden TextInput */}
             <TextInput
               ref={inputRef}
               value={otp}
@@ -149,31 +235,38 @@ export const OtpVerificationScreen = () => {
                 }
               }}
               keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              autoComplete="one-time-code"
               maxLength={6}
               style={styles.hiddenInput}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
             />
-            
-            {/* Entire row is now touchable to open keyboard */}
-            <TouchableOpacity 
+
+            <TouchableOpacity
               activeOpacity={1}
               onPress={() => inputRef.current?.focus()}
               style={styles.otpRow}
             >
               {renderSlots()}
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              className="mt-2 self-center" 
+
+            {error ? (
+              <Animated.View entering={FadeIn.duration(300)}>
+                <Text className="mt-2 text-red-500 font-medium text-sm text-center">{error}</Text>
+              </Animated.View>
+            ) : null}
+
+            <TouchableOpacity
+              className="mt-2 self-center"
               activeOpacity={0.7}
               onPress={() => setOtp('')}
             >
               <Text className="text-primary dark:text-white font-bold text-base underline text-center">Resend OTP</Text>
             </TouchableOpacity>
           </View>
-          
-          <Button 
+
+          <Button
             onPress={handleVerify}
             variant="primary"
             size="lg"
@@ -195,8 +288,8 @@ export const OtpVerificationScreen = () => {
           <View className="mt-auto pt-10">
             <Text className="text-muted dark:text-muted-dark font-medium text-[10px] text-center leading-4">
               By continuing, you automatically accept our{"\n"}
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline">Terms & Conditions</Text>, 
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline"> Privacy Policy</Text> and 
+              <Text className="text-foreground dark:text-foreground-dark font-bold underline">Terms & Conditions</Text>,
+              <Text className="text-foreground dark:text-foreground-dark font-bold underline"> Privacy Policy</Text> and
               <Text className="text-foreground dark:text-foreground-dark font-bold underline"> Cookies Policy</Text>
             </Text>
           </View>
@@ -210,9 +303,6 @@ export const OtpVerificationScreen = () => {
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
-  },
-  scrollBackground: {
-    backgroundColor: 'transparent',
   },
   hiddenInput: {
     position: 'absolute',
@@ -236,4 +326,3 @@ const styles = StyleSheet.create({
     elevation: 20,
   },
 });
-
