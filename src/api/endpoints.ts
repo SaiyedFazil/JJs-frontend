@@ -4,8 +4,8 @@
  */
 export const ENDPOINTS = {
   AUTH: {
-    SEND_OTP: '/user/create',
-    VERIFY_OTP: '/user/verify-otp',
+    SEND_OTP: '/user/auth/create',
+    VERIFY_OTP: '/user/auth/verify-otp',
     // LOGOUT: '/auth/logout',
     // REFRESH_TOKEN: '/auth/refresh-token',
   },
