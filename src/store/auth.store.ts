@@ -30,10 +30,16 @@ interface AuthState {
   /** Flag to track if we should show the splash screen (only on fresh app start) */
   isFirstLaunch: boolean;
 
+  /** True once the user's display name is on file. New users start as false. */
+  profileCompleted: boolean;
+
   // ── Actions ────────────────────────────────────────────────────────────────
 
   /** Sets the first launch flag */
   setFirstLaunch: (isFirst: boolean) => void;
+
+  /** Marks the profile as filled — triggers RootNavigator to show MainTabNavigator. */
+  setProfileCompleted: (value: boolean) => void;
 
   /**
    * Called after a successful OTP verification.
@@ -63,16 +69,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   user:            null,
   accessToken:     null,
   refreshToken:    null,
-  isFirstLaunch:   true,
+  isFirstLaunch:    true,
+  profileCompleted: true,   // default true so rehydrated sessions skip CompleteProfileScreen
 
   // ── setFirstLaunch ─────────────────────────────────────────────────────────
   setFirstLaunch: (isFirst: boolean) => set({ isFirstLaunch: isFirst }),
+
+  // ── setProfileCompleted ────────────────────────────────────────────────────
+  setProfileCompleted: (value: boolean) => set({ profileCompleted: value }),
 
   // ── setAuth ────────────────────────────────────────────────────────────────
   setAuth: (response: AuthResponse) => {
     const {
       accessToken,
       refreshToken,
+      profileCompleted,
       // Strip auth-only fields — keep only profile fields in the profile store
       /* eslint-disable @typescript-eslint/no-unused-vars */
       isOtpVerified: _v,
@@ -83,12 +94,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     const profile: StoredUserProfile = profileFields;
 
     // 1. Update in-memory state FIRST for immediate UI reaction
-    // This triggers the RootNavigator to switch to MainTabNavigator instantly.
     set({
       isAuthenticated: true,
       user:            profile,
       accessToken,
       refreshToken,
+      profileCompleted,
     });
 
     // 2. Persist to MMKV in the background (next tick)
