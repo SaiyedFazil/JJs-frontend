@@ -32,16 +32,16 @@ A production-grade food delivery mobile application for JJ's Kitchen. Built with
 
 All tools are installed and verified on this machine:
 
-| Tool | Verified Version | Status |
-|---|---|---|
-| **Node.js** | v24.13.1 | ✅ Installed & verified |
-| **npm** | v11.12.1 | ✅ Installed & verified |
-| **Git** | v2.51.0.windows.1 | ✅ Installed & verified |
-| **Java JDK 17** | OpenJDK 17.0.18 (Temurin-17.0.18+8) | ✅ Installed & verified |
-| **JAVA_HOME** | `D:\Program Files\Eclipse Adoptium\jdk-17.0.18.8-hotspot` | ✅ Set |
-| **Android Studio** | Panda 3 (2025.3.3) | ✅ Installed & verified |
-| **ANDROID_HOME** | `C:\Users\MohammedFazil-PC\AppData\Local\Android\Sdk` | ✅ Set |
-| **ADB** | Version 1.0.41 (37.0.0-14910828) | ✅ Working |
+| Tool               | Verified Version                                          | Status                  |
+| ------------------ | --------------------------------------------------------- | ----------------------- |
+| **Node.js**        | v24.13.1                                                  | ✅ Installed & verified |
+| **npm**            | v11.12.1                                                  | ✅ Installed & verified |
+| **Git**            | v2.51.0.windows.1                                         | ✅ Installed & verified |
+| **Java JDK 17**    | OpenJDK 17.0.18 (Temurin-17.0.18+8)                       | ✅ Installed & verified |
+| **JAVA_HOME**      | `D:\Program Files\Eclipse Adoptium\jdk-17.0.18.8-hotspot` | ✅ Set                  |
+| **Android Studio** | Panda 3 (2025.3.3)                                        | ✅ Installed & verified |
+| **ANDROID_HOME**   | `C:\Users\MohammedFazil-PC\AppData\Local\Android\Sdk`     | ✅ Set                  |
+| **ADB**            | Version 1.0.41 (37.0.0-14910828)                          | ✅ Working              |
 
 **All prerequisites are complete. The machine is ready for React Native development.**
 
@@ -87,7 +87,7 @@ Android Studio is **required** — but only as an SDK/ADB provider. You will sti
    - ✅ `Android SDK`
    - ✅ `Android SDK Platform`
    - ✅ `Android Virtual Device`
-   - ✅ `Performance (Intel HAXM)` *(if your CPU is Intel — skip if AMD/Ryzen)*
+   - ✅ `Performance (Intel HAXM)` _(if your CPU is Intel — skip if AMD/Ryzen)_
 5. Click **Next → Finish** to complete the installation
 
 #### 2b. Install Required SDK Components
@@ -96,23 +96,25 @@ After the installation wizard completes:
 
 1. Open **Android Studio**
 2. Click **"More Actions" → "SDK Manager"**
-   *(or go to Settings → Languages & Frameworks → Android SDK)*
+   _(or go to Settings → Languages & Frameworks → Android SDK)_
 
 **In the "SDK Platforms" tab:**
+
 - Tick **"Show Package Details"** in the bottom-right corner
 - Find and expand **"Android 15 (VanillaIceCream)"**
 - Check:
   - ✅ `Android SDK Platform 35`
-  - ✅ `Intel x86 Atom_64 System Image` *(or Google APIs Intel x86 Atom System Image)*
+  - ✅ `Intel x86 Atom_64 System Image` _(or Google APIs Intel x86 Atom System Image)_
 
 **In the "SDK Tools" tab:**
+
 - Tick **"Show Package Details"** in the bottom-right corner
 - Expand **"Android SDK Build-Tools"** and check:
   - ✅ `36.0.0`
 - Also check these standalone items:
   - ✅ `Android SDK Command-line Tools (latest)`
   - ✅ `Android SDK Platform-Tools` ← **this installs `adb`**
-  - ✅ `Android Emulator` *(optional — only needed for virtual device testing)*
+  - ✅ `Android Emulator` _(optional — only needed for virtual device testing)_
 
 3. Click **"Apply" → "OK"** and wait for the download to complete
 
@@ -126,12 +128,13 @@ This step is **mandatory**. React Native build tools need to find Java and the A
 2. Click **"Environment Variables..."** at the bottom
 3. Under **"System variables"** (the lower panel), click **"New"** and add both of these:
 
-   | Variable Name | Variable Value |
-   |---|---|
-   | `JAVA_HOME` | `C:\Program Files\Eclipse Adoptium\jdk-17.x.x.x-hotspot` *(check exact folder name at `C:\Program Files\Eclipse Adoptium\`)* |
-   | `ANDROID_HOME` | `C:\Users\MohammedFazil-PC\AppData\Local\Android\Sdk` |
+   | Variable Name  | Variable Value                                                                                                               |
+   | -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+   | `JAVA_HOME`    | `C:\Program Files\Eclipse Adoptium\jdk-17.x.x.x-hotspot` _(check exact folder name at `C:\Program Files\Eclipse Adoptium\`)_ |
+   | `ANDROID_HOME` | `C:\Users\MohammedFazil-PC\AppData\Local\Android\Sdk`                                                                        |
 
 4. Find the **"Path"** variable in System variables → click **Edit** → click **New** → add each of these on a separate line:
+
    ```
    %JAVA_HOME%\bin
    %ANDROID_HOME%\platform-tools
@@ -180,11 +183,11 @@ adb --version     # Android Debug Bridge version 1.0.41   ✅
 
 **Yes — but only as a background tool, not your code editor.**
 
-| Tool | What it's for | Daily use? |
-|---|---|---|
-| **Android Studio** | Installs Android SDK + ADB. Set up once, then leave it. | ❌ No (setup only) |
-| **VS Code / Cursor / Antigravity** | Where you write all your code | ✅ Yes |
-| **PowerShell** | Running npm and build commands | ✅ Yes |
+| Tool                               | What it's for                                           | Daily use?         |
+| ---------------------------------- | ------------------------------------------------------- | ------------------ |
+| **Android Studio**                 | Installs Android SDK + ADB. Set up once, then leave it. | ❌ No (setup only) |
+| **VS Code / Cursor / Antigravity** | Where you write all your code                           | ✅ Yes             |
+| **PowerShell**                     | Running npm and build commands                          | ✅ Yes             |
 
 Once Android Studio is installed and environment variables are configured, you will **never need to open it again** during daily development. All code lives in your preferred editor, all commands run from PowerShell.
 
@@ -194,38 +197,38 @@ Once Android Studio is installed and environment variables are configured, you w
 
 ### Current Phase (UI-Only)
 
-| Category | Library | Purpose |
-|---|---|---|
-| **Framework** | React Native CLI 0.76+ | Native mobile app |
-| **Language** | TypeScript (strict) | Type safety |
-| **Navigation** | React Navigation v7 | Screen routing & deep links |
-| **State** | Zustand | Global state (mock auth, cart) |
-| **Styling** | Tailwind CSS v4 via **Uniwind** | Tailwind utility classes in React Native |
+| Category       | Library                             | Purpose                                             |
+| -------------- | ----------------------------------- | --------------------------------------------------- |
+| **Framework**  | React Native CLI 0.76+              | Native mobile app                                   |
+| **Language**   | TypeScript (strict)                 | Type safety                                         |
+| **Navigation** | React Navigation v7                 | Screen routing & deep links                         |
+| **State**      | Zustand                             | Global state (mock auth, cart)                      |
+| **Styling**    | Tailwind CSS v4 via **Uniwind**     | Tailwind utility classes in React Native            |
 | **UI Library** | **HeroUI Native** (`heroui-native`) | Pre-built beautiful components built on Tailwind v4 |
-| **Animation** | react-native-reanimated v4 | 60fps animations (also required by HeroUI Native) |
-| **Gestures** | react-native-gesture-handler | Touch gestures (required by HeroUI Native) |
-| **Forms** | React Hook Form + Zod | Type-safe form validation |
-| **Storage** | react-native-mmkv | Fast cart persistence |
-| **Images** | react-native-fast-image | Performant cached images |
-| **Icons** | react-native-vector-icons | Material Design icons |
-| **SVG** | react-native-svg | SVG support (required by HeroUI Native) |
-| **Safe Area** | react-native-safe-area-context | Screen inset handling (required by HeroUI Native) |
-| **Config** | react-native-config | `.env` environment variables |
-| **Lint** | ESLint + Prettier + Husky | Code quality & git hooks |
+| **Animation**  | react-native-reanimated v4          | 60fps animations (also required by HeroUI Native)   |
+| **Gestures**   | react-native-gesture-handler        | Touch gestures (required by HeroUI Native)          |
+| **Forms**      | React Hook Form + Zod               | Type-safe form validation                           |
+| **Storage**    | react-native-mmkv                   | Fast cart persistence                               |
+| **Images**     | react-native-fast-image             | Performant cached images                            |
+| **Icons**      | react-native-vector-icons           | Material Design icons                               |
+| **SVG**        | react-native-svg                    | SVG support (required by HeroUI Native)             |
+| **Safe Area**  | react-native-safe-area-context      | Screen inset handling (required by HeroUI Native)   |
+| **Config**     | react-native-config                 | `.env` environment variables                        |
+| **Lint**       | ESLint + Prettier + Husky           | Code quality & git hooks                            |
 
 > 💡 **NativeWind vs Uniwind:** HeroUI Native uses **Tailwind CSS v4 via Uniwind** — its own Tailwind adapter for React Native. Do NOT install NativeWind separately — it conflicts with Uniwind. Uniwind is set up as part of the HeroUI Native installation and gives you the same `className="..."` Tailwind syntax in all components.
 
 ### Added in Backend Phase (Later)
 
-| Category | Library | When |
-|---|---|---|
-| **HTTP** | Axios + interceptors | When API URL is ready |
-| **Server State** | TanStack React Query v5 | When API is being integrated |
-| **Real-time** | Socket.IO Client | For live order tracking |
-| **Maps** | react-native-maps | When Google Maps key available |
-| **Payments** | react-native-razorpay | When Razorpay keys provided |
+| Category               | Library                          | When                             |
+| ---------------------- | -------------------------------- | -------------------------------- |
+| **HTTP**               | Axios + interceptors             | When API URL is ready            |
+| **Server State**       | TanStack React Query v5          | When API is being integrated     |
+| **Real-time**          | Socket.IO Client                 | For live order tracking          |
+| **Maps**               | react-native-maps                | When Google Maps key available   |
+| **Payments**           | react-native-razorpay            | When Razorpay keys provided      |
 | **Push Notifications** | @react-native-firebase/messaging | When Firebase project is created |
-| **OTP** | react-native-otp-verify | When backend OTP SMS is ready |
+| **OTP**                | react-native-otp-verify          | When backend OTP SMS is ready    |
 
 ---
 
@@ -308,34 +311,44 @@ JJsKitchen/
 ## 🚀 Getting Started
 
 ### 1. Clone the Repository
+
 ```powershell
 git clone https://github.com/your-org/jjs-kitchen-frontend.git
 cd jjs-kitchen-frontend
 ```
 
 ### 2. Install Dependencies
+
 ```powershell
 npm install
 ```
 
 ### 3. Create Your `.env` File
+
 ```powershell
 copy .env.example .env
 ```
+
 For now, leave the `.env` mostly empty — backend URLs will be added later.
 
 ### 4. Start Metro Bundler
+
 Open a PowerShell terminal and run:
+
 ```powershell
 npx react-native start
 ```
+
 > Keep this terminal open. Metro is the development server that sends JavaScript to your device.
 
 ### 5. Run on Android
+
 Open a **second PowerShell terminal** (keep the first one running) and run:
+
 ```powershell
 npx react-native run-android
 ```
+
 > This will build the Android app and install it on your connected device/emulator.
 
 ---
@@ -389,14 +402,18 @@ SOCKET_URL=
    - Check the "Always allow from this computer" box
 
 4. **Verify connection in PowerShell:**
+
    ```powershell
    adb devices
    ```
+
    You should see something like:
+
    ```
    List of devices attached
    R5CT106XXXX    device
    ```
+
    If it shows `unauthorized` instead of `device`, re-check USB Debugging and accept the dialog on your phone again.
 
 5. **Run the app:**
@@ -452,6 +469,7 @@ Use this if you don't have a physical phone nearby.
 ## 🏗 Running on Android
 
 ### Development Mode (Debug)
+
 ```powershell
 # Terminal 1 — Start Metro bundler (keep this running)
 npx react-native start
@@ -461,12 +479,15 @@ npx react-native run-android
 ```
 
 ### Release Mode (for local APK testing)
+
 ```powershell
 npx react-native run-android --mode=release
 ```
 
 ### In-App Developer Menu
+
 When the app is running in debug mode on your device, you can access the developer menu by:
+
 - **Shaking your phone** physically
 - Or pressing **Ctrl+M** if using an emulator
 
@@ -481,11 +502,13 @@ Use this to create a standalone `.apk` file to share with the client or install 
 A keystore is like a digital signature for your app. You only create this once.
 
 Open PowerShell and run:
+
 ```powershell
 keytool -genkeypair -v -storetype PKCS12 -keystore jjs-kitchen-release.keystore -alias jjs-kitchen -keyalg RSA -keysize 2048 -validity 10000
 ```
 
 It will ask for:
+
 - Keystore password (create a strong password, save it securely)
 - Your name, organization, city, state, country (can be generic)
 
@@ -496,6 +519,7 @@ It will ask for:
 ### Step 2 — Configure Signing in the Project
 
 Create a file at `android/app/keystore.properties`:
+
 ```properties
 storeFile=../../jjs-kitchen-release.keystore
 storePassword=YOUR_KEYSTORE_PASSWORD
@@ -518,6 +542,7 @@ cd ..
 > **Note on Windows:** Use `.\gradlew` (with dot-backslash), not `./gradlew`
 
 Your APK will be at:
+
 ```
 android\app\build\outputs\apk\release\app-release.apk
 ```
@@ -539,6 +564,7 @@ Or simply copy the `.apk` file to your phone and open it to install manually.
 The Google Play Store requires **Android App Bundle (AAB)** format — not APK.
 
 ### Build AAB
+
 ```powershell
 cd android
 .\gradlew bundleRelease
@@ -546,11 +572,13 @@ cd ..
 ```
 
 Output location:
+
 ```
 android\app\build\outputs\bundle\release\app-release.aab
 ```
 
 ### Upload to Play Console
+
 1. Go to [Google Play Console](https://play.google.com/console)
 2. Create new app → **JJ's Kitchen**
 3. Go to **Production → Create new release**
@@ -559,6 +587,7 @@ android\app\build\outputs\bundle\release\app-release.aab
 6. Submit for review
 
 ### Play Store Submission Checklist
+
 - [ ] App icon — 512×512 PNG (no transparency)
 - [ ] Feature graphic — 1024×500 PNG
 - [ ] At least 4 screenshots (phone screenshots)
@@ -603,24 +632,25 @@ android\app\build\outputs\bundle\release\app-release.aab
 
 ### Key Architecture Decisions
 
-| Decision | Reason |
-|---|---|
-| **Mock data first** | Build all UI without waiting for backend; easy to swap later |
-| **Zustand over Redux** | Less boilerplate, simpler API, perfect for mobile scale |
-| **MMKV over AsyncStorage** | 10–30x faster reads/writes, supports encryption |
-| **Feature-based folders** | Scales better; each feature is self-contained |
-| **Types defined upfront** | TypeScript models in `src/types/` match the API schema — ready for backend phase |
+| Decision                   | Reason                                                                           |
+| -------------------------- | -------------------------------------------------------------------------------- |
+| **Mock data first**        | Build all UI without waiting for backend; easy to swap later                     |
+| **Zustand over Redux**     | Less boilerplate, simpler API, perfect for mobile scale                          |
+| **MMKV over AsyncStorage** | 10–30x faster reads/writes, supports encryption                                  |
+| **Feature-based folders**  | Scales better; each feature is self-contained                                    |
+| **Types defined upfront**  | TypeScript models in `src/types/` match the API schema — ready for backend phase |
 
 ---
 
 ## 🔍 Code Quality & Git Hooks
 
 ### Linting & Formatting
+
 ```powershell
 # Check for lint errors
 npm run lint
 
-# Auto-fix lint errors  
+# Auto-fix lint errors
 npm run lint -- --fix
 
 # Format all files with Prettier
@@ -628,12 +658,15 @@ npm run format
 ```
 
 ### Pre-commit Hooks (Husky)
+
 Runs automatically on every `git commit`:
+
 - ESLint on staged files
 - Prettier formatting check
 - TypeScript type-check
 
 ### TypeScript Check
+
 ```powershell
 npx tsc --noEmit
 ```
@@ -708,33 +741,41 @@ npx react-native run-android
 ## 🐛 Troubleshooting
 
 ### `SDK location not found` Error
+
 Create `android/local.properties` file with:
+
 ```properties
 sdk.dir=C:\\Users\\MohammedFazil-PC\\AppData\\Local\\Android\\Sdk
 ```
 
 ### `adb: command not found` / `adb is not recognized`
+
 - Your `%ANDROID_HOME%\platform-tools` is not in PATH correctly
 - Re-check **Step 4** of the PC setup section above
 - Restart PowerShell after making changes
 
 ### `No devices found` when running `adb devices`
+
 ```powershell
 adb kill-server
 adb start-server
 adb devices
 ```
+
 If still empty — check:
+
 - USB Debugging is ON on your phone
 - You accepted the "Trust this computer" dialog on your phone
 - Try a different USB cable (some cables are charge-only)
 
 ### Metro Bundler Cache Issues (app not updating)
+
 ```powershell
 npx react-native start --reset-cache
 ```
 
 ### Gradle Build Failure
+
 ```powershell
 cd android
 .\gradlew clean
@@ -743,18 +784,22 @@ npx react-native run-android
 ```
 
 ### `java.lang.OutOfMemoryError` During Build
+
 Edit `android/gradle.properties` and update:
+
 ```properties
 org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=512m
 ```
 
 ### Red Screen on Device (JS Error)
+
 - Read the error message carefully — it tells you exactly what's wrong
 - Press **R R** (twice) on emulator to reload
 - Shake phone → **Reload**
 - Or: `npx react-native start --reset-cache`
 
 ### `JAVA_HOME is not set` Error
+
 - Make sure you added `JAVA_HOME` to System Environment Variables (not User variables)
 - Restart PowerShell completely after setting it
 - Verify: `echo $env:JAVA_HOME` should print the Java path
@@ -772,11 +817,11 @@ org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=512m
 
 ## 📋 Android Version Support
 
-| Minimum Android Version | API Level | Coverage (2026) |
-|---|---|---|
-| **Android 8.0 (Oreo)** ← *This project* | API 26 | ~95% of active devices |
-| Android 7.0 (Nougat) | API 24 | ~97% of active devices |
-| Android 10 | API 29 | ~85% of active devices |
+| Minimum Android Version                 | API Level | Coverage (2026)        |
+| --------------------------------------- | --------- | ---------------------- |
+| **Android 8.0 (Oreo)** ← _This project_ | API 26    | ~95% of active devices |
+| Android 7.0 (Nougat)                    | API 24    | ~97% of active devices |
+| Android 10                              | API 29    | ~85% of active devices |
 
 **Chosen minimum: Android 8.0 (API 26)** — Professional industry standard that covers nearly all active Android users while enabling modern APIs and security features.
 
@@ -789,4 +834,4 @@ React Native CLI · TypeScript · Android
 
 ---
 
-*Last updated: April 2026*
+_Last updated: April 2026_

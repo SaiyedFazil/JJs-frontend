@@ -6,13 +6,12 @@ export const ENDPOINTS = {
   AUTH: {
     SEND_OTP: '/user/auth/create',
     VERIFY_OTP: '/user/auth/verify-otp',
-    // LOGOUT: '/auth/logout',
+    LOGOUT: '/user/auth/logout',
+    RESEND_OTP: '/user/auth/resend-otp',
     // REFRESH_TOKEN: '/auth/refresh-token',
   },
   USER: {
-    // PROFILE: '/user/profile',
-    // UPDATE_PROFILE: '/user/profile/update',
-    // ADDRESSES: '/user/addresses',
+    UPDATE_PROFILE: '/user/profile',
   },
   MENU: {
     // CATEGORIES: '/menu/categories',

@@ -18,7 +18,7 @@ export const AuthService = {
       {
         country_code: countryCode,
         phone_number: phoneNumber,
-      }
+      },
     );
     return response.data;
   },
@@ -36,15 +36,32 @@ export const AuthService = {
         headers: {
           Authorization: `Bearer ${preVerifyToken}`,
         },
-      }
+      },
     );
     return response.data;
   },
 
   /**
-   * Log the user out
+   * Resend OTP verification code
+   * @param preVerifyToken Token received from sendOtp or previous resendOtp API
    */
-  // logout: async () => {
-  //   await apiClient.post(ENDPOINTS.AUTH.LOGOUT);
-  // },
+  resendOtp: async (preVerifyToken: string) => {
+    const response = await apiClient.post<ApiResponse<{ authToken: string }>>(
+      ENDPOINTS.AUTH.RESEND_OTP,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${preVerifyToken}`,
+        },
+      },
+    );
+    return response.data;
+  },
+
+  /**
+   * Log the user out from the server
+   */
+  logout: async () => {
+    return await apiClient.post(ENDPOINTS.AUTH.LOGOUT, {});
+  },
 };

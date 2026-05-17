@@ -13,30 +13,30 @@ export const storage = createMMKV({
 // Storage Keys — single source of truth, prevents typo bugs
 // ─────────────────────────────────────────────────────────────────────────────
 export const StorageKeys = {
-  ACCESS_TOKEN:  'access_token',
+  ACCESS_TOKEN: 'access_token',
   REFRESH_TOKEN: 'refresh_token',
-  USER_PROFILE:  'user_profile',   // renamed from user_data for clarity
+  USER_PROFILE: 'user_profile', // renamed from user_data for clarity
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // User Profile — matches the fields returned by the OTP verify response
 // ─────────────────────────────────────────────────────────────────────────────
 export interface StoredUserProfile {
-  id:          number;
-  firstName:   string | null;
-  lastName:    string | null;
-  email:       string | null;
+  id: number;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
   countryCode: string;
   phoneNumber: string;
-  role:        string;
-  status:      string;
+  role: string;
+  status: string;
 }
 
 // ── Access Token ──────────────────────────────────────────────────────────────
-export const getAccessToken  = (): string | undefined =>
+export const getAccessToken = (): string | undefined =>
   storage.getString(StorageKeys.ACCESS_TOKEN);
 
-export const setAccessToken  = (token: string): void =>
+export const setAccessToken = (token: string): void =>
   storage.set(StorageKeys.ACCESS_TOKEN, token);
 
 // ── Refresh Token ─────────────────────────────────────────────────────────────
@@ -49,7 +49,9 @@ export const setRefreshToken = (token: string): void =>
 // ── User Profile ──────────────────────────────────────────────────────────────
 export const getUserProfile = (): StoredUserProfile | null => {
   const raw = storage.getString(StorageKeys.USER_PROFILE);
-  if (!raw) { return null; }
+  if (!raw) {
+    return null;
+  }
   try {
     return JSON.parse(raw) as StoredUserProfile;
   } catch {

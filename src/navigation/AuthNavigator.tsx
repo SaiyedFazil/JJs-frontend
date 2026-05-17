@@ -8,10 +8,10 @@ import { useAuthStore } from '../store/auth.store';
 const Stack = createNativeStackNavigator();
 
 export const AuthNavigator = () => {
-  const isFirstLaunch = useAuthStore((state) => state.isFirstLaunch);
+  const isFirstLaunch = useAuthStore(state => state.isFirstLaunch);
 
   return (
-    <Stack.Navigator 
+    <Stack.Navigator
       initialRouteName={isFirstLaunch ? 'Splash' : 'Login'}
       screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
     >

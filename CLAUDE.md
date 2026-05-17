@@ -42,6 +42,7 @@ index.js → App.tsx (providers) → RootNavigator → AuthNavigator | MainTabNa
 ### State Management
 
 Zustand stores in `src/store/`:
+
 - `auth.store.ts` — `isAuthenticated`, `login()`, `logout()`, `skipAuth()`
 - `theme.store.ts` — `themeMode: 'light' | 'dark' | 'system'`, `setThemeMode()`
 
@@ -81,13 +82,13 @@ ESLint (`@react-native` ruleset) + Prettier (single quotes, trailing commas) + H
 - Node ≥ 22.11.0
 - Min SDK: API 26 (Android 8.0)
 
-## Android APk 
+## Android APk
 
 - cd android
 - ./gradlew clean
 - ./gradlew assembleRelease
 
-## for run in local after apk 
+## for run in local after apk
 
 - adb uninstall com.jjskitchen.app
 - npm run android

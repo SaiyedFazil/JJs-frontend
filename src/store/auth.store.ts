@@ -10,6 +10,7 @@ import {
   StoredUserProfile,
 } from '@/utils/storage';
 import { AuthResponse } from '@/types/api.types';
+import { AuthService } from '@/services/auth.service';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // State Shape
@@ -58,19 +59,19 @@ interface AuthState {
    * Clears every piece of personal information from both MMKV and memory.
    * After this call the user is treated as a guest.
    */
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Store
 // ─────────────────────────────────────────────────────────────────────────────
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>(set => ({
   isAuthenticated: false,
-  user:            null,
-  accessToken:     null,
-  refreshToken:    null,
-  isFirstLaunch:    true,
-  profileCompleted: true,   // default true so rehydrated sessions skip CompleteProfileScreen
+  user: null,
+  accessToken: null,
+  refreshToken: null,
+  isFirstLaunch: true,
+  profileCompleted: true, // default true so rehydrated sessions skip CompleteProfileScreen
 
   // ── setFirstLaunch ─────────────────────────────────────────────────────────
   setFirstLaunch: (isFirst: boolean) => set({ isFirstLaunch: isFirst }),
@@ -93,13 +94,20 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     const profile: StoredUserProfile = profileFields;
 
+    const hasFirstName =
+      profile.firstName && profile.firstName.trim().length > 0;
+    const hasLastName = profile.lastName && profile.lastName.trim().length > 0;
+    const isProfileComplete =
+      Boolean(profileCompleted) ||
+      (Boolean(hasFirstName) && Boolean(hasLastName));
+
     // 1. Update in-memory state FIRST for immediate UI reaction
     set({
       isAuthenticated: true,
-      user:            profile,
+      user: profile,
       accessToken,
       refreshToken,
-      profileCompleted,
+      profileCompleted: isProfileComplete,
     });
 
     // 2. Persist to MMKV in the background (next tick)
@@ -113,33 +121,50 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   // ── rehydrate ──────────────────────────────────────────────────────────────
   rehydrate: () => {
-    const token   = getAccessToken();
+    const token = getAccessToken();
     const refresh = getRefreshToken();
     const profile = getUserProfile();
 
     if (token && profile) {
+      const hasFirstName =
+        profile.firstName && profile.firstName.trim().length > 0;
+      const hasLastName =
+        profile.lastName && profile.lastName.trim().length > 0;
+      const isProfileComplete = Boolean(hasFirstName) && Boolean(hasLastName);
+
       set({
         isAuthenticated: true,
-        user:            profile,
-        accessToken:     token,
-        refreshToken:    refresh ?? null,
+        user: profile,
+        accessToken: token,
+        refreshToken: refresh ?? null,
+        profileCompleted: isProfileComplete,
       });
     }
     // If no token found the state stays at the default (guest / unauthenticated)
   },
 
   // ── logout ─────────────────────────────────────────────────────────────────
-  logout: () => {
-    // 1. Wipe every piece of personal info from persistent storage
-    clearAuthData();
+  logout: async () => {
+    try {
+      // 1. Call API while token is still available in state/storage
+      // The interceptor in apiClient will automatically pick up the token
+      await AuthService.logout();
+    } catch (error) {
+      // We log the error but proceed with clearing local state anyway
+      // Logout should be "best effort" on the server side
+      console.warn('Logout API call failed:', error);
+    } finally {
+      // 2. Wipe every piece of personal info from persistent storage
+      clearAuthData();
 
-    // 2. Reset in-memory state — nothing personal remains in RAM either
-    set({
-      isAuthenticated: false,
-      user:            null,
-      accessToken:     null,
-      refreshToken:    null,
-      isFirstLaunch:   false,
-    });
+      // 3. Reset in-memory state — nothing personal remains in RAM either
+      set({
+        isAuthenticated: false,
+        user: null,
+        accessToken: null,
+        refreshToken: null,
+        isFirstLaunch: false,
+      });
+    }
   },
 }));

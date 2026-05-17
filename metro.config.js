@@ -22,5 +22,5 @@ const customConfig = mergeConfig(defaultConfig, config);
 
 module.exports = withUniwindConfig(customConfig, {
   cssEntryFile: './src/global.css',
-  dtsFile: './src/uniwind-types.d.ts'
+  dtsFile: './src/uniwind-types.d.ts',
 });

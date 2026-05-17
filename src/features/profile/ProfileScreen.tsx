@@ -1,19 +1,30 @@
 import React, { memo, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { 
-  User as UserIcon, 
-  ChevronRight, 
-  ShoppingBag, 
-  MapPin, 
-  CreditCard, 
-  Settings, 
-  HelpCircle, 
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import {
+  User as UserIcon,
+  ChevronRight,
+  ShoppingBag,
+  MapPin,
+  CreditCard,
+  Settings,
+  HelpCircle,
   LogOut,
   Bell,
-  Heart
+  Heart,
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { FadeInDown, FadeInRight, FadeInUp } from 'react-native-reanimated';
+import Animated, {
+  FadeInDown,
+  FadeInRight,
+  FadeInUp,
+} from 'react-native-reanimated';
 import { useAuthStore } from '@/store/auth.store';
 
 /**
@@ -41,27 +52,101 @@ const MENU_SECTIONS: ProfileSection[] = [
   {
     title: 'Activity',
     items: [
-      { id: '1', title: 'My Orders', subtitle: 'View history & reorder', icon: <ShoppingBag size={20} className="text-primary dark:text-primary-dark" />, badge: '5 Items' },
-      { id: '2', title: 'Favorites', subtitle: 'Saved food items', icon: <Heart size={20} className="text-primary dark:text-primary-dark" /> },
-      { id: '3', title: 'Notifications', subtitle: 'Alerts & updates', icon: <Bell size={20} className="text-primary dark:text-primary-dark" />, badge: 'New' },
-    ]
+      {
+        id: '1',
+        title: 'My Orders',
+        subtitle: 'View history & reorder',
+        icon: (
+          <ShoppingBag
+            size={20}
+            className="text-primary dark:text-primary-dark"
+          />
+        ),
+        badge: '5 Items',
+      },
+      {
+        id: '2',
+        title: 'Favorites',
+        subtitle: 'Saved food items',
+        icon: (
+          <Heart size={20} className="text-primary dark:text-primary-dark" />
+        ),
+      },
+      {
+        id: '3',
+        title: 'Notifications',
+        subtitle: 'Alerts & updates',
+        icon: (
+          <Bell size={20} className="text-primary dark:text-primary-dark" />
+        ),
+        badge: 'New',
+      },
+    ],
   },
   {
     title: 'Account Settings',
     items: [
-      { id: '4', title: 'Personal Info', subtitle: 'Manage profile data', icon: <UserIcon size={20} className="text-primary dark:text-primary-dark" /> },
-      { id: '5', title: 'Saved Addresses', subtitle: 'Home, Office & others', icon: <MapPin size={20} className="text-primary dark:text-primary-dark" />, badge: '3 Saved' },
-      { id: '6', title: 'Payment Methods', subtitle: 'Cards & UPI', icon: <CreditCard size={20} className="text-primary dark:text-primary-dark" /> },
-    ]
+      {
+        id: '4',
+        title: 'Personal Info',
+        subtitle: 'Manage profile data',
+        icon: (
+          <UserIcon size={20} className="text-primary dark:text-primary-dark" />
+        ),
+      },
+      {
+        id: '5',
+        title: 'Saved Addresses',
+        subtitle: 'Home, Office & others',
+        icon: (
+          <MapPin size={20} className="text-primary dark:text-primary-dark" />
+        ),
+        badge: '3 Saved',
+      },
+      {
+        id: '6',
+        title: 'Payment Methods',
+        subtitle: 'Cards & UPI',
+        icon: (
+          <CreditCard
+            size={20}
+            className="text-primary dark:text-primary-dark"
+          />
+        ),
+      },
+    ],
   },
   {
     title: 'Preferences',
     items: [
-      { id: '7', title: 'Settings', subtitle: 'App preferences', icon: <Settings size={20} className="text-primary dark:text-primary-dark" /> },
-      { id: '8', title: 'Help & Support', subtitle: 'Get instant assistance', icon: <HelpCircle size={20} className="text-primary dark:text-primary-dark" /> },
-      { id: '9', title: 'Logout', subtitle: 'End your session', icon: <LogOut size={20} color="#EF4444" />, color: 'text-red-500' },
-    ]
-  }
+      {
+        id: '7',
+        title: 'Settings',
+        subtitle: 'App preferences',
+        icon: (
+          <Settings size={20} className="text-primary dark:text-primary-dark" />
+        ),
+      },
+      {
+        id: '8',
+        title: 'Help & Support',
+        subtitle: 'Get instant assistance',
+        icon: (
+          <HelpCircle
+            size={20}
+            className="text-primary dark:text-primary-dark"
+          />
+        ),
+      },
+      {
+        id: '9',
+        title: 'Logout',
+        subtitle: 'End your session',
+        icon: <LogOut size={20} color="#EF4444" />,
+        color: 'text-red-500',
+      },
+    ],
+  },
 ];
 
 /**
@@ -77,40 +162,58 @@ interface MenuItemProps {
   badge?: string;
 }
 
-const MenuItem = memo(({ icon, title, subtitle, onPress, color, delay = 0, badge }: MenuItemProps) => (
-  <Animated.View entering={FadeInDown.delay(delay).duration(500).springify()}>
-    <TouchableOpacity 
-      onPress={onPress}
-      activeOpacity={0.6}
-      className="flex-row items-center py-5 px-8"
-    >
-      <View className="w-11 h-11 rounded-2xl items-center justify-center bg-primary/5 dark:bg-primary-dark/10 border border-primary/5 dark:border-primary-dark/5">
-        {icon}
-      </View>
-      <View className="flex-1 ml-4">
-        <Text className={`text-[16px] font-black tracking-tight ${color || 'text-foreground dark:text-foreground-dark'}`}>
-          {title}
-        </Text>
-        {subtitle && (
-          <Text className="text-muted dark:text-muted-dark text-[11px] font-bold uppercase tracking-wider mt-0.5">
-            {subtitle}
-          </Text>
-        )}
-      </View>
-      {badge && (
-        <View className="bg-primary/10 dark:bg-primary-dark/20 px-2 py-1 rounded-lg mr-2">
-          <Text className="text-primary dark:text-primary-dark text-[10px] font-black uppercase">{badge}</Text>
+const MenuItem = memo(
+  ({
+    icon,
+    title,
+    subtitle,
+    onPress,
+    color,
+    delay = 0,
+    badge,
+  }: MenuItemProps) => (
+    <Animated.View entering={FadeInDown.delay(delay).duration(500).springify()}>
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.6}
+        className="flex-row items-center py-5 px-8"
+      >
+        <View className="w-11 h-11 rounded-2xl items-center justify-center bg-primary/5 dark:bg-primary-dark/10 border border-primary/5 dark:border-primary-dark/5">
+          {icon}
         </View>
-      )}
-      <ChevronRight size={14} className="text-muted/30 dark:text-muted-dark/20" strokeWidth={4} />
-    </TouchableOpacity>
-  </Animated.View>
-));
+        <View className="flex-1 ml-4">
+          <Text
+            className={`text-[16px] font-black tracking-tight ${color || 'text-foreground dark:text-foreground-dark'}`}
+          >
+            {title}
+          </Text>
+          {subtitle && (
+            <Text className="text-muted dark:text-muted-dark text-[11px] font-bold uppercase tracking-wider mt-0.5">
+              {subtitle}
+            </Text>
+          )}
+        </View>
+        {badge && (
+          <View className="bg-primary/10 dark:bg-primary-dark/20 px-2 py-1 rounded-lg mr-2">
+            <Text className="text-primary dark:text-primary-dark text-[10px] font-black uppercase">
+              {badge}
+            </Text>
+          </View>
+        )}
+        <ChevronRight
+          size={14}
+          className="text-muted/30 dark:text-muted-dark/20"
+          strokeWidth={4}
+        />
+      </TouchableOpacity>
+    </Animated.View>
+  ),
+);
 
 export const ProfileScreen = () => {
   const insets = useSafeAreaInsets();
-  const user = useAuthStore((state) => state.user);
-  const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore(state => state.user);
+  const logout = useAuthStore(state => state.logout);
 
   const handleLogout = () => {
     Alert.alert(
@@ -118,13 +221,13 @@ export const ProfileScreen = () => {
       'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
+        {
+          text: 'Logout',
           style: 'destructive',
-          onPress: () => logout()
+          onPress: () => logout(),
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
 
@@ -137,10 +240,10 @@ export const ProfileScreen = () => {
   };
 
   // Memoize scroll content style to avoid inline style warnings
-  const scrollContentStyle = useMemo(() => [
-    styles.scrollContent,
-    { paddingTop: insets.top + 40 }
-  ], [insets.top]);
+  const scrollContentStyle = useMemo(
+    () => [styles.scrollContent, { paddingTop: insets.top + 40 }],
+    [insets.top],
+  );
 
   // Helper to get initials
   const getInitials = () => {
@@ -153,12 +256,12 @@ export const ProfileScreen = () => {
 
   return (
     <View className="flex-1 bg-background dark:bg-background-dark">
-      <ScrollView 
+      <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={scrollContentStyle}
       >
         {/* Modern Header Section */}
-        <Animated.View 
+        <Animated.View
           entering={FadeInUp.duration(800).springify()}
           className="items-center px-6 mb-12"
         >
@@ -173,7 +276,9 @@ export const ProfileScreen = () => {
 
           <View className="items-center">
             <Text className="text-3xl font-black text-foreground dark:text-foreground-dark tracking-tight leading-tight mb-1">
-              {user?.firstName ? `${user.firstName} ${user.lastName || ''}` : 'User Name'}
+              {user?.firstName
+                ? `${user.firstName} ${user.lastName || ''}`
+                : 'User Name'}
             </Text>
             <View className="bg-primary/5 dark:bg-primary-dark/10 px-4 py-1.5 rounded-full border border-primary/5">
               <Text className="text-primary dark:text-primary-dark font-black text-[10px] uppercase tracking-[2px]">
@@ -186,14 +291,16 @@ export const ProfileScreen = () => {
         {/* Sectioned Menu - Direct on Screen */}
         {MENU_SECTIONS.map((section, sIndex) => (
           <View key={section.title} className="mb-6">
-            <Animated.View entering={FadeInRight.delay(sIndex * 100).duration(500)}>
+            <Animated.View
+              entering={FadeInRight.delay(sIndex * 100).duration(500)}
+            >
               <Text className="px-8 text-muted dark:text-muted-dark text-[11px] font-black uppercase tracking-[3px] mb-2 opacity-50">
                 {section.title}
               </Text>
             </Animated.View>
-            
+
             {section.items.map((item, iIndex) => (
-              <MenuItem 
+              <MenuItem
                 key={item.id}
                 title={item.title}
                 subtitle={item.subtitle}
@@ -209,8 +316,8 @@ export const ProfileScreen = () => {
 
         {/* Branding Footer */}
         <View className="mt-10 items-center px-6">
-           <View className="w-12 h-0.5 bg-primary/10 dark:bg-primary-dark/10 rounded-full mb-6" />
-           <Text className="text-muted/30 dark:text-muted-dark/20 text-[9px] font-black uppercase tracking-[6px]">
+          <View className="w-12 h-0.5 bg-primary/10 dark:bg-primary-dark/10 rounded-full mb-6" />
+          <Text className="text-muted/30 dark:text-muted-dark/20 text-[9px] font-black uppercase tracking-[6px]">
             JJ's Kitchen v1.0
           </Text>
         </View>

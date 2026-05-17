@@ -10,17 +10,17 @@ This plan covers the complete setup and development strategy for the **JJ's Kitc
 
 ## Confirmed Decisions
 
-| Decision | Value |
-|---|---|
-| **Framework** | React Native CLI |
-| **Package Manager** | npm |
-| **Platform** | Android first, iOS later |
-| **API Integration** | Deferred — UI-only phase now |
-| **Firebase** | New project (create when push notifications needed) |
-| **Google Maps** | Deferred — no key yet, integrate in backend phase |
-| **Razorpay** | Deferred — integrate in backend phase |
-| **App Name** | JJ's Kitchen |
-| **Bundle ID** | `com.jjskitchen.app` |
+| Decision                | Value                                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| **Framework**           | React Native CLI                                                                                   |
+| **Package Manager**     | npm                                                                                                |
+| **Platform**            | Android first, iOS later                                                                           |
+| **API Integration**     | Deferred — UI-only phase now                                                                       |
+| **Firebase**            | New project (create when push notifications needed)                                                |
+| **Google Maps**         | Deferred — no key yet, integrate in backend phase                                                  |
+| **Razorpay**            | Deferred — integrate in backend phase                                                              |
+| **App Name**            | JJ's Kitchen                                                                                       |
+| **Bundle ID**           | `com.jjskitchen.app`                                                                               |
 | **Min Android Version** | **API 26 (Android 8.0)** — covers ~95% of active Android devices (2026), recommended best practice |
 
 ---
@@ -29,31 +29,32 @@ This plan covers the complete setup and development strategy for the **JJ's Kitc
 
 ### Core Libraries (Install in Phase 1)
 
-| Category | Technology | Reason |
-|---|---|---|
-| **Framework** | React Native CLI (0.76+) | Full native control, no Expo restrictions |
-| **Language** | TypeScript (strict) | Type-safety, IntelliSense, fewer runtime bugs |
-| **Navigation** | React Navigation v7 | Industry standard, supports deep linking |
-| **State Management** | Zustand | Lightweight, no boilerplate, great for mobile |
-| **Styling** | Tailwind CSS v4 via **Uniwind** | Tailwind in React Native (required by HeroUI Native) |
-| **UI Library** | **HeroUI Native** (`heroui-native`) | Beautiful pre-built components, built on Tailwind v4 |
-| **Animation** | react-native-reanimated v4 | 60fps animations + required peer dep of HeroUI Native |
-| **Gestures** | react-native-gesture-handler | Touch gestures + required peer dep of HeroUI Native |
-| **Forms** | React Hook Form + Zod | Typed form validation |
-| **Images** | react-native-fast-image | Performant cached image loading |
-| **Icons** | react-native-vector-icons | Scalable icon set (MaterialDesignIcons) |
-| **Storage** | react-native-mmkv | Fast key-value storage (cart persistence) |
-| **SVG** | react-native-svg | SVG support (required peer dep of HeroUI Native) |
-| **Safe Area** | react-native-safe-area-context | Screen insets (required peer dep of HeroUI Native) |
-| **Code Quality** | ESLint + Prettier + Husky | Consistent code style, pre-commit hooks |
-| **Build** | Gradle (local) | Android APK/AAB generation |
-| **Environment** | react-native-config | `.env` per environment (dev/staging/prod) |
+| Category             | Technology                          | Reason                                                |
+| -------------------- | ----------------------------------- | ----------------------------------------------------- |
+| **Framework**        | React Native CLI (0.76+)            | Full native control, no Expo restrictions             |
+| **Language**         | TypeScript (strict)                 | Type-safety, IntelliSense, fewer runtime bugs         |
+| **Navigation**       | React Navigation v7                 | Industry standard, supports deep linking              |
+| **State Management** | Zustand                             | Lightweight, no boilerplate, great for mobile         |
+| **Styling**          | Tailwind CSS v4 via **Uniwind**     | Tailwind in React Native (required by HeroUI Native)  |
+| **UI Library**       | **HeroUI Native** (`heroui-native`) | Beautiful pre-built components, built on Tailwind v4  |
+| **Animation**        | react-native-reanimated v4          | 60fps animations + required peer dep of HeroUI Native |
+| **Gestures**         | react-native-gesture-handler        | Touch gestures + required peer dep of HeroUI Native   |
+| **Forms**            | React Hook Form + Zod               | Typed form validation                                 |
+| **Images**           | react-native-fast-image             | Performant cached image loading                       |
+| **Icons**            | react-native-vector-icons           | Scalable icon set (MaterialDesignIcons)               |
+| **Storage**          | react-native-mmkv                   | Fast key-value storage (cart persistence)             |
+| **SVG**              | react-native-svg                    | SVG support (required peer dep of HeroUI Native)      |
+| **Safe Area**        | react-native-safe-area-context      | Screen insets (required peer dep of HeroUI Native)    |
+| **Code Quality**     | ESLint + Prettier + Husky           | Consistent code style, pre-commit hooks               |
+| **Build**            | Gradle (local)                      | Android APK/AAB generation                            |
+| **Environment**      | react-native-config                 | `.env` per environment (dev/staging/prod)             |
 
 > **Important — NativeWind vs Uniwind:**
 > HeroUI Native uses **Tailwind CSS v4 via Uniwind** (its own Tailwind adapter for React Native) — NOT NativeWind.
 > Do NOT install NativeWind alongside HeroUI Native as they conflict. Uniwind is automatically handled as part of the HeroUI Native setup and gives you full `className="..."` Tailwind support in all components.
 
 ### HeroUI Native Required Peer Dependencies
+
 ```
 heroui-native
 react-native-reanimated@^4.1.1
@@ -66,15 +67,16 @@ tailwind-merge@^3.4.0
 ```
 
 ### Libraries to Add Later (Backend Phase)
-| Category | Technology | When |
-|---|---|---|
-| **HTTP Client** | Axios + interceptors | Backend integration phase |
-| **Server State** | TanStack React Query v5 | Backend integration phase |
-| **Real-time** | Socket.IO Client | Order tracking phase |
-| **Maps** | react-native-maps | When Google Maps key available |
-| **Payments** | react-native-razorpay | When Razorpay keys provided |
-| **Notifications** | @react-native-firebase/messaging | When Firebase project created |
-| **OTP** | react-native-otp-verify | When backend OTP API ready |
+
+| Category          | Technology                       | When                           |
+| ----------------- | -------------------------------- | ------------------------------ |
+| **HTTP Client**   | Axios + interceptors             | Backend integration phase      |
+| **Server State**  | TanStack React Query v5          | Backend integration phase      |
+| **Real-time**     | Socket.IO Client                 | Order tracking phase           |
+| **Maps**          | react-native-maps                | When Google Maps key available |
+| **Payments**      | react-native-razorpay            | When Razorpay keys provided    |
+| **Notifications** | @react-native-firebase/messaging | When Firebase project created  |
+| **OTP**           | react-native-otp-verify          | When backend OTP API ready     |
 
 ---
 
@@ -163,23 +165,23 @@ JJsKitchen/
 
 **✅ All prerequisites installed and verified on this machine:**
 
-| Tool | Verified Version | Status |
-|---|---|---|
-| Node.js | v24.13.1 | ✅ Done |
-| npm | v11.12.1 | ✅ Done |
-| Git | v2.51.0.windows.1 | ✅ Done |
-| Java JDK 17 | OpenJDK 17.0.18 (Temurin-17.0.18+8) | ✅ Done |
-| JAVA_HOME | `D:\Program Files\Eclipse Adoptium\jdk-17.0.18.8-hotspot` | ✅ Set |
-| Android Studio | Panda 3 (2025.3.3) | ✅ Done |
-| ANDROID_HOME | `C:\Users\MohammedFazil-PC\AppData\Local\Android\Sdk` | ✅ Set |
-| ADB | Version 1.0.41 (37.0.0-14910828) | ✅ Working |
+| Tool           | Verified Version                                          | Status     |
+| -------------- | --------------------------------------------------------- | ---------- |
+| Node.js        | v24.13.1                                                  | ✅ Done    |
+| npm            | v11.12.1                                                  | ✅ Done    |
+| Git            | v2.51.0.windows.1                                         | ✅ Done    |
+| Java JDK 17    | OpenJDK 17.0.18 (Temurin-17.0.18+8)                       | ✅ Done    |
+| JAVA_HOME      | `D:\Program Files\Eclipse Adoptium\jdk-17.0.18.8-hotspot` | ✅ Set     |
+| Android Studio | Panda 3 (2025.3.3)                                        | ✅ Done    |
+| ANDROID_HOME   | `C:\Users\MohammedFazil-PC\AppData\Local\Android\Sdk`     | ✅ Set     |
+| ADB            | Version 1.0.41 (37.0.0-14910828)                          | ✅ Working |
 
 **The machine is fully ready for React Native development. Proceed to Step 2.**
 
 > For any new developer joining this project, see `README.md` for the complete step-by-step installation guide including exact SDK versions and environment variable configuration.
 
-
 #### Step 2: Project Initialization
+
 - `npx @react-native-community/cli@latest init JJsKitchen`
 - Set Bundle ID to `com.jjskitchen.app` in `android/app/build.gradle`
 - Configure TypeScript strict mode in `tsconfig.json`
@@ -189,6 +191,7 @@ JJsKitchen/
 - Set minimum Android SDK to **26** in `android/app/build.gradle`
 
 #### Step 3: Design System & UI Setup (`src/theme/` + HeroUI Native)
+
 - Install **HeroUI Native** (`heroui-native`) and all required peer dependencies:
   ```
   npm install heroui-native
@@ -203,6 +206,7 @@ JJsKitchen/
 - Create `src/theme/index.ts` for any additional non-Tailwind constants (shadows etc.)
 
 #### Step 4: Navigation Setup (`src/navigation/`)
+
 - `RootNavigator`: switches between Auth and Main using Zustand mock state
 - `AuthNavigator`: Stack — Splash → Onboarding → Login → OTP Verify
 - `MainTabNavigator`: Bottom Tab — Home | Menu | Orders | Profile
@@ -269,6 +273,7 @@ JJsKitchen/
 ---
 
 ### Phase 8 – Backend Integration (ACTIVE)
+
 - [x] Set up Axios client with base URL + interceptors
 - [ ] Implement Token management (MMKV storage)
 - [ ] Replace mock data with real API calls using React Query
@@ -279,6 +284,7 @@ JJsKitchen/
 - [ ] Set up Firebase FCM for push notifications
 
 **API Architecture Best Practices:**
+
 1. **Axios Instance**: Centralized configuration for base URL, timeout, and headers.
 2. **Interceptors**: Request interceptors for attaching Auth tokens; Response interceptors for global error handling and token refresh.
 3. **Endpoints Registry**: Centralized file for all API routes to avoid hardcoded strings.
@@ -291,12 +297,14 @@ JJsKitchen/
 ## Verification Plan
 
 ### Phase 1–7 (UI Phase)
+
 - Run app on physical Android device via USB
 - Test all navigation flows manually
 - Test cart persistence across app restarts (MMKV)
 - Build a debug APK and install on device for stakeholder review
 
 ### Phase 8 (Backend Phase)
+
 - End-to-end order flow testing with real API
 - Socket.IO tracking test with backend developer
 - Payment test in Razorpay test mode

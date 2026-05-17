@@ -1,9 +1,5 @@
 import React, { useEffect } from 'react';
-import {
-  View,
-  StyleSheet,
-  useWindowDimensions,
-} from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   FadeIn,
@@ -51,12 +47,11 @@ const LoadingDot = ({ index }: { index: number }) => {
   return <Animated.View style={[styles.dot, animatedStyle]} />;
 };
 
-
 export const SplashScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { width: W, height: H } = useWindowDimensions();
 
-  const setFirstLaunch = useAuthStore((state) => state.setFirstLaunch);
+  const setFirstLaunch = useAuthStore(state => state.setFirstLaunch);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -70,7 +65,6 @@ export const SplashScreen = () => {
   const taglineSize = Math.max(12, minDim * 0.035);
   const taglineSpacing = Math.max(4, minDim * 0.015);
   const dotsBottom = Math.max(60, H * 0.12);
-
 
   return (
     <Animated.View
@@ -86,8 +80,8 @@ export const SplashScreen = () => {
       />
 
       <View style={styles.center}>
-        <View style={{ height: H * 0.22 }} /> 
-        
+        <View style={{ height: H * 0.22 }} />
+
         <Animated.Text
           entering={FadeIn.delay(2600).duration(800)}
           style={[
@@ -95,10 +89,9 @@ export const SplashScreen = () => {
             { fontSize: taglineSize, letterSpacing: taglineSpacing },
           ]}
         >
-          TASTE  THE  PERFECTION
+          TASTE THE PERFECTION
         </Animated.Text>
       </View>
-
 
       <Animated.View
         entering={FadeIn.delay(2700).duration(500)}

@@ -1,0 +1,12 @@
+node_modules/
+android/
+ios/
+build/
+dist/
+coverage/
+.expo/
+.expo-shared/
+web-build/
+*.config.js
+*.keystore
+package-lock.json

@@ -18,21 +18,21 @@ interface CartState {
 
 export const useCartStore = create<CartState>((set, get) => ({
   items: [],
-  addItem: (item) => {
-    const existing = get().items.find((i) => i.id === item.id);
+  addItem: item => {
+    const existing = get().items.find(i => i.id === item.id);
     if (existing) {
       set({
-        items: get().items.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+        items: get().items.map(i =>
+          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i,
         ),
       });
     } else {
       set({ items: [...get().items, { ...item, quantity: 1 }] });
     }
   },
-  removeItem: (id) =>
+  removeItem: id =>
     set({
-      items: get().items.filter((i) => i.id !== id),
+      items: get().items.filter(i => i.id !== id),
     }),
   clearCart: () => set({ items: [] }),
   totalItems: () => get().items.reduce((acc, item) => acc + item.quantity, 0),

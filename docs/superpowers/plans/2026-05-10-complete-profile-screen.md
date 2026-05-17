@@ -12,18 +12,19 @@
 
 ## Files
 
-| Action | Path | Responsibility |
-|--------|------|----------------|
-| Modify | `src/types/api.types.ts` | Add `profileCompleted: boolean` to `AuthResponse` |
-| Modify | `src/store/auth.store.ts` | Add `profileCompleted` flag + `setProfileCompleted` action + update `setAuth` |
-| Modify | `src/navigation/RootNavigator.tsx` | Add third routing branch for incomplete profiles |
-| Create | `src/features/auth/CompleteProfileScreen.tsx` | New profile completion screen |
+| Action | Path                                          | Responsibility                                                                |
+| ------ | --------------------------------------------- | ----------------------------------------------------------------------------- |
+| Modify | `src/types/api.types.ts`                      | Add `profileCompleted: boolean` to `AuthResponse`                             |
+| Modify | `src/store/auth.store.ts`                     | Add `profileCompleted` flag + `setProfileCompleted` action + update `setAuth` |
+| Modify | `src/navigation/RootNavigator.tsx`            | Add third routing branch for incomplete profiles                              |
+| Create | `src/features/auth/CompleteProfileScreen.tsx` | New profile completion screen                                                 |
 
 ---
 
 ### Task 1: Add `profileCompleted` to API types
 
 **Files:**
+
 - Modify: `src/types/api.types.ts`
 
 - [ ] **Step 1: Update `AuthResponse` to include `profileCompleted`**
@@ -59,6 +60,7 @@ git commit -m "feat: add profileCompleted to AuthResponse type"
 ### Task 2: Update auth store — add `profileCompleted` state and action
 
 **Files:**
+
 - Modify: `src/store/auth.store.ts`
 
 - [ ] **Step 1: Add `profileCompleted` to `AuthState` interface**
@@ -154,6 +156,7 @@ git commit -m "feat: add profileCompleted flag and setProfileCompleted action to
 ### Task 3: Create `CompleteProfileScreen`
 
 **Files:**
+
 - Create: `src/features/auth/CompleteProfileScreen.tsx`
 
 - [ ] **Step 1: Create the file with the full screen implementation**
@@ -628,6 +631,7 @@ git commit -m "feat: add CompleteProfileScreen with name/email fields and email 
 ### Task 4: Wire `CompleteProfileScreen` into `RootNavigator`
 
 **Files:**
+
 - Modify: `src/navigation/RootNavigator.tsx`
 
 - [ ] **Step 1: Update `RootNavigator` to add the third routing branch**
@@ -703,19 +707,19 @@ In `src/services/auth.service.ts` (or wherever the mock response is built), temp
 
 - [ ] **Step 4: Test CompleteProfileScreen interactions**
 
-| Action | Expected result |
-|--------|----------------|
-| Tap "Complete Profile" with empty fields | First Name and Last Name errors appear |
-| Fill First Name only, tap button | Last Name error appears |
-| Fill both names, no email | Button becomes active, label is "Complete Profile" |
-| Type invalid email (e.g. `abc`) | Amber warning "Please enter a valid email address" |
-| Type valid email (`a@b.com`) | "Verify Email" button slides in below email field |
-| Tap "Verify Email" | 6 OTP slots appear below, keyboard focus moves to hidden OTP input |
-| Enter 6 digits in OTP slots | Button label changes to "Verify & Save", button becomes active |
-| Tap "Verify & Save" | Spinner shows briefly, then app switches to MainTabNavigator (home) |
-| Open keyboard | Header collapses smoothly |
-| Close keyboard | Header expands back |
-| Dark mode | All surfaces use dark tokens correctly |
+| Action                                   | Expected result                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------- |
+| Tap "Complete Profile" with empty fields | First Name and Last Name errors appear                              |
+| Fill First Name only, tap button         | Last Name error appears                                             |
+| Fill both names, no email                | Button becomes active, label is "Complete Profile"                  |
+| Type invalid email (e.g. `abc`)          | Amber warning "Please enter a valid email address"                  |
+| Type valid email (`a@b.com`)             | "Verify Email" button slides in below email field                   |
+| Tap "Verify Email"                       | 6 OTP slots appear below, keyboard focus moves to hidden OTP input  |
+| Enter 6 digits in OTP slots              | Button label changes to "Verify & Save", button becomes active      |
+| Tap "Verify & Save"                      | Spinner shows briefly, then app switches to MainTabNavigator (home) |
+| Open keyboard                            | Header collapses smoothly                                           |
+| Close keyboard                           | Header expands back                                                 |
+| Dark mode                                | All surfaces use dark tokens correctly                              |
 
 - [ ] **Step 5: Revert the temporary `profileCompleted: false` mock**
 

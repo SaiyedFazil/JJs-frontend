@@ -22,20 +22,29 @@ function App() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <View style={styles.container} className={isDarkMode ? 'dark' : ''}>
-        <HeroUINativeProvider 
-          config={{ devInfo: { stylingPrinciples: false } }}
+      <SafeAreaProvider>
+        <HeroUINativeProvider
+          config={{
+            devInfo: { stylingPrinciples: false },
+            toast: {
+              defaultProps: {
+                placement: 'top',
+                isSwipeable: true,
+              },
+              insets: { bottom: 12, left: 16, right: 16 },
+            },
+          }}
         >
-          <SafeAreaProvider>
-            <StatusBar 
-              barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
+          <View style={styles.container} className={isDarkMode ? 'dark' : ''}>
+            <StatusBar
+              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
               backgroundColor="transparent"
               translucent
             />
             <RootNavigator />
-          </SafeAreaProvider>
+          </View>
         </HeroUINativeProvider>
-      </View>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
@@ -47,4 +56,3 @@ const styles = StyleSheet.create({
 });
 
 export default App;
-

@@ -1,4 +1,8 @@
-import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, {
+  AxiosInstance,
+  AxiosError,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import Config from 'react-native-config';
 import { getAccessToken, clearAuthData } from '@/utils/storage';
 
@@ -31,37 +35,35 @@ apiClient.interceptors.request.use(
   },
   (error: AxiosError) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response Interceptor: Global Error Handling
 apiClient.interceptors.response.use(
-  (response) => response,
+  response => response,
   async (error: AxiosError) => {
-
-
     // Handle 401 Unauthorized (Token Expired)
     if (error.response?.status === 401) {
       // Logic for token refresh would go here
       // For now, we clear auth data and let the app handle redirection
       console.warn('Unauthorized access, clearing session...');
       clearAuthData();
-      
+
       // Optional: Trigger a global event or update store to redirect to login
-      // useAuthStore.getState().logout(); 
+      // useAuthStore.getState().logout();
     }
 
     // Standardized Error Response
-    const errorMessage = 
-      (error.response?.data as any)?.message || 
-      error.message || 
+    const errorMessage =
+      (error.response?.data as any)?.message ||
+      error.message ||
       'Something went wrong';
 
     return Promise.reject({
       ...error,
       message: errorMessage,
     });
-  }
+  },
 );
 
 export default apiClient;

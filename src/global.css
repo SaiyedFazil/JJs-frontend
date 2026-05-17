@@ -2,6 +2,10 @@
 @import 'uniwind';
 @import 'heroui-native/styles';
 
+/* Tell Tailwind v4 to scan heroui-native source files for className strings */
+@source "../node_modules/heroui-native/src";
+@source "../node_modules/heroui-native/lib";
+
 /* 
   Professional Global Design System - JJ's Kitchen 
   Using Explicit Theme Tokens for 100% Reliability in React Native.
@@ -9,32 +13,38 @@
 
 :root {
   /* Primary Branding */
-  --primary: #170C79;
-  --primary-dark: #8E05C2;
+  --primary: #170c79;
+  --primary-dark: #8e05c2;
   --primary-foreground: #ffffff;
-  
+
   /* Layout Colors */
-  --background: #EFE3CA;
+  --background: #efe3ca;
   --background-dark: #000000;
-  
+
   --surface: #ffffff;
-  --surface-dark: #3E065F;
-  --surface-foreground: #170C79;
+  --surface-dark: #3e065f;
+  --surface-foreground: #170c79;
   --surface-foreground-dark: #ffffff;
-  
+
   /* Typography & UI */
-  --foreground: #170C79;
+  --foreground: #170c79;
   --foreground-dark: #ffffff;
-  
-  --muted: #6B7280;
+
+  --muted: #6b7280;
   --muted-dark: #9ca3af;
-  
+
   --border: #d1d5db;
   --border-dark: #4b5563;
-  
-  /* Feature Specific */
-  --slot-bg: #F9FAFB;
-  --slot-bg-dark: #1F2937;
+
+  /* Onboarding / Welcome Screen Specific */
+  --onboarding-blob-primary: #170c79;
+  --onboarding-blob-secondary: #1e12a1;
+  --onboarding-blob-accent: #8e05c2;
+
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-bg-dark: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-dark: rgba(255, 255, 255, 0.1);
 }
 
 @theme inline {
@@ -42,27 +52,37 @@
   --color-primary: var(--primary);
   --color-primary-dark: var(--primary-dark);
   --color-primary-foreground: var(--primary-foreground);
-  
+
   --color-background: var(--background);
   --color-background-dark: var(--background-dark);
-  
+
   --color-surface: var(--surface);
   --color-surface-dark: var(--surface-dark);
   --color-surface-foreground: var(--surface-foreground);
   --color-surface-foreground-dark: var(--surface-foreground-dark);
-  
+
   --color-foreground: var(--foreground);
   --color-foreground-dark: var(--foreground-dark);
-  
+
   --color-muted: var(--muted);
   --color-muted-dark: var(--muted-dark);
-  
+
   --color-border: var(--border);
   --color-border-dark: var(--border-dark);
-  
+
   --color-slot-bg: var(--slot-bg);
   --color-slot-bg-dark: var(--slot-bg-dark);
-  
+
+  /* Onboarding Tokens */
+  --color-onboarding-blob-primary: var(--onboarding-blob-primary);
+  --color-onboarding-blob-secondary: var(--onboarding-blob-secondary);
+  --color-onboarding-blob-accent: var(--onboarding-blob-accent);
+
+  --color-glass-bg: var(--glass-bg);
+  --color-glass-bg-dark: var(--glass-bg-dark);
+  --color-glass-border: var(--glass-border);
+  --color-glass-border-dark: var(--glass-border-dark);
+
   /* Spacing & Typography */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
