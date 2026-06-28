@@ -51,52 +51,47 @@ export const GlassInput = forwardRef<TextInput, GlassInputProps>(
     ref,
   ) => {
     const [isFocused, setIsFocused] = useState(false);
-    const focusAnim = useSharedValue(0);
-    const disabledAnim = useSharedValue(disabled ? 1 : 0);
+    // Combined animation value: 0 = idle, 1 = focused, 2 = disabled
+    const stateAnim = useSharedValue(0);
+    const scaleAnim = useSharedValue(1);
 
     useEffect(() => {
-      focusAnim.value = withTiming(isFocused && !disabled ? 1 : 0, {
-        duration: 250,
-      });
-    }, [isFocused, focusAnim, disabled]);
-
-    useEffect(() => {
-      disabledAnim.value = withTiming(disabled ? 1 : 0, { duration: 300 });
-    }, [disabled, disabledAnim]);
+      if (disabled) {
+        stateAnim.value = withTiming(2, { duration: 300 });
+        scaleAnim.value = withTiming(1, { duration: 250 });
+      } else if (isFocused) {
+        stateAnim.value = withTiming(1, { duration: 250 });
+        scaleAnim.value = withTiming(1.01, { duration: 250 });
+      } else {
+        stateAnim.value = withTiming(0, { duration: 250 });
+        scaleAnim.value = withTiming(1, { duration: 250 });
+      }
+    }, [isFocused, stateAnim, scaleAnim, disabled]);
 
     const animatedStyle = useAnimatedStyle(() => {
-      const defaultBorder = isDark ? '#333333' : '#D8D4F0';
+      // Define all color stops for the three states
+      const idleBorder = error ? COLORS.error : isDark ? '#333333' : '#D8D4F0';
       const focusedBorder = isDark ? '#FFFFFF' : '#170C79';
       const disabledBorder = isDark ? '#222222' : '#E8E6F5';
-      const defaultBg = isDark ? '#1A1A1A' : '#FFFFFF';
+
+      const idleBg = isDark ? '#1A1A1A' : '#FFFFFF';
       const focusedBg = isDark ? '#242424' : '#FFFFFF';
       const disabledBg = isDark ? '#141414' : '#F4F2FB';
 
-      const activeBorder = error ? COLORS.error : defaultBorder;
-
       return {
+        // Animate border: idle → focused (0→1), then if disabled jump to disabled color (1→2)
         borderColor: interpolateColor(
-          disabledAnim.value,
-          [0, 1],
-          [
-            interpolateColor(
-              focusAnim.value,
-              [0, 1],
-              [activeBorder, focusedBorder],
-            ),
-            disabledBorder,
-          ],
+          stateAnim.value,
+          [0, 1, 2],
+          [idleBorder, focusedBorder, disabledBorder],
         ),
         backgroundColor: interpolateColor(
-          disabledAnim.value,
-          [0, 1],
-          [
-            interpolateColor(focusAnim.value, [0, 1], [defaultBg, focusedBg]),
-            disabledBg,
-          ],
+          stateAnim.value,
+          [0, 1, 2],
+          [idleBg, focusedBg, disabledBg],
         ),
-        opacity: interpolate(disabledAnim.value, [0, 1], [1, 0.6]),
-        transform: [{ scale: interpolate(focusAnim.value, [0, 1], [1, 1.01]) }],
+        opacity: interpolate(stateAnim.value, [0, 1, 2], [1, 1, 0.6]),
+        transform: [{ scale: scaleAnim.value }],
       };
     });
 

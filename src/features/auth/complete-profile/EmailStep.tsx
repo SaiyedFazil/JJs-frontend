@@ -6,12 +6,7 @@ import {
   TouchableOpacity,
   Keyboard,
 } from 'react-native';
-import Animated, {
-  SlideInRight,
-  SlideOutLeft,
-  FadeIn,
-  ZoomIn,
-} from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, ZoomIn } from 'react-native-reanimated';
 import { Mail, ShieldCheck, ChevronLeft, Check } from 'lucide-react-native';
 import { Spinner } from 'heroui-native';
 import { GlassInput } from './components/GlassInput';
@@ -106,7 +101,11 @@ export const EmailStep: React.FC<EmailStepProps> = ({
   const chipTextColor = isDarkMode ? '#8B7FD4' : COLORS.primary;
 
   return (
-    <Animated.View entering={SlideInRight} exiting={SlideOutLeft}>
+    <Animated.View
+      entering={FadeIn.duration(400)}
+      exiting={FadeOut.duration(300)}
+      className="w-full"
+    >
       {/* Email field — disabled once OTP is active */}
       <GlassInput
         label="Email Address (Optional)"

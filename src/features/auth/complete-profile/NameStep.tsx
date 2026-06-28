@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, Keyboard, type TextInput } from 'react-native';
-import Animated, { SlideInRight, SlideOutLeft } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { User, ArrowRight } from 'lucide-react-native';
 import { Spinner } from 'heroui-native';
 import { GlassInput } from './components/GlassInput';
@@ -34,7 +34,11 @@ export const NameStep: React.FC<NameStepProps> = ({
   isLoading,
 }) => {
   return (
-    <Animated.View entering={SlideInRight} exiting={SlideOutLeft}>
+    <Animated.View
+      entering={FadeIn.duration(400)}
+      exiting={FadeOut.duration(300)}
+      className="w-full"
+    >
       <GlassInput
         label="First Name"
         value={firstName}

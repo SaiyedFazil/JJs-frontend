@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  useColorScheme,
 } from 'react-native';
 import {
   User as UserIcon,
@@ -27,6 +28,14 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useAuthStore } from '@/store/auth.store';
 
+// ── Design-system color tokens (mirrors global.css :root values) ─────────────
+const COLORS = {
+  primary: '#170C79', // --primary
+  primaryDark: '#8E05C2', // --primary-dark
+  muted: '#6B7280', // --muted
+  mutedDark: '#9CA3AF', // --muted-dark
+} as const;
+
 /**
  * Types for Profile Menu
  */
@@ -34,8 +43,10 @@ interface ProfileMenuItem {
   id: string;
   title: string;
   subtitle: string;
-  icon: React.ReactNode;
+  /** Render function receives the resolved theme color so icons stay outside the component */
+  icon: (color: string) => React.ReactNode;
   badge?: string;
+  /** Optional text color override (e.g. red for Logout) */
   color?: string;
 }
 
@@ -56,29 +67,20 @@ const MENU_SECTIONS: ProfileSection[] = [
         id: '1',
         title: 'My Orders',
         subtitle: 'View history & reorder',
-        icon: (
-          <ShoppingBag
-            size={20}
-            className="text-primary dark:text-primary-dark"
-          />
-        ),
+        icon: (color: string) => <ShoppingBag size={20} color={color} />,
         badge: '5 Items',
       },
       {
         id: '2',
         title: 'Favorites',
         subtitle: 'Saved food items',
-        icon: (
-          <Heart size={20} className="text-primary dark:text-primary-dark" />
-        ),
+        icon: (color: string) => <Heart size={20} color={color} />,
       },
       {
         id: '3',
         title: 'Notifications',
         subtitle: 'Alerts & updates',
-        icon: (
-          <Bell size={20} className="text-primary dark:text-primary-dark" />
-        ),
+        icon: (color: string) => <Bell size={20} color={color} />,
         badge: 'New',
       },
     ],
@@ -90,29 +92,20 @@ const MENU_SECTIONS: ProfileSection[] = [
         id: '4',
         title: 'Personal Info',
         subtitle: 'Manage profile data',
-        icon: (
-          <UserIcon size={20} className="text-primary dark:text-primary-dark" />
-        ),
+        icon: (color: string) => <UserIcon size={20} color={color} />,
       },
       {
         id: '5',
         title: 'Saved Addresses',
         subtitle: 'Home, Office & others',
-        icon: (
-          <MapPin size={20} className="text-primary dark:text-primary-dark" />
-        ),
+        icon: (color: string) => <MapPin size={20} color={color} />,
         badge: '3 Saved',
       },
       {
         id: '6',
         title: 'Payment Methods',
         subtitle: 'Cards & UPI',
-        icon: (
-          <CreditCard
-            size={20}
-            className="text-primary dark:text-primary-dark"
-          />
-        ),
+        icon: (color: string) => <CreditCard size={20} color={color} />,
       },
     ],
   },
@@ -123,26 +116,20 @@ const MENU_SECTIONS: ProfileSection[] = [
         id: '7',
         title: 'Settings',
         subtitle: 'App preferences',
-        icon: (
-          <Settings size={20} className="text-primary dark:text-primary-dark" />
-        ),
+        icon: (color: string) => <Settings size={20} color={color} />,
       },
       {
         id: '8',
         title: 'Help & Support',
         subtitle: 'Get instant assistance',
-        icon: (
-          <HelpCircle
-            size={20}
-            className="text-primary dark:text-primary-dark"
-          />
-        ),
+        icon: (color: string) => <HelpCircle size={20} color={color} />,
       },
       {
         id: '9',
         title: 'Logout',
         subtitle: 'End your session',
-        icon: <LogOut size={20} color="#EF4444" />,
+        // Logout always uses destructive red — not part of primary theme
+        icon: (_color: string) => <LogOut size={20} color="#EF4444" />,
         color: 'text-red-500',
       },
     ],
@@ -153,7 +140,8 @@ const MENU_SECTIONS: ProfileSection[] = [
  * Premium Menu Item Component
  */
 interface MenuItemProps {
-  icon: React.ReactNode;
+  /** Render function receives the resolved theme color */
+  icon: (color: string) => React.ReactNode;
   title: string;
   subtitle?: string;
   onPress?: () => void;
@@ -171,43 +159,51 @@ const MenuItem = memo(
     color,
     delay = 0,
     badge,
-  }: MenuItemProps) => (
-    <Animated.View entering={FadeInDown.delay(delay).duration(500).springify()}>
-      <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.6}
-        className="flex-row items-center py-5 px-8"
+  }: MenuItemProps) => {
+    // Resolve theme-aware colors from global.css tokens
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme === 'dark';
+    const iconColor = isDark ? COLORS.primaryDark : COLORS.primary;
+    const chevronColor = isDark
+      ? 'rgba(156, 163, 175, 0.3)' // --muted-dark / 30%
+      : 'rgba(107, 114, 128, 0.35)'; // --muted / 35%
+
+    return (
+      <Animated.View
+        entering={FadeInDown.delay(delay).duration(500).springify()}
       >
-        <View className="w-11 h-11 rounded-2xl items-center justify-center bg-primary/5 dark:bg-primary-dark/10 border border-primary/5 dark:border-primary-dark/5">
-          {icon}
-        </View>
-        <View className="flex-1 ml-4">
-          <Text
-            className={`text-[16px] font-black tracking-tight ${color || 'text-foreground dark:text-foreground-dark'}`}
-          >
-            {title}
-          </Text>
-          {subtitle && (
-            <Text className="text-muted dark:text-muted-dark text-[11px] font-bold uppercase tracking-wider mt-0.5">
-              {subtitle}
-            </Text>
-          )}
-        </View>
-        {badge && (
-          <View className="bg-primary/10 dark:bg-primary-dark/20 px-2 py-1 rounded-lg mr-2">
-            <Text className="text-primary dark:text-primary-dark text-[10px] font-black uppercase">
-              {badge}
-            </Text>
+        <TouchableOpacity
+          onPress={onPress}
+          activeOpacity={0.6}
+          className="flex-row items-center py-5 px-8"
+        >
+          <View className="w-11 h-11 rounded-2xl items-center justify-center bg-primary/5 dark:bg-primary-dark/10 border border-primary/5 dark:border-primary-dark/5">
+            {icon(iconColor)}
           </View>
-        )}
-        <ChevronRight
-          size={14}
-          className="text-muted/30 dark:text-muted-dark/20"
-          strokeWidth={4}
-        />
-      </TouchableOpacity>
-    </Animated.View>
-  ),
+          <View className="flex-1 ml-4">
+            <Text
+              className={`text-[16px] font-black tracking-tight ${color || 'text-foreground dark:text-foreground-dark'}`}
+            >
+              {title}
+            </Text>
+            {subtitle && (
+              <Text className="text-muted dark:text-muted-dark text-[11px] font-bold uppercase tracking-wider mt-0.5">
+                {subtitle}
+              </Text>
+            )}
+          </View>
+          {badge && (
+            <View className="bg-primary/10 dark:bg-primary-dark/20 px-2 py-1 rounded-lg mr-2">
+              <Text className="text-primary dark:text-primary-dark text-[10px] font-black uppercase">
+                {badge}
+              </Text>
+            </View>
+          )}
+          <ChevronRight size={14} color={chevronColor} strokeWidth={4} />
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  },
 );
 
 export const ProfileScreen = () => {
@@ -281,8 +277,9 @@ export const ProfileScreen = () => {
                 : 'User Name'}
             </Text>
             <View className="bg-primary/5 dark:bg-primary-dark/10 px-4 py-1.5 rounded-full border border-primary/5">
-              <Text className="text-primary dark:text-primary-dark font-black text-[10px] uppercase tracking-[2px]">
-                {user?.email || 'Email'}
+              <Text className="text-primary dark:text-primary-dark font-black text-[12px] uppercase tracking-[2px]">
+                <Text>+91 </Text>
+                {user?.phoneNumber || 'Mobile'}
               </Text>
             </View>
           </View>

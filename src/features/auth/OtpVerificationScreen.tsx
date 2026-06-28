@@ -12,7 +12,14 @@ import {
   Dimensions,
   NativeModules,
   NativeEventEmitter,
+  useColorScheme,
 } from 'react-native';
+
+// ── Design-system color tokens (mirrors global.css :root values) ─────────────
+const COLORS = {
+  primary: '#170C79', // --primary
+  primaryDark: '#8E05C2', // --primary-dark
+} as const;
 import Animated, {
   SlideInDown,
   FadeInUp,
@@ -63,6 +70,12 @@ export const OtpVerificationScreen = () => {
   const inputRef = useRef<TextInput>(null);
   const setAuth = useAuthStore(state => state.setAuth);
   const toast = useAppToast();
+
+  // Resolve theme-aware colors from global.css tokens
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
+  // Spinner color matches the surrounding label: text-primary in light, white in dark
+  const resendSpinnerColor = isDarkMode ? '#FFFFFF' : COLORS.primary;
 
   /** Resets and starts the 60-second countdown. */
   const startResendTimer = useCallback(() => {
@@ -367,7 +380,7 @@ export const OtpVerificationScreen = () => {
 
             {isResending ? (
               <View className="mt-4 flex-row items-center justify-center">
-                <Spinner color="primary" size="sm" />
+                <Spinner color={resendSpinnerColor} size="sm" />
                 <Text className="text-primary dark:text-white font-bold text-base ml-2">
                   Sending code...
                 </Text>

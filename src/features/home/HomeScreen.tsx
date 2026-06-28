@@ -8,6 +8,7 @@ import {
   Dimensions,
   ImageBackground,
   TextInput,
+  useColorScheme,
 } from 'react-native';
 import { MapPin, ChevronRight, Search } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +16,14 @@ import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 
 // Components
 import { FoodListItem } from '@/components/common/FoodListItem';
+
+// ── Design-system color tokens (mirrors global.css :root values) ─────────────
+const COLORS = {
+  primary: '#170C79', // --primary
+  primaryDark: '#8E05C2', // --primary-dark
+  muted: '#6B7280', // --muted
+  mutedDark: '#9CA3AF', // --muted-dark
+} as const;
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const BANNER_HEIGHT = SCREEN_HEIGHT * 0.42;
@@ -85,19 +94,26 @@ const MOST_ORDERED = [
 /**
  * Section Header Component
  */
-const SectionHeader = memo(({ title }: { title: string }) => (
-  <View className="flex-row justify-between items-center px-6 mb-4">
-    <Text className="text-xl font-black text-foreground dark:text-foreground-dark">
-      {title}
-    </Text>
-    <TouchableOpacity className="flex-row items-center">
-      <Text className="text-primary dark:text-primary-dark font-bold mr-1">
-        View all
+const SectionHeader = memo(({ title }: { title: string }) => {
+  // Hooks are valid inside memo components
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const chevronColor = isDark ? COLORS.primaryDark : COLORS.primary;
+
+  return (
+    <View className="flex-row justify-between items-center px-6 mb-4">
+      <Text className="text-xl font-black text-foreground dark:text-foreground-dark">
+        {title}
       </Text>
-      <ChevronRight size={16} className="text-primary dark:text-primary-dark" />
-    </TouchableOpacity>
-  </View>
-));
+      <TouchableOpacity className="flex-row items-center">
+        <Text className="text-primary dark:text-primary-dark font-bold mr-1">
+          View all
+        </Text>
+        <ChevronRight size={16} color={chevronColor} />
+      </TouchableOpacity>
+    </View>
+  );
+});
 
 /**
  * Category Item Component
@@ -118,6 +134,15 @@ const CategoryItem = memo(({ cat, index }: { cat: any; index: number }) => (
 
 export const HomeScreen = () => {
   const insets = useSafeAreaInsets();
+  // Resolve theme-aware colors from global.css tokens
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const primaryColor = isDark ? COLORS.primaryDark : COLORS.primary;
+  const mutedColor = isDark ? COLORS.mutedDark : COLORS.muted;
+  // MapPin fill uses primary at 40% opacity
+  const mapPinFill = isDark
+    ? 'rgba(142, 5, 194, 0.4)' // --primary-dark / 40%
+    : 'rgba(23, 12, 121, 0.4)'; // --primary / 40%
 
   return (
     <View className="flex-1 bg-background dark:bg-background-dark">
@@ -140,12 +165,7 @@ export const HomeScreen = () => {
                 Delivery location
               </Text>
               <TouchableOpacity className="flex-row items-center">
-                <MapPin
-                  size={16}
-                  className="text-primary dark:text-primary-dark"
-                  fill="currentColor"
-                  fillOpacity={0.4}
-                />
+                <MapPin size={16} color={primaryColor} fill={mapPinFill} />
                 <Text
                   className="text-white w-40 font-black text-sm mx-2"
                   numberOfLines={1}
@@ -160,7 +180,7 @@ export const HomeScreen = () => {
           {/* Search Bar Overlay - At the bottom of the banner */}
           <View className="mt-auto px-6 mb-8">
             <View className="flex-row items-center bg-white dark:bg-surface-dark h-14 rounded-full px-5 shadow-2xl border border-primary/5">
-              <Search size={20} className="text-muted dark:text-muted-dark" />
+              <Search size={20} color={mutedColor} />
               <TextInput
                 placeholder="Search by item name..."
                 placeholderTextColor="#9ca3af"

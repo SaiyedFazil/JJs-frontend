@@ -3,6 +3,7 @@ import {
   View,
   Text,
   KeyboardAvoidingView,
+  Platform,
   ScrollView,
   TouchableOpacity,
   Keyboard,
@@ -25,6 +26,7 @@ export const CompleteProfileScreen = () => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
   const setProfileCompleted = useAuthStore(state => state.setProfileCompleted);
+  const updateUser = useAuthStore(state => state.updateUser);
 
   // Step Management: 1 = Names, 2 = Email
   const [currentStep, setCurrentStep] = useState(1);
@@ -77,6 +79,16 @@ export const CompleteProfileScreen = () => {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
         });
+
+        // ── Persist the new name immediately ─────────────────────────────────
+        // This writes to both Zustand (instant UI) and MMKV (survives restart).
+        // Without this call, the profile screen shows "User Name" until logout/re-login
+        // because the in-memory user object never received the updated name.
+        updateUser({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+        });
+
         setCurrentStep(2);
       } catch (err: any) {
         Alert.alert(
@@ -137,7 +149,10 @@ export const CompleteProfileScreen = () => {
         </View>
       </View>
 
-      <KeyboardAvoidingView behavior="padding" className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="flex-1"
+      >
         <ScrollView
           ref={scrollViewRef}
           contentContainerStyle={[
@@ -246,7 +261,7 @@ export const CompleteProfileScreen = () => {
             <Animated.Text
               key={`desc-${currentStep}`}
               entering={FadeIn.delay(100).duration(600)}
-              className="text-md font-semibold mb-6 leading-7 text-foreground/50 dark:text-foreground-dark/50"
+              className="text-md font-semibold mb-6 leading-7 text-default-soft dark:text-foreground-dark/50"
             >
               {currentStep === 1
                 ? "Welcome to JJ's Kitchen. To provide the best experience, we need your name."

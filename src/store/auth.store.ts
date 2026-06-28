@@ -39,6 +39,13 @@ interface AuthState {
   /** Sets the first launch flag */
   setFirstLaunch: (isFirst: boolean) => void;
 
+  /**
+   * Partially updates the in-memory user profile AND persists the change to MMKV.
+   * Safe to call after any profile-editing API call — it merges into the
+   * existing user object so no other fields are accidentally wiped.
+   */
+  updateUser: (updates: Partial<StoredUserProfile>) => void;
+
   /** Marks the profile as filled — triggers RootNavigator to show MainTabNavigator. */
   setProfileCompleted: (value: boolean) => void;
 
@@ -65,7 +72,7 @@ interface AuthState {
 // ─────────────────────────────────────────────────────────────────────────────
 // Store
 // ─────────────────────────────────────────────────────────────────────────────
-export const useAuthStore = create<AuthState>(set => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   user: null,
   accessToken: null,
@@ -78,6 +85,27 @@ export const useAuthStore = create<AuthState>(set => ({
 
   // ── setProfileCompleted ────────────────────────────────────────────────────
   setProfileCompleted: (value: boolean) => set({ profileCompleted: value }),
+
+  // ── updateUser ─────────────────────────────────────────────────────────────
+  /**
+   * Merges `updates` into the current user profile, then:
+   *  1. Flushes the merged object to MMKV so it survives app restarts.
+   *  2. Updates the Zustand in-memory state for immediate UI re-render.
+   * Using a merge pattern (spreading existing user) prevents fields that
+   * are NOT being changed (e.g. phoneNumber, role) from becoming null.
+   */
+  updateUser: (updates: Partial<StoredUserProfile>) => {
+    const current = get().user;
+    if (!current) return;
+
+    const merged: StoredUserProfile = { ...current, ...updates };
+
+    // 1. Persist to MMKV first — ensures durability even if the process dies
+    setUserProfile(merged);
+
+    // 2. Update in-memory state for immediate UI re-render
+    set({ user: merged });
+  },
 
   // ── setAuth ────────────────────────────────────────────────────────────────
   setAuth: (response: AuthResponse) => {
