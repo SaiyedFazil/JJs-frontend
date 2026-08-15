@@ -170,85 +170,85 @@ REVIEW ||--|| ORDER_ITEM : "for item (optional)"
 - User (customers, riders, admins):
 
 - const User = sequelize.define('User', {  
-   id: { type: UUID, primaryKey: true },  
-   name: DataTypes.STRING,  
-   email: { type: DataTypes.STRING, unique: true },  
-   phone: DataTypes.STRING,  
-   passwordHash: DataTypes.STRING,  
-   role: DataTypes.ENUM('CUSTOMER','ADMIN','RIDER')  
-   });
+  id: { type: UUID, primaryKey: true },  
+  name: DataTypes.STRING,  
+  email: { type: DataTypes.STRING, unique: true },  
+  phone: DataTypes.STRING,  
+  passwordHash: DataTypes.STRING,  
+  role: DataTypes.ENUM('CUSTOMER','ADMIN','RIDER')  
+  });
 - Address:
 
 - const Address = sequelize.define('Address', {  
-   id: { type: UUID, primaryKey: true },  
-   userId: { type: UUID, references: { model: 'Users', key: 'id' } },  
-   label: DataTypes.STRING, // e.g. "Home"  
-   line1: DataTypes.STRING, line2: DataTypes.STRING, city: DataTypes.STRING, state: DataTypes.STRING, zip: DataTypes.STRING  
-   });
+  id: { type: UUID, primaryKey: true },  
+  userId: { type: UUID, references: { model: 'Users', key: 'id' } },  
+  label: DataTypes.STRING, // e.g. "Home"  
+  line1: DataTypes.STRING, line2: DataTypes.STRING, city: DataTypes.STRING, state: DataTypes.STRING, zip: DataTypes.STRING  
+  });
 - Category (menu categories): { id, name }.
 - MenuItem:
 
 - const MenuItem = sequelize.define('MenuItem', {  
-   id: { type: UUID, primaryKey: true },  
-   categoryId: { type: UUID, references: { model: 'Categories', key: 'id' } },  
-   name: DataTypes.STRING,  
-   description: DataTypes.TEXT,  
-   price: DataTypes.FLOAT,  
-   imageUrl: DataTypes.STRING,  
-   isAvailable: DataTypes.BOOLEAN  
-   });
+  id: { type: UUID, primaryKey: true },  
+  categoryId: { type: UUID, references: { model: 'Categories', key: 'id' } },  
+  name: DataTypes.STRING,  
+  description: DataTypes.TEXT,  
+  price: DataTypes.FLOAT,  
+  imageUrl: DataTypes.STRING,  
+  isAvailable: DataTypes.BOOLEAN  
+  });
 - ItemOption (add-ons):
 
 - const ItemOption = sequelize.define('ItemOption', {  
-   id: { type: UUID, primaryKey: true },  
-   menuItemId: { type: UUID, references: { model: 'MenuItems', key: 'id' } },  
-   name: DataTypes.STRING,  
-   extraPrice: DataTypes.FLOAT  
-   });
+  id: { type: UUID, primaryKey: true },  
+  menuItemId: { type: UUID, references: { model: 'MenuItems', key: 'id' } },  
+  name: DataTypes.STRING,  
+  extraPrice: DataTypes.FLOAT  
+  });
 - Coupon: { id, code, discountPercent, validFrom:DATE, validUntil:DATE }.
 - Order:
 
 - const Order = sequelize.define('Order', {  
-   id: { type: UUID, primaryKey: true },  
-   userId: { type: UUID, ref: 'Users' },  
-   addressId: { type: UUID, ref: 'Addresses' },  
-   couponId: { type: UUID, ref: 'Coupons', allowNull:true },  
-   totalPrice: DataTypes.FLOAT,  
-   status: DataTypes.ENUM('PLACED','PREPARING','READY','PICKED','DELIVERED'),  
-   paymentMethod: DataTypes.ENUM('CARD','UPI','COD'),  
-   createdAt: DataTypes.DATE, updatedAt: DataTypes.DATE  
-   });
+  id: { type: UUID, primaryKey: true },  
+  userId: { type: UUID, ref: 'Users' },  
+  addressId: { type: UUID, ref: 'Addresses' },  
+  couponId: { type: UUID, ref: 'Coupons', allowNull:true },  
+  totalPrice: DataTypes.FLOAT,  
+  status: DataTypes.ENUM('PLACED','PREPARING','READY','PICKED','DELIVERED'),  
+  paymentMethod: DataTypes.ENUM('CARD','UPI','COD'),  
+  createdAt: DataTypes.DATE, updatedAt: DataTypes.DATE  
+  });
 - OrderItem: { id, orderId, menuItemId, quantity, selectedOptions: JSON }. We store chosen options in a JSON column or a join table if needed.
 - Payment:
 
 - const Payment = sequelize.define('Payment', {  
-   id: { type: UUID, primaryKey: true },  
-   orderId: { type: UUID, references: { model: 'Orders', key: 'id' } },  
-   amount: DataTypes.FLOAT,  
-   method: DataTypes.ENUM('CARD','UPI','COD'),  
-   status: DataTypes.ENUM('PENDING','PAID','FAILED'),  
-   paidAt: DataTypes.DATE  
-   });
+  id: { type: UUID, primaryKey: true },  
+  orderId: { type: UUID, references: { model: 'Orders', key: 'id' } },  
+  amount: DataTypes.FLOAT,  
+  method: DataTypes.ENUM('CARD','UPI','COD'),  
+  status: DataTypes.ENUM('PENDING','PAID','FAILED'),  
+  paidAt: DataTypes.DATE  
+  });
 - Rider: (delivery personnel)
 
 - const Rider = sequelize.define('Rider', {  
-   id: { type: UUID, primaryKey: true },  
-   name: DataTypes.STRING,  
-   phone: DataTypes.STRING,  
-   vehicleInfo: DataTypes.STRING,  
-   status: DataTypes.ENUM('AVAILABLE','ON_DELIVERY')  
-   });
+  id: { type: UUID, primaryKey: true },  
+  name: DataTypes.STRING,  
+  phone: DataTypes.STRING,  
+  vehicleInfo: DataTypes.STRING,  
+  status: DataTypes.ENUM('AVAILABLE','ON_DELIVERY')  
+  });
 - Delivery (assignment): { id, orderId, riderId, assignedAt, pickedAt, deliveredAt }.
 - Review:
 
 - const Review = sequelize.define('Review', {  
-   id: { type: UUID, primaryKey: true },  
-   userId: { type: UUID, ref: 'Users' },  
-   menuItemId: { type: UUID, ref: 'MenuItems' },  
-   rating: DataTypes.INTEGER,  
-   comment: DataTypes.TEXT,  
-   createdAt: DataTypes.DATE  
-   });
+  id: { type: UUID, primaryKey: true },  
+  userId: { type: UUID, ref: 'Users' },  
+  menuItemId: { type: UUID, ref: 'MenuItems' },  
+  rating: DataTypes.INTEGER,  
+  comment: DataTypes.TEXT,  
+  createdAt: DataTypes.DATE  
+  });
 - **AuditLog** (actions): store actions (order status changes) for traceability.
 - **Notification**: to track push notifications sent: { id, userId, type, message, createdAt }.
 
