@@ -9,3 +9,4 @@ coverage/
 web-build/
 package-lock.json
 *.keystore
+src/uniwind-types.d.ts

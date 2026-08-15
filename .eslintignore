@@ -10,3 +10,4 @@ web-build/
 *.config.js
 *.keystore
 package-lock.json
+src/uniwind-types.d.ts
