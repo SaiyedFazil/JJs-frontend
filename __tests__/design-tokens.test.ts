@@ -25,7 +25,6 @@ const ALLOWLIST: string[] = [
   'features/auth/complete-profile/components/styles.ts',
   'features/home/HomeScreen.tsx',
   'features/profile/ProfileScreen.tsx',
-  'theme/index.ts',
 ];
 
 /** Directories and files the guard never inspects. */

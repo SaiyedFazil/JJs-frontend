@@ -6,95 +6,242 @@
 @source "../node_modules/heroui-native/src";
 @source "../node_modules/heroui-native/lib";
 
-/* 
-  Professional Global Design System - JJ's Kitchen 
-  Using Explicit Theme Tokens for 100% Reliability in React Native.
-*/
+/* ============================================================================
+   JJ's Kitchen — Design System v1.0
+   Source of truth: "Mobile app design scope.pdf"
 
+   THIS FILE IS THE ONLY PLACE A COLOR, TYPE STYLE, RADIUS, SPACING OR
+   ELEVATION VALUE IS ALLOWED TO EXIST. Everything else in the app consumes
+   these tokens through Tailwind utilities.
+
+   One palette renders in BOTH light and dark device schemes — there are
+   deliberately no `-dark` token variants and no `dark:` variants in the app.
+
+   Layer A  raw palette      the PDF's literal swatches
+   Layer B  semantic tokens  meaning, and HeroUI Native's variable contract
+   Layer C  @theme inline    exposure as Tailwind utilities
+
+   Enforced by __tests__/design-tokens.test.ts and
+   __tests__/global-css-contract.test.ts.
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   LAYER A · RAW PALETTE (PDF section 01)
+   Never reference these from a component. Layer B is the public surface.
+   ------------------------------------------------------------------------ */
 :root {
-  /* Primary Branding */
-  --primary: #170c79;
-  --primary-dark: #8e05c2;
-  --primary-foreground: #ffffff;
+  /* CHARCOAL · immersive & hero surfaces */
+  --ink-900: #14100d; /* hero, splash */
+  --ink-800: #211811; /* surfaces */
+  --ink-700: #2e241b; /* text strong */
+  --ink-600: #4a3d30; /* muted / dark */
 
-  /* Layout Colors */
-  --background: #efe3ca;
-  --background-dark: #000000;
+  /* EMBER & SAFFRON · primary action */
+  --ember-500: #ec5b13; /* buttons, active */
+  --ember-600: #cd4a0a; /* pressed / hover */
+  --saffron-400: #f6a623; /* highlights */
+  --ember-50: #fbe7d6; /* tint bg */
 
-  --surface: #ffffff;
-  --surface-dark: #3e065f;
-  --surface-foreground: #170c79;
-  --surface-foreground-dark: #ffffff;
+  /* NEUTRALS · content surfaces */
+  --cream-50: #fbf7f1; /* app canvas */
+  --surface-0: #ffffff; /* cards */
+  --sand-100: #f3ece1; /* sunken / chips */
+  --border-warm: #e7ddcc; /* hairlines */
+  --muted-warm: #8a7d6c; /* captions */
 
-  /* Typography & UI */
-  --foreground: #170c79;
-  --foreground-dark: #ffffff;
-
-  --muted: #6b7280;
-  --muted-dark: #9ca3af;
-
-  --border: #d1d5db;
-  --border-dark: #4b5563;
-
-  /* Onboarding / Welcome Screen Specific */
-  --onboarding-blob-primary: #170c79;
-  --onboarding-blob-secondary: #1e12a1;
-  --onboarding-blob-accent: #8e05c2;
-
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-bg-dark: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-border-dark: rgba(255, 255, 255, 0.1);
+  /* FUNCTIONAL · veg / non-veg & semantic tokens */
+  --veg: #147d3a;
+  --non-veg: #9e2a1b;
+  --chili: #c22a1b;
+  --warning-amber: #e08a00;
+  --info-teal: #0e7c86;
 }
 
+/* ---------------------------------------------------------------------------
+   LAYER B · SEMANTIC TOKENS
+
+   The names below are NOT arbitrary. Everything from `--background` down to
+   `--radius` is the variable contract that heroui-native's components read
+   internally. heroui-native declares them inside `@layer theme`; an unlayered
+   `:root` block outbids a layered one in the CSS cascade, so redefining them
+   here rethemes the entire component library at once — no wrappers, no
+   per-component overrides.
+
+   Consequence worth knowing: src/hooks/useAppToast.tsx needs no changes. It
+   delegates to HeroUI's success/danger/warning/accent variants and therefore
+   inherits this palette for free. That is the pattern to aim for everywhere.
+   ------------------------------------------------------------------------ */
+:root {
+  /* — heroui-native contract — */
+  --background: var(--cream-50);
+  --foreground: var(--ink-800);
+
+  --surface: var(--surface-0);
+  --surface-foreground: var(--ink-800);
+  --surface-secondary: var(--sand-100);
+  --surface-secondary-foreground: var(--ink-800);
+  --surface-tertiary: var(--border-warm);
+  --surface-tertiary-foreground: var(--ink-800);
+
+  --overlay: var(--surface-0);
+  --overlay-foreground: var(--ink-800);
+  --backdrop: rgba(20, 16, 13, 0.45);
+
+  --muted: var(--muted-warm);
+
+  --default: var(--sand-100);
+  --default-foreground: var(--ink-800);
+
+  --accent: var(--ember-500);
+  --accent-foreground: var(--surface-0);
+
+  --field-background: var(--surface-0);
+  --field-foreground: var(--ink-800);
+  --field-placeholder: var(--muted-warm);
+  --field-border: var(--border-warm);
+
+  --success: var(--veg);
+  --success-foreground: var(--surface-0);
+  --warning: var(--warning-amber);
+  --warning-foreground: var(--ink-900);
+  --danger: var(--chili);
+  --danger-foreground: var(--surface-0);
+
+  --border: var(--border-warm);
+  --separator: var(--border-warm);
+  --focus: var(--ember-500);
+  --link: var(--ember-500);
+
+  --segment: var(--surface-0);
+  --segment-foreground: var(--ink-800);
+
+  --radius: 12px;
+  --field-radius: 16px;
+  --border-width: 1px;
+  --field-border-width: 1px;
+
+  /* — JJ's Kitchen semantics — */
+  --canvas: var(--cream-50); /* the app ground */
+  --hero: var(--ink-900); /* splash & immersive surfaces */
+  --hero-foreground: var(--cream-50);
+  --sunken: var(--sand-100); /* chips, wells, skeletons */
+  --hairline: var(--border-warm);
+  --ink: var(--ink-800); /* body text */
+  --ink-strong: var(--ink-700);
+  --on-ember: var(--surface-0); /* text on an ember ground */
+  --price: var(--ink-800);
+  --strike: var(--muted-warm); /* struck-through original price */
+  --ember-pressed: var(--ember-600);
+  --ember-tint: var(--ember-50);
+}
+
+/* ---------------------------------------------------------------------------
+   LAYER C · TAILWIND EXPOSURE
+   Turns Layer B into the utility vocabulary the app is written in.
+   ------------------------------------------------------------------------ */
 @theme inline {
-  /* Semantic Tokens mapped to explicit Light/Dark values */
-  --color-primary: var(--primary);
-  --color-primary-dark: var(--primary-dark);
-  --color-primary-foreground: var(--primary-foreground);
-
-  --color-background: var(--background);
-  --color-background-dark: var(--background-dark);
-
+  /* — COLOR — */
+  --color-canvas: var(--canvas);
+  --color-hero: var(--hero);
+  --color-hero-foreground: var(--hero-foreground);
   --color-surface: var(--surface);
-  --color-surface-dark: var(--surface-dark);
   --color-surface-foreground: var(--surface-foreground);
-  --color-surface-foreground-dark: var(--surface-foreground-dark);
+  --color-sunken: var(--sunken);
+  --color-hairline: var(--hairline);
 
-  --color-foreground: var(--foreground);
-  --color-foreground-dark: var(--foreground-dark);
-
+  --color-ink: var(--ink);
+  --color-ink-strong: var(--ink-strong);
   --color-muted: var(--muted);
-  --color-muted-dark: var(--muted-dark);
 
-  --color-border: var(--border);
-  --color-border-dark: var(--border-dark);
+  --color-ember: var(--accent);
+  --color-ember-pressed: var(--ember-pressed);
+  --color-ember-tint: var(--ember-tint);
+  --color-saffron: var(--saffron-400);
+  --color-on-ember: var(--on-ember);
 
-  --color-slot-bg: var(--slot-bg);
-  --color-slot-bg-dark: var(--slot-bg-dark);
+  --color-veg: var(--veg);
+  --color-non-veg: var(--non-veg);
+  --color-chili: var(--chili);
+  --color-warning: var(--warning);
+  --color-info: var(--info-teal);
 
-  /* Onboarding Tokens */
-  --color-onboarding-blob-primary: var(--onboarding-blob-primary);
-  --color-onboarding-blob-secondary: var(--onboarding-blob-secondary);
-  --color-onboarding-blob-accent: var(--onboarding-blob-accent);
+  --color-price: var(--price);
+  --color-strike: var(--strike);
 
-  --color-glass-bg: var(--glass-bg);
-  --color-glass-bg-dark: var(--glass-bg-dark);
-  --color-glass-border: var(--glass-border);
-  --color-glass-border-dark: var(--glass-border-dark);
+  /* — TYPOGRAPHY (PDF section 02) —
+     Bricolage Grotesque carries display sizes (>= 24px per the PDF);
+     Plus Jakarta Sans carries everything at 20px and below.
 
-  /* Spacing & Typography */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
+     Weight is chosen by FAMILY NAME, never by fontWeight — React Native
+     cannot synthesize a weight from a static face. */
+  --font-bricolage-400: 'BricolageGrotesque-Regular';
+  --font-bricolage-600: 'BricolageGrotesque-SemiBold';
+  --font-bricolage-700: 'BricolageGrotesque-Bold';
+  --font-bricolage-800: 'BricolageGrotesque-ExtraBold';
 
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 1.875rem;
+  --font-jakarta-400: 'PlusJakartaSans-Regular';
+  --font-jakarta-500: 'PlusJakartaSans-Medium';
+  --font-jakarta-600: 'PlusJakartaSans-SemiBold';
+  --font-jakarta-700: 'PlusJakartaSans-Bold';
+  --font-jakarta-800: 'PlusJakartaSans-ExtraBold';
+
+  /* Display · Bricolage 44 / 800 / -3% */
+  --text-display: 44px;
+  --text-display--line-height: 46px;
+  --text-display--letter-spacing: -1.32px;
+
+  /* Heading 1 · Bricolage 32 / 700 */
+  --text-h1: 32px;
+  --text-h1--line-height: 38px;
+  --text-h1--letter-spacing: -0.64px;
+
+  /* Heading 2 · Bricolage 24 / 700 */
+  --text-h2: 24px;
+  --text-h2--line-height: 30px;
+  --text-h2--letter-spacing: -0.24px;
+
+  /* Title · section header · Jakarta 20 / 700 */
+  --text-title: 20px;
+  --text-title--line-height: 26px;
+  --text-title--letter-spacing: -0.2px;
+
+  /* Item name · list title · Jakarta 17 / 600 */
+  --text-item: 17px;
+  --text-item--line-height: 24px;
+  --text-item--letter-spacing: 0px;
+
+  /* Body · descriptions & UI copy · Jakarta 15 / 500 */
+  --text-body: 15px;
+  --text-body--line-height: 22px;
+  --text-body--letter-spacing: 0px;
+
+  /* Caption · labels · meta · Jakarta 12 / 700 / +14% */
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-caption--letter-spacing: 1.68px;
+
+  /* — SPACING (PDF section 03, 4px base) —
+     The 4px base keeps numeric utilities (px-6 = 24px) working alongside
+     the named steps. */
+  --spacing: 4px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* — RADIUS (PDF section 03) — */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-sheet: 28px;
+  --radius-pill: 9999px;
+
+  /* — ELEVATION (PDF section 03) — */
+  --shadow-e1: 0px 1px 3px rgba(20, 16, 13, 0.06);
+  --shadow-e2: 0px 4px 12px rgba(20, 16, 13, 0.1);
+  --shadow-e3: 0px -8px 28px rgba(20, 16, 13, 0.14);
+  --shadow-ember-glow: 0px 6px 20px rgba(236, 91, 19, 0.32);
 }
