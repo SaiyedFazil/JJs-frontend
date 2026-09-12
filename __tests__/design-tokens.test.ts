@@ -11,10 +11,7 @@ const SRC = path.join(ROOT, 'src');
  * list. It must reach []. Never add an entry — if a new file needs a color,
  * the color belongs in src/global.css as a token.
  */
-const ALLOWLIST: string[] = [
-  'components/navigation/CustomTabBar.tsx',
-  'features/profile/ProfileScreen.tsx',
-];
+const ALLOWLIST: string[] = ['components/navigation/CustomTabBar.tsx'];
 
 /** Directories and files the guard never inspects. */
 const SKIP_DIRS = ['assets', 'node_modules'];
