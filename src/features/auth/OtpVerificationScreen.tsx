@@ -1,11 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Keyboard,
   TextInput,
@@ -16,11 +14,9 @@ import {
 import Animated, {
   SlideInDown,
   FadeInUp,
-  ZoomIn,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  FadeIn,
 } from 'react-native-reanimated';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -29,6 +25,7 @@ import { Spinner } from 'heroui-native';
 import { AuthService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { useAppToast } from '@/hooks/useAppToast';
+import { Text, Button, OtpInput } from '@/components/ui';
 
 // ── Native modules ────────────────────────────────────────────────────────────
 const { SmsRetrieverModule } = NativeModules;
@@ -36,8 +33,8 @@ const { SmsRetrieverModule } = NativeModules;
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = SCREEN_HEIGHT * 0.45;
 const MIN_HEADER_HEIGHT = 160;
-const CARD_OVERLAP = 40; // -mt-10 = 10 * 4
-const MIN_CARD_OVERLAP = 35; // keep card rounded corners visible inside header
+const CARD_OVERLAP = 40;
+const MIN_CARD_OVERLAP = 35; // keep the sheet's rounded corners visible
 
 type RootStackParamList = {
   Login: { prefillPhone?: string };
@@ -55,7 +52,6 @@ export const OtpVerificationScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
   const [authToken, setAuthToken] = useState(route.params.authToken);
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
@@ -112,7 +108,6 @@ export const OtpVerificationScreen = () => {
     });
     const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
       inputRef.current?.blur();
-      setIsFocused(false);
       headerProgress.value = withTiming(1, { duration: 220 });
     });
 
@@ -230,209 +225,122 @@ export const OtpVerificationScreen = () => {
 
   const isButtonActive = otp.length === 6 && !isLoading;
 
-  const renderSlots = () => {
-    const slots = [];
-    for (let i = 0; i < 6; i++) {
-      const char = otp[i];
-      const isActive = isFocused && i === otp.length;
-
-      slots.push(
-        <View
-          key={i}
-          className={`w-11 h-14 rounded-xl border-2 justify-center items-center bg-white ${
-            isActive
-              ? 'border-primary dark:border-primary-dark'
-              : 'border-border dark:border-border-dark'
-          }`}
-          pointerEvents="none"
-        >
-          {char ? (
-            <Animated.Text
-              entering={ZoomIn.duration(200)}
-              className="text-2xl font-black text-[#170C79]"
-            >
-              {char}
-            </Animated.Text>
-          ) : null}
-          {isActive && (
-            <View className="w-0.5 h-6 bg-primary dark:bg-primary-dark absolute" />
-          )}
-        </View>,
-      );
-    }
-    return slots;
-  };
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      className="flex-1 bg-primary dark:bg-primary-dark"
+      className="flex-1 bg-hero"
     >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-background dark:bg-background-dark"
+        className="flex-1 bg-canvas"
         bounces={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header — collapses when keyboard opens */}
+        {/* Hero header — collapses when the keyboard opens */}
         <Animated.View
           style={animatedHeaderStyle}
-          className="w-full bg-primary dark:bg-primary-dark items-center justify-center"
+          className="w-full bg-hero items-center justify-center"
         >
           <Animated.View
             entering={FadeInUp.duration(1000)}
-            className="items-center"
+            className="items-center gap-md"
           >
-            <View className="w-24 h-24 bg-primary-foreground/20 dark:bg-primary-foreground/20 rounded-full items-center justify-center">
-              <Text className="text-5xl">🍔</Text>
+            <View className="w-24 h-24 rounded-pill bg-ember items-center justify-center shadow-ember-glow">
+              <Text variant="display" tone="on-ember">
+                JJ
+              </Text>
             </View>
-            <Text className="text-primary-foreground dark:text-primary-foreground text-3xl font-black mt-3">
+            <Text variant="h1" tone="on-hero">
               Verify OTP
             </Text>
           </Animated.View>
         </Animated.View>
 
-        {/* Floating Card Section */}
+        {/* Sheet */}
         <Animated.View
           entering={SlideInDown.duration(600)}
-          className="flex-1 bg-surface dark:bg-surface-dark rounded-t-[40px] px-8 pt-8"
-          style={[
-            styles.cardShadow,
-            { paddingBottom: insets.bottom + 40 },
-            animatedCardStyle,
-          ]}
+          className="flex-1 bg-canvas rounded-t-sheet px-xl pt-xl shadow-e3"
+          style={[{ paddingBottom: insets.bottom + 40 }, animatedCardStyle]}
         >
-          <View className="items-center mb-2">
-            <View className="w-16 h-1.5 bg-muted/30 dark:bg-muted-dark/30 rounded-full mb-6" />
-            <Text className="text-foreground/80 dark:text-foreground-dark/80 font-medium text-lg text-center px-1 leading-8">
+          <View className="items-center mb-sm gap-sm">
+            <View className="w-16 h-1.5 rounded-pill bg-hairline mb-md" />
+            <Text variant="title" className="text-center">
               JJ's Kitchen has sent a 6-digit code to
             </Text>
-            <View className="flex-row items-center justify-center mt-2">
-              <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">
-                +91 {phone}
-              </Text>
-              <TouchableOpacity
+            <View className="flex-row items-center gap-sm mt-xs">
+              <Text variant="item">+91 {phone}</Text>
+              <Button
+                label="Change"
+                variant="secondary"
+                size="sm"
                 onPress={() =>
                   navigation.navigate('Login', { prefillPhone: phone })
                 }
-                className="ml-3 bg-muted/10 border border-border dark:border-border-dark px-2 py-1 rounded-xl flex-row items-center shadow-sm active:bg-muted/20"
-              >
-                <Text className="text-primary dark:text-white mr-1.5 text-[10px]">
-                  ✎
-                </Text>
-                <Text className="text-primary dark:text-white font-bold text-[10px] uppercase tracking-wider">
-                  Change
-                </Text>
-              </TouchableOpacity>
+              />
             </View>
           </View>
 
-          <View className="items-center mb-2">
-            {/* Hidden TextInput */}
-            <TextInput
+          <View className="items-center mb-sm">
+            <OtpInput
               ref={inputRef}
               value={otp}
               onChangeText={text => {
-                const cleaned = text.replace(/[^0-9]/g, '').slice(0, 6);
-                setOtp(cleaned);
-                if (cleaned.length === 6) {
-                  Keyboard.dismiss();
-                }
+                setOtp(text);
+                if (text.length === 6) Keyboard.dismiss();
               }}
-              keyboardType="number-pad"
-              textContentType="oneTimeCode"
-              autoComplete="one-time-code"
-              maxLength={6}
-              style={styles.hiddenInput}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
+              error={error || undefined}
             />
 
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => inputRef.current?.focus()}
-              style={styles.otpRow}
-            >
-              {renderSlots()}
-            </TouchableOpacity>
-
-            {error ? (
-              <Animated.View entering={FadeIn.duration(300)}>
-                <Text className="mt-2 text-red-500 font-medium text-sm text-center">
-                  {error}
-                </Text>
-              </Animated.View>
-            ) : null}
-
             {isResending ? (
-              <View className="mt-4 flex-row items-center justify-center">
-                <Spinner color="primary" size="sm" />
-                <Text className="text-primary dark:text-white font-bold text-base ml-2">
+              <View className="mt-md flex-row items-center justify-center gap-sm">
+                <Spinner size="sm" />
+                <Text variant="body" tone="ember">
                   Sending code...
                 </Text>
               </View>
             ) : !canResend ? (
-              /* Countdown — button disabled */
-              <View className="mt-4 items-center">
-                <Text className="text-muted dark:text-muted-dark text-sm font-medium">
+              <View className="mt-md items-center">
+                <Text variant="body" tone="muted">
                   Resend code in{' '}
-                  <Text className="text-primary dark:text-white font-bold">
+                  <Text variant="body" tone="ember">
                     0:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}
                   </Text>
                 </Text>
               </View>
             ) : (
-              /* Timer expired — button active */
-              <TouchableOpacity
-                className="mt-4 self-center px-4 py-2 rounded-xl active:opacity-70"
-                activeOpacity={0.7}
+              <Button
+                label="Resend OTP"
+                variant="ghost"
+                size="sm"
                 onPress={handleResendOtp}
-                disabled={isLoading}
-              >
-                <Text className="text-primary dark:text-white font-bold text-base underline text-center">
-                  Resend OTP
-                </Text>
-              </TouchableOpacity>
+                isDisabled={isLoading}
+                className="mt-md self-center"
+              />
             )}
           </View>
 
-          <TouchableOpacity
+          <Button
+            label="Verify & Login"
+            loadingLabel="Verifying..."
             onPress={handleVerify}
-            disabled={!isButtonActive}
-            activeOpacity={0.8}
-            className={`h-16 rounded-2xl shadow-lg mt-4 items-center justify-center ${isButtonActive ? 'bg-primary dark:bg-primary-dark' : 'bg-primary/30 dark:bg-primary-dark/30 shadow-none'}`}
-          >
-            {isLoading ? (
-              <View className="flex-row items-center justify-center">
-                <Spinner color="white" size="sm" />
-                <Text className="text-primary-foreground dark:text-primary-foreground text-xl font-black ml-3">
-                  Verifying...
-                </Text>
-              </View>
-            ) : (
-              <Text
-                className={`text-xl font-black ${isButtonActive ? 'text-primary-foreground dark:text-primary-foreground' : 'text-muted dark:text-muted-dark'}`}
-              >
-                Verify & Login
-              </Text>
-            )}
-          </TouchableOpacity>
+            isDisabled={!isButtonActive && !isLoading}
+            isLoading={isLoading}
+            className="mt-md"
+          />
 
-          <View className="mt-auto pt-10">
-            <Text className="text-muted dark:text-muted-dark font-medium text-[10px] text-center leading-4">
+          <View className="mt-auto pt-xl">
+            <Text variant="body" tone="muted" className="text-center">
               By continuing, you automatically accept our{'\n'}
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline">
+              <Text variant="body" className="underline">
                 Terms & Conditions
               </Text>
-              ,
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline">
-                {' '}
+              ,{' '}
+              <Text variant="body" className="underline">
                 Privacy Policy
               </Text>{' '}
-              and
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline">
-                {' '}
+              and{' '}
+              <Text variant="body" className="underline">
                 Cookies Policy
               </Text>
             </Text>
@@ -443,29 +351,9 @@ export const OtpVerificationScreen = () => {
   );
 };
 
+/** Layout-only: the ScrollView must be able to grow past the viewport. */
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
-  },
-  hiddenInput: {
-    position: 'absolute',
-    width: 1,
-    height: 1,
-    opacity: 0,
-  },
-  otpRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    gap: 8,
-    paddingVertical: 10,
-  },
-  cardShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 20,
   },
 });
