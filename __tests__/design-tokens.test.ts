@@ -109,3 +109,66 @@ describe('design token guard', () => {
     expect(missing).toEqual([]);
   });
 });
+
+/**
+ * The hex guard above cannot catch a *stale token reference*: `text-primary`
+ * survived the old palette's deletion as a string, and Tailwind would emit no
+ * rule for it, so the text silently renders unstyled rather than wrong.
+ *
+ * This is the static equivalent of changing --ember-500 in global.css and
+ * checking that the whole app moves: if every color utility in the source
+ * resolves to a token, then the token layer really does drive everything.
+ */
+describe('every color utility resolves to a token in global.css', () => {
+  /** Suffixes that are not colors: the type scale, plus Tailwind keywords. */
+  const NON_COLOR = new Set([
+    // type scale (text-*)
+    'display',
+    'h1',
+    'h2',
+    'title',
+    'item',
+    'body',
+    'caption',
+    // alignment and border-side utilities the pattern also matches
+    'center',
+    'left',
+    'right',
+    'justify',
+    'transparent',
+    'current',
+    'b',
+    't',
+    'l',
+    'r',
+    'x',
+    'y',
+  ]);
+
+  const definedTokens = (): Set<string> => {
+    const css = fs.readFileSync(path.join(SRC, 'global.css'), 'utf8');
+    const out = new Set<string>();
+    for (const m of css.matchAll(/--color-([a-z0-9-]+)\s*:/g)) out.add(m[1]);
+    return out;
+  };
+
+  const usedUtilities = (): Map<string, string> => {
+    const out = new Map<string, string>();
+    for (const { rel, abs } of sourceFiles()) {
+      const src = fs.readFileSync(abs, 'utf8');
+      for (const m of src.matchAll(/\b(?:bg|text|border)-([a-z][a-z0-9-]*)/g)) {
+        if (!out.has(m[1])) out.set(m[1], rel);
+      }
+    }
+    return out;
+  };
+
+  it('defines the tokens the app actually uses', () => {
+    const tokens = definedTokens();
+    const unresolved = [...usedUtilities().entries()]
+      .filter(([name]) => !NON_COLOR.has(name) && !tokens.has(name))
+      .map(([name, rel]) => `${name} (first seen in ${rel})`);
+
+    expect(unresolved).toEqual([]);
+  });
+});
