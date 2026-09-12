@@ -1,70 +1,75 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
   ImageBackground,
-  TextInput,
 } from 'react-native';
-import { MapPin, ChevronRight, Search } from 'lucide-react-native';
+import { ChevronRight, Search } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
-
-// Components
-import { FoodListItem } from '@/components/common/FoodListItem';
+import {
+  Text,
+  FoodCard,
+  CategoryChip,
+  LocationBar,
+  TextField,
+  type FoodItem,
+} from '@/components/ui';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const BANNER_HEIGHT = SCREEN_HEIGHT * 0.42;
 
+/** The restaurant's actual sections, per the PDF's category chips. */
 const CATEGORIES = [
-  { id: '1', name: 'Burger', emoji: '🍔' },
-  { id: '2', name: 'Pizza', emoji: '🍕' },
-  { id: '3', name: 'Sushi', emoji: '🍣' },
-  { id: '4', name: 'Desserts', emoji: '🍰' },
-  { id: '5', name: 'Pasta', emoji: '🍝' },
-  { id: '6', name: 'Salads', emoji: '🥗' },
+  'All',
+  'Tandoor',
+  'Starters',
+  'Mutton',
+  'Seafood',
+  'Veg only',
 ];
 
-const POPULAR_ITEMS = [
+const POPULAR_ITEMS: FoodItem[] = [
   {
     id: '1',
-    name: 'Classic Cheeseburger',
-    price: 299,
-    rating: 4.8,
+    name: 'Chicken Burrah',
+    price: 419,
+    rating: 4.7,
     reviews: 120,
     isVeg: false,
+    tag: 'BESTSELLER',
     description:
-      'Juicy beef patty with melted cheddar, pickles, and our signature sauce.',
+      'Charcoal-grilled chicken chops in a smoky yogurt & chilli marinade.',
     image:
       'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=500&auto=format&fit=crop',
   },
   {
     id: '2',
-    name: 'Pepperoni Feast Pizza',
-    price: 449,
+    name: 'Mutton Seekh',
+    price: 699,
     rating: 4.9,
     reviews: 85,
     isVeg: false,
+    isSpicy: true,
     description:
-      'Loaded with spicy pepperoni, mozzarella, and classic tomato sauce.',
+      'Hand-minced mutton on the skewer, finished over natural charcoal.',
     image:
       'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=500&auto=format&fit=crop',
   },
 ];
 
-const MOST_ORDERED = [
+const MOST_ORDERED: FoodItem[] = [
   {
     id: '3',
-    name: 'Spicy Paneer Tikka',
+    name: 'Paneer Tikka Masala',
     price: 349,
     rating: 4.6,
     reviews: 210,
     isVeg: true,
-    description:
-      'Grilled paneer cubes marinated in spicy yogurt and indian spices.',
+    description: 'Cottage cheese in a rich makhani gravy, finished with cream.',
     image:
       'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?q=80&w=500&auto=format&fit=crop',
   },
@@ -72,6 +77,7 @@ const MOST_ORDERED = [
     id: '4',
     name: 'Garden Fresh Salad',
     price: 179,
+    strikePrice: 219,
     rating: 4.3,
     reviews: 45,
     isVeg: true,
@@ -82,47 +88,31 @@ const MOST_ORDERED = [
   },
 ];
 
-/**
- * Section Header Component
- */
 const SectionHeader = memo(({ title }: { title: string }) => (
-  <View className="flex-row justify-between items-center px-6 mb-4">
-    <Text className="text-xl font-black text-foreground dark:text-foreground-dark">
-      {title}
-    </Text>
-    <TouchableOpacity className="flex-row items-center">
-      <Text className="text-primary dark:text-primary-dark font-bold mr-1">
+  <View className="flex-row justify-between items-center px-lg mb-md">
+    <Text variant="title">{title}</Text>
+    <TouchableOpacity
+      accessibilityRole="button"
+      className="flex-row items-center gap-xs"
+    >
+      <Text variant="caption" tone="ember">
         View all
       </Text>
-      <ChevronRight size={16} className="text-primary dark:text-primary-dark" />
+      <ChevronRight size={16} className="text-ember" />
     </TouchableOpacity>
   </View>
 ));
 
-/**
- * Category Item Component
- */
-const CategoryItem = memo(({ cat, index }: { cat: any; index: number }) => (
-  <Animated.View
-    entering={FadeInRight.delay(index * 100)}
-    className="items-center mx-2.5"
-  >
-    <TouchableOpacity className="bg-surface dark:bg-surface-dark w-16 h-16 rounded-[20px] items-center justify-center shadow-md shadow-primary/10 border border-border/40 dark:border-border-dark/20 mb-2.5">
-      <Text className="text-2xl">{cat.emoji}</Text>
-    </TouchableOpacity>
-    <Text className="text-foreground dark:text-foreground-dark font-black text-[10px] uppercase tracking-wider">
-      {cat.name}
-    </Text>
-  </Animated.View>
-));
+SectionHeader.displayName = 'SectionHeader';
 
 export const HomeScreen = () => {
   const insets = useSafeAreaInsets();
+  const [category, setCategory] = useState('All');
+  const [query, setQuery] = useState('');
 
   return (
-    <View className="flex-1 bg-background dark:bg-background-dark">
+    <View className="flex-1 bg-canvas">
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-        {/* Banner Section - Covers phone top */}
         <ImageBackground
           source={{
             uri: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1000&auto=format&fit=crop',
@@ -130,90 +120,76 @@ export const HomeScreen = () => {
           style={[styles.banner, { height: BANNER_HEIGHT }]}
           imageStyle={styles.bannerImage}
         >
-          {/* Address Header Overlay */}
+          {/* Ink 900 scrim keeps the location bar legible over any photo. */}
+          <View className="absolute inset-0 bg-hero/40" />
+
           <View
             style={{ paddingTop: insets.top + 10 }}
             className="items-center w-full"
           >
-            <View className="bg-black/70 backdrop-blur-md px-5 py-2 rounded-full border border-white/10 items-center">
-              <Text className="text-white/60 text-[9px] font-black uppercase tracking-widest mb-0.5">
-                Delivery location
-              </Text>
-              <TouchableOpacity className="flex-row items-center">
-                <MapPin
-                  size={16}
-                  className="text-primary dark:text-primary-dark"
-                  fill="currentColor"
-                  fillOpacity={0.4}
-                />
-                <Text
-                  className="text-white w-40 font-black text-sm mx-2"
-                  numberOfLines={1}
-                >
-                  351 Maison Street, NY
-                </Text>
-                <ChevronRight size={14} color="white" />
-              </TouchableOpacity>
-            </View>
+            <LocationBar
+              label="Deliver to · Home"
+              address="351 Maison Street, Bandra W"
+              onHero
+            />
           </View>
 
-          {/* Search Bar Overlay - At the bottom of the banner */}
-          <View className="mt-auto px-6 mb-8">
-            <View className="flex-row items-center bg-white dark:bg-surface-dark h-14 rounded-full px-5 shadow-2xl border border-primary/5">
-              <Search size={20} className="text-muted dark:text-muted-dark" />
-              <TextInput
-                placeholder="Search by item name..."
-                placeholderTextColor="#9ca3af"
-                className="flex-1 ml-3 text-foreground dark:text-foreground-dark font-bold text-sm"
-              />
-            </View>
+          <View className="mt-auto px-lg mb-xl">
+            <TextField
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search by item name…"
+              icon={<Search size={20} className="text-muted" />}
+              className="mb-0"
+            />
           </View>
         </ImageBackground>
 
-        {/* Categories Horizontal Scroll */}
-        <View className="mt-8">
+        {/* Categories */}
+        <View className="mt-xl">
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoryScrollContent}
           >
-            {CATEGORIES.map((cat, index) => (
-              <CategoryItem key={cat.id} cat={cat} index={index} />
+            {CATEGORIES.map((name, index) => (
+              <Animated.View
+                key={name}
+                entering={FadeInRight.delay(index * 60)}
+              >
+                <CategoryChip
+                  label={name}
+                  isActive={name === category}
+                  onPress={() => setCategory(name)}
+                />
+              </Animated.View>
             ))}
           </ScrollView>
         </View>
 
-        {/* Popular Items Section */}
-        <View className="mt-12">
-          <SectionHeader title="Popular Items" />
-          <View className="px-6">
+        <View className="mt-xl">
+          <SectionHeader title="Popular items" />
+          <View className="px-lg">
             {POPULAR_ITEMS.map((item, index) => (
               <Animated.View
                 key={item.id}
                 entering={FadeInDown.delay(index * 100)}
               >
-                <FoodListItem
-                  item={item}
-                  onAdd={() => console.log('Add', item.name)}
-                />
+                <FoodCard item={item} />
               </Animated.View>
             ))}
           </View>
         </View>
 
-        {/* Most Ordered Section */}
-        <View className="mt-8 mb-32">
-          <SectionHeader title="Most Ordered" />
-          <View className="px-6">
+        <View className="mt-xl mb-32">
+          <SectionHeader title="Most ordered" />
+          <View className="px-lg">
             {MOST_ORDERED.map((item, index) => (
               <Animated.View
                 key={item.id}
                 entering={FadeInDown.delay(index * 100)}
               >
-                <FoodListItem
-                  item={item}
-                  onAdd={() => console.log('Add', item.name)}
-                />
+                <FoodCard item={item} />
               </Animated.View>
             ))}
           </View>
@@ -223,16 +199,18 @@ export const HomeScreen = () => {
   );
 };
 
+/** Layout-only: values Tailwind cannot express against an ImageBackground. */
 const styles = StyleSheet.create({
   banner: {
     width: '100%',
     justifyContent: 'flex-start',
   },
   bannerImage: {
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
   categoryScrollContent: {
     paddingHorizontal: 16,
+    gap: 8,
   },
 });

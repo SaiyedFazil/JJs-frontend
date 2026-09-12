@@ -12,9 +12,7 @@ const SRC = path.join(ROOT, 'src');
  * the color belongs in src/global.css as a token.
  */
 const ALLOWLIST: string[] = [
-  'components/common/FoodListItem.tsx',
   'components/navigation/CustomTabBar.tsx',
-  'features/home/HomeScreen.tsx',
   'features/profile/ProfileScreen.tsx',
 ];
 
