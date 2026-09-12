@@ -111,6 +111,79 @@ describe('design token guard', () => {
 });
 
 /**
+ * Lottie files are the one place a colour legitimately lives outside
+ * global.css, because the animation format bakes them in — so SKIP_DIRS
+ * excludes src/assets and nothing else checks them.
+ *
+ * They still have to match the design system. A Lottie carries colour in two
+ * unrelated shapes: shape fills and strokes use `c.k` as normalised RGBA, while
+ * solid layers use a plain `sc` hex string. Missing the second kind is exactly
+ * how a full-screen navy background survived the first splash retheme.
+ */
+describe('Lottie animations use design system colors', () => {
+  const ANIMATIONS = path.join(SRC, 'assets', 'animations');
+
+  /** Every colour in the file, from both representations, as lowercase hex. */
+  function lottieColors(abs: string): string[] {
+    const found = new Set<string>();
+    const toHex = (c: number[]) =>
+      '#' +
+      c
+        .slice(0, 3)
+        .map(x =>
+          Math.round(x * 255)
+            .toString(16)
+            .padStart(2, '0'),
+        )
+        .join('');
+
+    (function walk(node: unknown) {
+      if (Array.isArray(node)) return node.forEach(walk);
+      if (!node || typeof node !== 'object') return;
+      const o = node as Record<string, any>;
+
+      // Shape fills and strokes: normalised RGBA in c.k
+      if (
+        (o.ty === 'fl' || o.ty === 'st') &&
+        Array.isArray(o.c?.k) &&
+        o.c.k.every((x: unknown) => typeof x === 'number')
+      ) {
+        found.add(toHex(o.c.k));
+      }
+      // Solid layers: a plain hex string in sc
+      if (o.ty === 1 && typeof o.sc === 'string') {
+        found.add(o.sc.toLowerCase());
+      }
+
+      Object.values(o).forEach(walk);
+    })(JSON.parse(fs.readFileSync(abs, 'utf8')));
+
+    return [...found];
+  }
+
+  /**
+   * Ink 900 and Cream 50 (the PDF's hero surface pairing), plus Surface 0 —
+   * all three are raw palette entries in global.css.
+   */
+  const ALLOWED = new Set(['#14100d', '#fbf7f1', '#ffffff']);
+
+  const animations = fs.existsSync(ANIMATIONS)
+    ? fs.readdirSync(ANIMATIONS).filter(f => f.endsWith('.json'))
+    : [];
+
+  it('finds animations to check', () => {
+    expect(animations.length).toBeGreaterThan(0);
+  });
+
+  it.each(animations)('%s uses only design system colors', file => {
+    const offenders = lottieColors(path.join(ANIMATIONS, file)).filter(
+      hex => !ALLOWED.has(hex),
+    );
+    expect(offenders).toEqual([]);
+  });
+});
+
+/**
  * The hex guard above cannot catch a *stale token reference*: `text-primary`
  * survived the old palette's deletion as a string, and Tailwind would emit no
  * rule for it, so the text silently renders unstyled rather than wrong.
