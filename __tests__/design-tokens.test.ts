@@ -14,11 +14,6 @@ const SRC = path.join(ROOT, 'src');
 const ALLOWLIST: string[] = [
   'components/common/FoodListItem.tsx',
   'components/navigation/CustomTabBar.tsx',
-  'features/auth/complete-profile/EmailStep.tsx',
-  'features/auth/complete-profile/NameStep.tsx',
-  'features/auth/complete-profile/index.tsx',
-  'features/auth/complete-profile/components/GlassInput.tsx',
-  'features/auth/complete-profile/components/styles.ts',
   'features/home/HomeScreen.tsx',
   'features/profile/ProfileScreen.tsx',
 ];
