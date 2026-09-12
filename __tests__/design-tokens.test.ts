@@ -16,7 +16,6 @@ const ALLOWLIST: string[] = [
   'components/navigation/CustomTabBar.tsx',
   'features/auth/LoginScreen.tsx',
   'features/auth/OtpVerificationScreen.tsx',
-  'features/auth/SplashScreen.tsx',
   'features/auth/complete-profile/EmailStep.tsx',
   'features/auth/complete-profile/NameStep.tsx',
   'features/auth/complete-profile/index.tsx',
