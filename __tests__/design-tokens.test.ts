@@ -13,7 +13,6 @@ const SRC = path.join(ROOT, 'src');
  */
 const ALLOWLIST: string[] = [
   'components/common/FoodListItem.tsx',
-  'components/common/PlaceholderScreen.tsx',
   'components/navigation/CustomTabBar.tsx',
   'features/auth/LoginScreen.tsx',
   'features/auth/OtpVerificationScreen.tsx',
@@ -32,10 +31,9 @@ const SKIP_DIRS = ['assets', 'node_modules'];
 const SKIP_FILES = ['global.css', 'uniwind-types.d.ts', 'env.d.ts'];
 
 /**
- * App.tsx still imports the theme store, which Task 4 deletes. Same ratchet
- * as ALLOWLIST: this must reach [] and stay there.
+ * Empty, and must stay empty: nothing may import the deleted theme modules.
  */
-const DEAD_IMPORT_ALLOWLIST: string[] = ['../App.tsx'];
+const DEAD_IMPORT_ALLOWLIST: string[] = [];
 
 const HEX = /#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{1,5})?\b/;
 const DARK_VARIANT = /(?:^|["'`\s{])dark:/;
