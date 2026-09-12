@@ -11,6 +11,17 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		1D1898C6FDF74A62930B8029 /* BricolageGrotesque-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B648445796D24C06BE622FE1 /* BricolageGrotesque-Bold.ttf */; };
+		2D76C50356CF44C4B8C5075D /* BricolageGrotesque-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E4EB3719C84244F3BA610E94 /* BricolageGrotesque-ExtraBold.ttf */; };
+		04B6B5E8A1074738BD8EBFC5 /* BricolageGrotesque-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E65E1BE155D942959D14FCAC /* BricolageGrotesque-Regular.ttf */; };
+		3B8DFA558B1C474F96560418 /* BricolageGrotesque-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F8EBB93273714B9F945BE750 /* BricolageGrotesque-SemiBold.ttf */; };
+		118DDB82F45048F6941FC457 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EF5BFA35ABD407184C5E33E /* PlusJakartaSans-Bold.ttf */; };
+		9F07C0802C51444A99568966 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 087AA6B1826645908BE284BD /* PlusJakartaSans-ExtraBold.ttf */; };
+		142EA0272D644FA4B66A6470 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 96A207EBD0444377B99F29BC /* PlusJakartaSans-Medium.ttf */; };
+		8CBA7A64645444B48930B33E /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 509A6912B4584A1EB9BF6E49 /* PlusJakartaSans-Regular.ttf */; };
+		9ED09A42E310439E923BECDB /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 54F28E0C7A354DD68764562E /* PlusJakartaSans-SemiBold.ttf */; };
+		4CB3CBEDCB5D49F4A1D8AE08 /* BricolageGrotesque-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = AE0CC2DDFCEB473FABEFA0EF /* BricolageGrotesque-OFL.txt */; };
+		A6D66EC53C984E5DB13368E6 /* PlusJakartaSans-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 141B543A462B4F8A94E10A6E /* PlusJakartaSans-OFL.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +35,17 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = JJsKitchen/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = JJsKitchen/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		B648445796D24C06BE622FE1 /* BricolageGrotesque-Bold.ttf */ = {isa = PBXFileReference; name = "BricolageGrotesque-Bold.ttf"; path = "../src/assets/fonts/BricolageGrotesque-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		E4EB3719C84244F3BA610E94 /* BricolageGrotesque-ExtraBold.ttf */ = {isa = PBXFileReference; name = "BricolageGrotesque-ExtraBold.ttf"; path = "../src/assets/fonts/BricolageGrotesque-ExtraBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		E65E1BE155D942959D14FCAC /* BricolageGrotesque-Regular.ttf */ = {isa = PBXFileReference; name = "BricolageGrotesque-Regular.ttf"; path = "../src/assets/fonts/BricolageGrotesque-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		F8EBB93273714B9F945BE750 /* BricolageGrotesque-SemiBold.ttf */ = {isa = PBXFileReference; name = "BricolageGrotesque-SemiBold.ttf"; path = "../src/assets/fonts/BricolageGrotesque-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		8EF5BFA35ABD407184C5E33E /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; name = "PlusJakartaSans-Bold.ttf"; path = "../src/assets/fonts/PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		087AA6B1826645908BE284BD /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; name = "PlusJakartaSans-ExtraBold.ttf"; path = "../src/assets/fonts/PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		96A207EBD0444377B99F29BC /* PlusJakartaSans-Medium.ttf */ = {isa = PBXFileReference; name = "PlusJakartaSans-Medium.ttf"; path = "../src/assets/fonts/PlusJakartaSans-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		509A6912B4584A1EB9BF6E49 /* PlusJakartaSans-Regular.ttf */ = {isa = PBXFileReference; name = "PlusJakartaSans-Regular.ttf"; path = "../src/assets/fonts/PlusJakartaSans-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		54F28E0C7A354DD68764562E /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; name = "PlusJakartaSans-SemiBold.ttf"; path = "../src/assets/fonts/PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		AE0CC2DDFCEB473FABEFA0EF /* BricolageGrotesque-OFL.txt */ = {isa = PBXFileReference; name = "BricolageGrotesque-OFL.txt"; path = "../src/assets/fonts/BricolageGrotesque-OFL.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		141B543A462B4F8A94E10A6E /* PlusJakartaSans-OFL.txt */ = {isa = PBXFileReference; name = "PlusJakartaSans-OFL.txt"; path = "../src/assets/fonts/PlusJakartaSans-OFL.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +96,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				3E661CBA73164E41B6D1F9D2 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -96,6 +119,25 @@
 			);
 			path = Pods;
 			sourceTree = "<group>";
+		};
+		3E661CBA73164E41B6D1F9D2 /* Resources */ = {
+			isa = "PBXGroup";
+			children = (
+				B648445796D24C06BE622FE1 /* BricolageGrotesque-Bold.ttf */,
+				E4EB3719C84244F3BA610E94 /* BricolageGrotesque-ExtraBold.ttf */,
+				E65E1BE155D942959D14FCAC /* BricolageGrotesque-Regular.ttf */,
+				F8EBB93273714B9F945BE750 /* BricolageGrotesque-SemiBold.ttf */,
+				8EF5BFA35ABD407184C5E33E /* PlusJakartaSans-Bold.ttf */,
+				087AA6B1826645908BE284BD /* PlusJakartaSans-ExtraBold.ttf */,
+				96A207EBD0444377B99F29BC /* PlusJakartaSans-Medium.ttf */,
+				509A6912B4584A1EB9BF6E49 /* PlusJakartaSans-Regular.ttf */,
+				54F28E0C7A354DD68764562E /* PlusJakartaSans-SemiBold.ttf */,
+				AE0CC2DDFCEB473FABEFA0EF /* BricolageGrotesque-OFL.txt */,
+				141B543A462B4F8A94E10A6E /* PlusJakartaSans-OFL.txt */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -159,6 +201,17 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				1D1898C6FDF74A62930B8029 /* BricolageGrotesque-Bold.ttf in Resources */,
+				2D76C50356CF44C4B8C5075D /* BricolageGrotesque-ExtraBold.ttf in Resources */,
+				04B6B5E8A1074738BD8EBFC5 /* BricolageGrotesque-Regular.ttf in Resources */,
+				3B8DFA558B1C474F96560418 /* BricolageGrotesque-SemiBold.ttf in Resources */,
+				118DDB82F45048F6941FC457 /* PlusJakartaSans-Bold.ttf in Resources */,
+				9F07C0802C51444A99568966 /* PlusJakartaSans-ExtraBold.ttf in Resources */,
+				142EA0272D644FA4B66A6470 /* PlusJakartaSans-Medium.ttf in Resources */,
+				8CBA7A64645444B48930B33E /* PlusJakartaSans-Regular.ttf in Resources */,
+				9ED09A42E310439E923BECDB /* PlusJakartaSans-SemiBold.ttf in Resources */,
+				4CB3CBEDCB5D49F4A1D8AE08 /* BricolageGrotesque-OFL.txt in Resources */,
+				A6D66EC53C984E5DB13368E6 /* PlusJakartaSans-OFL.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

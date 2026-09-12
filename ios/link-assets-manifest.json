@@ -1,0 +1,49 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/BricolageGrotesque-Bold.ttf",
+      "sha1": "0c48c38c9f84c40d05753b18f03e430804abef7e"
+    },
+    {
+      "path": "src/assets/fonts/BricolageGrotesque-ExtraBold.ttf",
+      "sha1": "10b684c54b5daf2dd97883d1e425b193db6b0957"
+    },
+    {
+      "path": "src/assets/fonts/BricolageGrotesque-OFL.txt",
+      "sha1": "f63c11ad3638f6ccc44b188755fea3db7ad4405a"
+    },
+    {
+      "path": "src/assets/fonts/BricolageGrotesque-Regular.ttf",
+      "sha1": "bd1311175c813357d3f122cfac1991acbd244516"
+    },
+    {
+      "path": "src/assets/fonts/BricolageGrotesque-SemiBold.ttf",
+      "sha1": "87104d5573f33b6a347484832c03059a58d201d2"
+    },
+    {
+      "path": "src/assets/fonts/PlusJakartaSans-Bold.ttf",
+      "sha1": "725f9514c93b5356230588f805f771d2c8381487"
+    },
+    {
+      "path": "src/assets/fonts/PlusJakartaSans-ExtraBold.ttf",
+      "sha1": "8cb31628fea4d444bdc278b04a28bebee5970ce1"
+    },
+    {
+      "path": "src/assets/fonts/PlusJakartaSans-Medium.ttf",
+      "sha1": "a76cf945a2ffeff98027dfd401b656c6273bff46"
+    },
+    {
+      "path": "src/assets/fonts/PlusJakartaSans-OFL.txt",
+      "sha1": "06a13446af986261b9604de9c012035fd95b193d"
+    },
+    {
+      "path": "src/assets/fonts/PlusJakartaSans-Regular.ttf",
+      "sha1": "39007600414c4de958463f14eb3f59d775621303"
+    },
+    {
+      "path": "src/assets/fonts/PlusJakartaSans-SemiBold.ttf",
+      "sha1": "24953bebc61acd5caa5be521dd319772444f8b24"
+    }
+  ]
+}
