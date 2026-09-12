@@ -5,13 +5,13 @@ const ROOT = path.resolve(__dirname, '..');
 const SRC = path.join(ROOT, 'src');
 
 /**
- * Files that still carry pre-migration hardcoded styling.
+ * Files exempt from the hardcoded-styling checks.
  *
- * Every task in the Design System v1.0 migration removes entries from this
- * list. It must reach []. Never add an entry — if a new file needs a color,
- * the color belongs in src/global.css as a token.
+ * This is EMPTY and must stay empty — the Design System v1.0 migration is
+ * complete. If a new file needs a color, the color belongs in src/global.css
+ * as a token; adding an entry here is not the fix.
  */
-const ALLOWLIST: string[] = ['components/navigation/CustomTabBar.tsx'];
+const ALLOWLIST: string[] = [];
 
 /** Directories and files the guard never inspects. */
 const SKIP_DIRS = ['assets', 'node_modules'];
@@ -93,6 +93,14 @@ describe('design token guard', () => {
       expect(`${rel}: ${hits.join(' | ')}`).toBe(`${rel}: `);
     },
   );
+
+  it('allowlist is empty — the migration is complete', () => {
+    expect(ALLOWLIST).toEqual([]);
+  });
+
+  it('dead-import allowlist is empty', () => {
+    expect(DEAD_IMPORT_ALLOWLIST).toEqual([]);
+  });
 
   it('allowlist only names files that exist', () => {
     const missing = ALLOWLIST.filter(

@@ -1,11 +1,5 @@
 import React, { useMemo, memo } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import {
   Home,
@@ -15,11 +9,15 @@ import {
   User,
 } from 'lucide-react-native';
 import { useCartStore } from '@/store/cart.store';
+import { Text } from '@/components/ui';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 /**
  * Tab Icon Component
+ *
+ * PDF section 04: rounded line icons at 1.9px stroke, with filled variants
+ * reserved for the active tab and the rating star.
  */
 interface TabIconProps {
   name: string;
@@ -28,41 +26,67 @@ interface TabIconProps {
 }
 
 const TabIcon = memo(({ name, isFocused, cartCount }: TabIconProps) => {
-  const color = isFocused ? '#FF6B35' : '#94A3B8';
+  const className = isFocused ? 'text-ember' : 'text-muted';
   const size = 24;
-  const strokeWidth = isFocused ? 2.5 : 2;
+  const strokeWidth = isFocused ? 2.5 : 1.9;
+  const fill = isFocused ? 'currentColor' : 'none';
 
   switch (name) {
     case 'Home':
-      return <Home size={size} color={color} strokeWidth={strokeWidth} />;
+      return (
+        <Home
+          size={size}
+          className={className}
+          strokeWidth={strokeWidth}
+          fill={fill}
+        />
+      );
     case 'Saved':
-      return <Bookmark size={size} color={color} strokeWidth={strokeWidth} />;
+      return (
+        <Bookmark
+          size={size}
+          className={className}
+          strokeWidth={strokeWidth}
+          fill={fill}
+        />
+      );
     case 'Cart':
       return (
-        <View className="bg-primary dark:bg-primary-dark p-3 rounded-full -mt-10 shadow-lg shadow-primary/50">
-          <ShoppingBag size={28} color="white" strokeWidth={2.5} />
-          {cartCount > 0 && (
-            <View
-              style={styles.badge}
-              className="absolute -top-1 -right-1 bg-white items-center justify-center border-2 border-primary"
-            >
-              <Text className="text-primary text-[10px] font-black">
+        <View className="bg-ember p-md rounded-pill -mt-10 shadow-ember-glow">
+          <ShoppingBag size={28} className="text-on-ember" strokeWidth={2.5} />
+          {cartCount > 0 ? (
+            <View className="absolute -top-1 -right-1 w-5 h-5 rounded-pill bg-surface items-center justify-center border-2 border-ember">
+              <Text variant="caption" tone="ember">
                 {cartCount}
               </Text>
             </View>
-          )}
+          ) : null}
         </View>
       );
     case 'Orders':
       return (
-        <ClipboardList size={size} color={color} strokeWidth={strokeWidth} />
+        <ClipboardList
+          size={size}
+          className={className}
+          strokeWidth={strokeWidth}
+          fill={fill}
+        />
       );
     case 'Profile':
-      return <User size={size} color={color} strokeWidth={strokeWidth} />;
+      return (
+        <User
+          size={size}
+          className={className}
+          strokeWidth={strokeWidth}
+          fill={fill}
+        />
+      );
     default:
       return null;
   }
 });
+
+TabIcon.displayName = 'TabIcon';
 
 /**
  * Custom Tab Bar Component
@@ -82,9 +106,9 @@ export const CustomTabBar = memo(
     return (
       <View
         style={containerStyle}
-        className="bg-surface dark:bg-surface-dark border-t border-border/10 dark:border-border-dark/10"
+        className="bg-surface border-t border-hairline rounded-t-sheet shadow-e3"
       >
-        <View className="flex-row items-center justify-around px-4">
+        <View className="flex-row items-center justify-around px-md">
           {state.routes.map((route, index) => {
             const isFocused = state.index === index;
 
@@ -108,7 +132,7 @@ export const CustomTabBar = memo(
                 onPress={onPress}
                 accessibilityRole="button"
                 accessibilityState={isFocused ? { selected: true } : {}}
-                className="items-center py-2"
+                className="items-center py-sm"
                 style={styles.tabButton}
                 activeOpacity={0.7}
               >
@@ -117,13 +141,15 @@ export const CustomTabBar = memo(
                   isFocused={isFocused}
                   cartCount={cartItemsCount}
                 />
-                {route.name !== 'Cart' && (
+                {route.name !== 'Cart' ? (
                   <Text
-                    className={`text-[10px] mt-1 font-bold ${isFocused ? 'text-primary dark:text-primary-dark' : 'text-muted dark:text-muted-dark'}`}
+                    variant="caption"
+                    tone={isFocused ? 'ember' : 'muted'}
+                    className="mt-xs"
                   >
                     {route.name}
                   </Text>
-                )}
+                ) : null}
               </TouchableOpacity>
             );
           })}
@@ -133,26 +159,17 @@ export const CustomTabBar = memo(
   },
 );
 
+CustomTabBar.displayName = 'CustomTabBar';
+
+/** Layout-only: the bar floats above content at the screen's full width. */
 const styles = StyleSheet.create({
   tabContainer: {
     position: 'absolute',
     bottom: 0,
     width: SCREEN_WIDTH,
     paddingTop: 12,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 20,
   },
   tabButton: {
     flex: 1,
-  },
-  badge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
   },
 });
