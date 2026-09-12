@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Keyboard,
-  TextInput,
   Dimensions,
   NativeModules,
-  TouchableOpacity,
 } from 'react-native';
 import Animated, {
   SlideInDown,
   FadeInUp,
-  FadeIn,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
@@ -23,18 +19,18 @@ import Animated, {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spinner } from 'heroui-native';
 import { AuthService } from '@/services/auth.service';
 import { clearAuthData } from '@/utils/storage';
 import { useAppToast } from '@/hooks/useAppToast';
+import { Text, Button, TextField } from '@/components/ui';
 
 const { PhoneNumberHintModule } = NativeModules;
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = SCREEN_HEIGHT * 0.45;
 const MIN_HEADER_HEIGHT = 200;
-const CARD_OVERLAP = 48; // -mt-12 = 12 * 4
-const MIN_CARD_OVERLAP = 34; // keep card rounded corners visible inside header
+const CARD_OVERLAP = 48;
+const MIN_CARD_OVERLAP = 34; // keep the sheet's rounded corners visible
 
 type RootStackParamList = {
   Login: { prefillPhone?: string };
@@ -159,132 +155,85 @@ export const LoginScreen = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      className="flex-1 bg-primary dark:bg-primary-dark"
+      className="flex-1 bg-hero"
     >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-background dark:bg-background-dark"
+        className="flex-1 bg-canvas"
         bounces={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header — collapses when keyboard opens */}
+        {/* Hero header — Ink 900, collapses when the keyboard opens */}
         <Animated.View
           style={animatedHeaderStyle}
-          className="w-full bg-primary dark:bg-primary-dark items-center justify-center"
+          className="w-full bg-hero items-center justify-center"
         >
           <Animated.View
             entering={FadeInUp.duration(1000)}
-            className="items-center"
+            className="items-center gap-md"
           >
-            <View className="w-24 h-24 bg-primary-foreground/20 dark:bg-primary-foreground/20 rounded-full items-center justify-center">
-              <Text className="text-5xl">🍔</Text>
+            <View className="w-24 h-24 rounded-pill bg-ember items-center justify-center shadow-ember-glow">
+              <Text variant="display" tone="on-ember">
+                JJ
+              </Text>
             </View>
-            <Text className="text-primary-foreground dark:text-primary-foreground text-4xl font-black mt-4">
+            <Text variant="h1" tone="on-hero">
               JJ's Kitchen
+            </Text>
+            <Text variant="caption" tone="on-hero" className="opacity-70">
+              Dine in & catering
             </Text>
           </Animated.View>
         </Animated.View>
 
-        {/* Floating Login Card */}
+        {/* Sheet */}
         <Animated.View
           entering={SlideInDown.duration(600)}
-          className="flex-1 bg-surface dark:bg-surface-dark rounded-t-[40px] px-8 pt-10"
-          style={[
-            styles.cardShadow,
-            { paddingBottom: insets.bottom + 20 },
-            animatedCardStyle,
-          ]}
+          className="flex-1 bg-canvas rounded-t-sheet px-xl pt-xl shadow-e3"
+          style={[{ paddingBottom: insets.bottom + 20 }, animatedCardStyle]}
         >
-          <View className="items-center mb-10">
-            <View className="w-16 h-1.5 bg-muted/30 dark:bg-muted-dark/30 rounded-full mb-6" />
-            <Text className="text-foreground/80 dark:text-foreground-dark/80 font-medium text-lg text-center">
+          <View className="items-center mb-xl gap-lg">
+            <View className="w-16 h-1.5 rounded-pill bg-hairline" />
+            <Text variant="title" className="text-center">
               Let's start with your phone number
             </Text>
           </View>
 
-          <View className="mb-8">
-            <View className="flex-row gap-x-3 items-start">
-              {/* Country Code Box */}
-              <View
-                style={[styles.inputBox, error ? styles.inputBoxError : null]}
-                className="w-20 h-16 rounded-2xl border-2 border-border dark:border-border-dark bg-white items-center justify-center"
-              >
-                <Text className="text-xl font-bold text-primary">+91</Text>
-              </View>
+          <TextField
+            label="Phone number"
+            prefix="+91"
+            value={phone}
+            onChangeText={handlePhoneChange}
+            placeholder="98765 43210"
+            error={error || undefined}
+            keyboardType="number-pad"
+            textContentType="telephoneNumber"
+            autoComplete="tel"
+            maxLength={10}
+            isDisabled={isLoading}
+          />
 
-              {/* Phone Number Input Box */}
-              <View className="flex-1">
-                <View
-                  style={[styles.inputBox, error ? styles.inputBoxError : null]}
-                  className="h-16 rounded-2xl border-2 border-border dark:border-border-dark bg-white px-4 justify-center"
-                >
-                  <TextInput
-                    placeholder="Enter phone number"
-                    placeholderTextColor="#94A3B8"
-                    value={phone}
-                    textContentType="telephoneNumber"
-                    autoComplete="tel"
-                    onChangeText={handlePhoneChange}
-                    keyboardType="number-pad"
-                    maxLength={10}
-                    editable={!isLoading}
-                    style={[
-                      styles.inputText,
-                      phone ? styles.fontLarge : styles.fontSmall,
-                      styles.darkText,
-                    ]}
-                    className="font-bold h-full p-0"
-                  />
-                </View>
-
-                {error ? (
-                  <Animated.View entering={FadeIn.duration(300)}>
-                    <Text className="mt-2 ml-1 text-red-500 font-medium text-sm">
-                      {error}
-                    </Text>
-                  </Animated.View>
-                ) : null}
-              </View>
-            </View>
-          </View>
-
-          <TouchableOpacity
+          <Button
+            label="Send OTP"
+            loadingLabel="Sending OTP"
             onPress={handleContinue}
-            disabled={!isButtonActive}
-            activeOpacity={0.8}
-            className={`h-16 rounded-2xl shadow-lg items-center justify-center ${isButtonActive ? 'bg-primary dark:bg-primary-dark' : 'bg-primary/30 dark:bg-primary-dark/30 shadow-none'}`}
-          >
-            {isLoading ? (
-              <View className="flex-row items-center justify-center">
-                <Spinner color="white" size="sm" />
-                <Text className="text-primary-foreground dark:text-primary-foreground text-xl font-black ml-3">
-                  Sending OTP
-                </Text>
-              </View>
-            ) : (
-              <Text
-                className={`text-xl font-black ${isButtonActive ? 'text-primary-foreground dark:text-primary-foreground' : 'text-muted dark:text-muted-dark'}`}
-              >
-                Send OTP
-              </Text>
-            )}
-          </TouchableOpacity>
+            isDisabled={!isButtonActive && !isLoading}
+            isLoading={isLoading}
+          />
 
-          <View className="mt-auto pt-10 pb-4">
-            <Text className="text-muted dark:text-muted-dark font-medium text-[10px] text-center leading-4">
+          <View className="mt-auto pt-xl pb-md">
+            <Text variant="body" tone="muted" className="text-center">
               By continuing, you automatically accept our{'\n'}
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline">
+              <Text variant="body" className="underline">
                 Terms & Conditions
               </Text>
-              ,
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline">
-                {' '}
+              ,{' '}
+              <Text variant="body" className="underline">
                 Privacy Policy
               </Text>{' '}
-              and
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline">
-                {' '}
+              and{' '}
+              <Text variant="body" className="underline">
                 Cookies Policy
               </Text>
             </Text>
@@ -295,38 +244,9 @@ export const LoginScreen = () => {
   );
 };
 
+/** Layout-only: the ScrollView must be able to grow past the viewport. */
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
-  },
-  inputBox: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  inputBoxError: {
-    borderColor: '#ef4444',
-  },
-  inputText: {
-    paddingVertical: 0,
-    includeFontPadding: false,
-  },
-  darkText: {
-    color: '#170C79',
-  },
-  fontSmall: {
-    fontSize: 14,
-  },
-  fontLarge: {
-    fontSize: 20,
-  },
-  cardShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 20,
   },
 });
