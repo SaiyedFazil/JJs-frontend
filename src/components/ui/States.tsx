@@ -76,3 +76,19 @@ export const SkeletonCard = ({ count = 3 }: { count?: number }) => (
     ))}
   </View>
 );
+
+/** Loading placeholder shaped like a horizontal dish rail. */
+export const SkeletonRail = ({ cards = 3 }: { cards?: number }) => (
+  <View className="px-md gap-md">
+    <Skeleton className="h-4 w-2/5 rounded-sm" />
+    <View className="flex-row gap-md">
+      {Array.from({ length: cards }).map((_, i) => (
+        <View key={i} className="w-40 gap-sm">
+          <Skeleton className="w-full h-28 rounded-xl" />
+          <Skeleton className="h-3 w-4/5 rounded-sm" />
+          <Skeleton className="h-3 w-1/2 rounded-sm" />
+        </View>
+      ))}
+    </View>
+  </View>
+);
