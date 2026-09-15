@@ -46,3 +46,7 @@ export type { ImageTileProps } from './ImageTile';
 
 export { DishCard } from './DishCard';
 export type { DishCardProps } from './DishCard';
+
+export { CategoryTile } from './CategoryTile';
+export { VegSwitch } from './VegSwitch';
+export { SearchButton } from './SearchButton';
