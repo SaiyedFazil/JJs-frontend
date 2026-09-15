@@ -34,3 +34,5 @@ export { TopAppBar, LocationBar } from './AppBar';
 export { EmptyState, ErrorState, SkeletonCard } from './States';
 export { OrderTimeline } from './OrderTimeline';
 export type { TimelineStep } from './OrderTimeline';
+
+export { LinearFill, ScrimFill, RadialGlow } from './Gradient';
