@@ -43,3 +43,6 @@ export { LinearFill, ScrimFill, RadialGlow } from './Gradient';
 
 export { ImageTile, CATEGORY_TINT, CATEGORY_EMOJI } from './ImageTile';
 export type { ImageTileProps } from './ImageTile';
+
+export { DishCard } from './DishCard';
+export type { DishCardProps } from './DishCard';
