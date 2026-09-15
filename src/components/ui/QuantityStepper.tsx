@@ -3,6 +3,20 @@ import { View, TouchableOpacity } from 'react-native';
 import { Plus, Minus } from 'lucide-react-native';
 import { Text } from './Text';
 
+export type StepperVariant = 'solid' | 'outline';
+export type StepperSize = 'md' | 'sm';
+
+const ADD_GROUND: Record<StepperVariant, string> = {
+  solid: 'bg-ember shadow-ember-glow',
+  outline: 'bg-surface border-2 border-ember',
+};
+
+const SIZING: Record<StepperSize, { add: string; bar: string; icon: number }> =
+  {
+    md: { add: 'px-lg h-10 min-w-24', bar: 'px-sm h-10 min-w-24', icon: 16 },
+    sm: { add: 'px-md h-8 min-w-16', bar: 'px-xs h-8 min-w-16', icon: 13 },
+  };
+
 /**
  * PDF section 05 · quantity stepper.
  * Collapses to a single ADD button at zero, expands to − n + above it.
@@ -13,12 +27,18 @@ export const QuantityStepper = ({
   onAdd,
   onRemove,
   addLabel = 'ADD',
+  variant = 'solid',
+  size = 'md',
 }: {
   quantity: number;
   onAdd: () => void;
   onRemove: () => void;
   addLabel?: string;
+  variant?: StepperVariant;
+  size?: StepperSize;
 }) => {
+  const s = SIZING[size];
+
   if (quantity <= 0) {
     return (
       <TouchableOpacity
@@ -26,9 +46,12 @@ export const QuantityStepper = ({
         activeOpacity={0.85}
         accessibilityRole="button"
         accessibilityLabel={addLabel}
-        className="bg-ember rounded-md px-lg h-10 min-w-24 items-center justify-center shadow-ember-glow"
+        className={`rounded-md items-center justify-center ${ADD_GROUND[variant]} ${s.add}`}
       >
-        <Text variant="caption" tone="on-ember">
+        <Text
+          variant="caption"
+          tone={variant === 'solid' ? 'on-ember' : 'ember'}
+        >
           {addLabel}
         </Text>
       </TouchableOpacity>
@@ -36,16 +59,18 @@ export const QuantityStepper = ({
   }
 
   return (
-    <View className="flex-row items-center justify-between bg-ember rounded-md px-sm h-10 min-w-24 shadow-ember-glow">
+    <View
+      className={`flex-row items-center justify-between bg-ember rounded-md shadow-ember-glow ${s.bar}`}
+    >
       <TouchableOpacity
         onPress={onRemove}
         accessibilityRole="button"
         accessibilityLabel="Decrease quantity"
         className="p-xs"
       >
-        <Minus size={16} className="text-on-ember" strokeWidth={3} />
+        <Minus size={s.icon} className="text-on-ember" strokeWidth={3} />
       </TouchableOpacity>
-      <Text variant="item" tone="on-ember">
+      <Text variant={size === 'md' ? 'item' : 'caption'} tone="on-ember">
         {quantity}
       </Text>
       <TouchableOpacity
@@ -54,7 +79,7 @@ export const QuantityStepper = ({
         accessibilityLabel="Increase quantity"
         className="p-xs"
       >
-        <Plus size={16} className="text-on-ember" strokeWidth={3} />
+        <Plus size={s.icon} className="text-on-ember" strokeWidth={3} />
       </TouchableOpacity>
     </View>
   );

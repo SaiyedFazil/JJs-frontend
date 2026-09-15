@@ -8,7 +8,7 @@
 export type { Surface } from './surface';
 
 export { Text } from './Text';
-export type { TextProps, TextVariant, TextTone } from './Text';
+export type { TextProps, TextVariant, TextTone, TextWeight } from './Text';
 
 export { Button } from './Button';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
@@ -23,8 +23,12 @@ export { VegBadge, RatingBadge, Tag, SpiceBadge } from './Badges';
 export { PriceTag, PortionPrice } from './PriceTag';
 
 export { CategoryChip } from './CategoryChip';
+
 export { Segmented } from './Segmented';
+export type { SegmentedOption } from './Segmented';
+
 export { QuantityStepper } from './QuantityStepper';
+export type { StepperVariant, StepperSize } from './QuantityStepper';
 
 export { FoodCard } from './FoodCard';
 export type { FoodCardProps, FoodItem } from './FoodCard';

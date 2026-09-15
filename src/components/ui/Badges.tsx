@@ -7,23 +7,37 @@ import { Text } from './Text';
 export const VegBadge = ({
   isVeg,
   size = 16,
+  tone = 'default',
 }: {
   isVeg: boolean;
   size?: number;
-}) => (
-  <View
-    accessibilityLabel={isVeg ? 'Vegetarian' : 'Non-vegetarian'}
-    style={{ width: size, height: size }}
-    className={`border-2 items-center justify-center rounded-sm ${
-      isVeg ? 'border-veg' : 'border-non-veg'
-    }`}
-  >
+  /** `bright` lifts the mark for a photo scrim, where --non-veg goes muddy. */
+  tone?: 'default' | 'bright';
+}) => {
+  const border = isVeg
+    ? 'border-veg'
+    : tone === 'bright'
+      ? 'border-non-veg-bright'
+      : 'border-non-veg';
+  const dot = isVeg
+    ? 'bg-veg'
+    : tone === 'bright'
+      ? 'bg-non-veg-bright'
+      : 'bg-non-veg';
+
+  return (
     <View
-      style={{ width: size * 0.4, height: size * 0.4 }}
-      className={`rounded-pill ${isVeg ? 'bg-veg' : 'bg-non-veg'}`}
-    />
-  </View>
-);
+      accessibilityLabel={isVeg ? 'Vegetarian' : 'Non-vegetarian'}
+      style={{ width: size, height: size }}
+      className={`border-2 items-center justify-center rounded-sm ${border}`}
+    >
+      <View
+        style={{ width: size * 0.4, height: size * 0.4 }}
+        className={`rounded-pill ${dot}`}
+      />
+    </View>
+  );
+};
 
 /** PDF section 05 · rating pill. */
 export const RatingBadge = ({
