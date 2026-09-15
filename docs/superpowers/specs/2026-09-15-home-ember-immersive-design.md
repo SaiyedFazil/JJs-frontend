@@ -9,7 +9,7 @@
 
 ## 1. What this is
 
-A full replacement of the home screen with the Ember Immersive direction: a dark Ink 900 header, a signature dish as the lead visual, and the rest of the menu delivered as horizontal rails on the cream canvas. The restaurant's real menu (140 dishes across 16 categories) backs it.
+A full replacement of the home screen with the Ember Immersive direction: a dark Ink 900 header, a signature dish as the lead visual, and the rest of the menu delivered as horizontal rails on the cream canvas. The restaurant's real menu (125 dishes across 16 categories) backs it.
 
 The design medium was HTML/CSS. The prototype's structure is not copied; its **visual output** is recreated against the existing design system.
 
@@ -153,7 +153,7 @@ The hero photo scrim is `LinearFill` bottom→top with stops `hero` @ 0.92 / 6%,
 - `src/types/menu.ts` — `MenuItem`, `MenuCategory`, `Portion`
 - `src/data/menu.ts` — the menu, ported from the supplied `menu-data.js`
 
-The port is **verbatim**: same 140 `raw` entries, same `slug()` implementation, same `MENU` / `byId` / `POPULAR` / `priceOf()` exports. Ids must not drift — the whole screen addresses dishes by slug.
+The port is **verbatim**: same 125 `raw` entries, same `slug()` implementation, same `MENU` / `byId` / `POPULAR` / `priceOf()` exports. Ids must not drift — the whole screen addresses dishes by slug.
 
 ```ts
 export interface MenuItem {
