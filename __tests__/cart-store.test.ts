@@ -42,7 +42,11 @@ describe('totals', () => {
   it('totalAmount multiplies price by quantity across lines', () => {
     useCartStore.getState().addItem(line);
     useCartStore.getState().addItem(line);
-    useCartStore.getState().addItem({ id: 'butter-garlic-naan', name: 'Butter Garlic Naan', price: 90 });
+    useCartStore.getState().addItem({
+      id: 'butter-garlic-naan',
+      name: 'Butter Garlic Naan',
+      price: 90,
+    });
     expect(useCartStore.getState().totalAmount()).toBe(1088);
     expect(useCartStore.getState().totalItems()).toBe(3);
   });

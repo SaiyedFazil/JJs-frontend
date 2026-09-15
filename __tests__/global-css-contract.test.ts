@@ -155,10 +155,25 @@ describe('global.css — Ember Immersive additions (spec 2026-09-15)', () => {
   // Layer C is what components actually consume. design-tokens.test.ts fails
   // on any utility with no --color-* entry, so these must all exist.
   const EXPOSED = [
-    'tint-tandoor', 'tint-mutton', 'tint-seafood', 'tint-tawa', 'tint-sizzler',
-    'tint-chinese', 'tint-veg', 'tint-bread', 'tint-dessert', 'tint-drink',
-    'tint-selected', 'ember-deep', 'on-ember-muted', 'hero-hairline-lifted',
-    'veg-tint', 'veg-bright', 'non-veg-bright', 'closed', 'closed-foreground',
+    'tint-tandoor',
+    'tint-mutton',
+    'tint-seafood',
+    'tint-tawa',
+    'tint-sizzler',
+    'tint-chinese',
+    'tint-veg',
+    'tint-bread',
+    'tint-dessert',
+    'tint-drink',
+    'tint-selected',
+    'ember-deep',
+    'on-ember-muted',
+    'hero-hairline-lifted',
+    'veg-tint',
+    'veg-bright',
+    'non-veg-bright',
+    'closed',
+    'closed-foreground',
     'switch-track-off',
   ];
 

@@ -1,4 +1,11 @@
-import { MENU, byId, CATEGORIES, priceOf, bestsellers, byCategory } from '../src/data/menu';
+import {
+  MENU,
+  byId,
+  CATEGORIES,
+  priceOf,
+  bestsellers,
+  byCategory,
+} from '../src/data/menu';
 import { isOpenAt, HOURS } from '../src/data/restaurant';
 
 /**

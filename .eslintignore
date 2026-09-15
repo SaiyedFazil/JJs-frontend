@@ -11,3 +11,5 @@ web-build/
 *.keystore
 package-lock.json
 src/uniwind-types.d.ts
+# Design handoff copy — kept byte-verbatim against the original
+docs/
