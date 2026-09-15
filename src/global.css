@@ -35,12 +35,16 @@
   --ink-800: #211811; /* surfaces */
   --ink-700: #2e241b; /* text strong */
   --ink-600: #4a3d30; /* muted / dark */
+  --ink-750: #38291d; /* hairline on a card inside a hero panel */
 
   /* EMBER & SAFFRON · primary action */
   --ember-500: #ec5b13; /* buttons, active */
   --ember-600: #cd4a0a; /* pressed / hover */
   --saffron-400: #f6a623; /* highlights */
   --ember-50: #fbe7d6; /* tint bg */
+  --ember-700: #c8410a; /* offer-card gradient end */
+  --ember-100: #ffe2ce; /* secondary text on an ember ground */
+  --ember-25: #ffead9; /* selected category tile */
 
   /* NEUTRALS · content surfaces */
   --cream-50: #fbf7f1; /* app canvas */
@@ -55,6 +59,24 @@
   --chili: #c22a1b;
   --warning-amber: #e08a00;
   --info-teal: #0e7c86;
+  --veg-50: #e6f2ea; /* Pure Veg switch, on */
+  --veg-300: #7bd69b; /* veg affirmative on charcoal */
+  --non-veg-300: #ff8f5e; /* non-veg mark lifted for a photo scrim */
+  --closed-900: #3a2320; /* closed-strip ground */
+  --closed-300: #f6c98a; /* closed-strip text — 7.1:1 on Closed 900 */
+  --track-off: #c9bca6; /* switch track, off */
+
+  /* CUISINE TINTS · pastel grounds for the category rail and image
+     placeholders. Named by hue here; Layer B assigns the cuisine. */
+  --clay-50: #f6e0da;
+  --mist-50: #ddeef0;
+  --wheat-50: #f7eed6;
+  --flame-50: #fbe1d0;
+  --oat-50: #ede6d6;
+  --leaf-50: #e6f0e1;
+  --linen-50: #f1eedf;
+  --rose-50: #f6e6ec;
+  --ice-50: #e7eef2;
 
   /* ON-HERO · tints lifted for legibility on Ink 900 (auth flow, D6) */
   --warm-300: #a89a87; /* captions on charcoal — 6.88:1 on Ink 900 */
@@ -141,6 +163,31 @@
   --strike: var(--muted-warm); /* struck-through original price */
   --ember-pressed: var(--ember-600);
   --ember-tint: var(--ember-50);
+
+  /* — Ember Immersive home (spec 2026-09-15) — */
+  --ember-deep: var(--ember-700); /* the far end of the offer gradient */
+  --on-ember-muted: var(--ember-100); /* secondary copy on ember */
+  --hero-hairline-lifted: var(--ink-750); /* LIGHTER than --hero-hairline:
+     the border of a card on --hero-surface, where Ink 700 disappears */
+  --veg-tint: var(--veg-50);
+  --veg-bright: var(--veg-300); /* veg affirmative on charcoal */
+  --non-veg-bright: var(--non-veg-300); /* the mark over a photo scrim */
+  --closed: var(--closed-900);
+  --closed-foreground: var(--closed-300);
+  --switch-track-off: var(--track-off);
+
+  /* Cuisine coding: the category rail and every image placeholder */
+  --tint-tandoor: var(--ember-50);
+  --tint-mutton: var(--clay-50);
+  --tint-seafood: var(--mist-50);
+  --tint-tawa: var(--wheat-50);
+  --tint-sizzler: var(--flame-50);
+  --tint-chinese: var(--oat-50);
+  --tint-veg: var(--leaf-50);
+  --tint-bread: var(--linen-50);
+  --tint-dessert: var(--rose-50);
+  --tint-drink: var(--ice-50);
+  --tint-selected: var(--ember-25);
 }
 
 /* ---------------------------------------------------------------------------
@@ -179,6 +226,28 @@
 
   --color-price: var(--price);
   --color-strike: var(--strike);
+
+  --color-ember-deep: var(--ember-deep);
+  --color-on-ember-muted: var(--on-ember-muted);
+  --color-hero-hairline-lifted: var(--hero-hairline-lifted);
+  --color-veg-tint: var(--veg-tint);
+  --color-veg-bright: var(--veg-bright);
+  --color-non-veg-bright: var(--non-veg-bright);
+  --color-closed: var(--closed);
+  --color-closed-foreground: var(--closed-foreground);
+  --color-switch-track-off: var(--switch-track-off);
+
+  --color-tint-tandoor: var(--tint-tandoor);
+  --color-tint-mutton: var(--tint-mutton);
+  --color-tint-seafood: var(--tint-seafood);
+  --color-tint-tawa: var(--tint-tawa);
+  --color-tint-sizzler: var(--tint-sizzler);
+  --color-tint-chinese: var(--tint-chinese);
+  --color-tint-veg: var(--tint-veg);
+  --color-tint-bread: var(--tint-bread);
+  --color-tint-dessert: var(--tint-dessert);
+  --color-tint-drink: var(--tint-drink);
+  --color-tint-selected: var(--tint-selected);
 
   /* — TYPOGRAPHY (PDF section 02) —
      Bricolage Grotesque carries display sizes (>= 24px per the PDF);

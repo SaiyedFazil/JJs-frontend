@@ -124,3 +124,50 @@ describe('global.css — type scale', () => {
     expect(varValue(name)).not.toBeNull();
   });
 });
+
+describe('global.css — Ember Immersive additions (spec 2026-09-15)', () => {
+  const RAW: Record<string, string> = {
+    '--clay-50': '#f6e0da',
+    '--mist-50': '#ddeef0',
+    '--wheat-50': '#f7eed6',
+    '--flame-50': '#fbe1d0',
+    '--oat-50': '#ede6d6',
+    '--leaf-50': '#e6f0e1',
+    '--linen-50': '#f1eedf',
+    '--rose-50': '#f6e6ec',
+    '--ice-50': '#e7eef2',
+    '--ember-25': '#ffead9',
+    '--ember-700': '#c8410a',
+    '--ember-100': '#ffe2ce',
+    '--ink-750': '#38291d',
+    '--veg-50': '#e6f2ea',
+    '--veg-300': '#7bd69b',
+    '--non-veg-300': '#ff8f5e',
+    '--closed-900': '#3a2320',
+    '--closed-300': '#f6c98a',
+    '--track-off': '#c9bca6',
+  };
+
+  it.each(Object.entries(RAW))('%s is %s', (name, expected) => {
+    expect(varValue(name)?.toLowerCase()).toBe(expected);
+  });
+
+  // Layer C is what components actually consume. design-tokens.test.ts fails
+  // on any utility with no --color-* entry, so these must all exist.
+  const EXPOSED = [
+    'tint-tandoor', 'tint-mutton', 'tint-seafood', 'tint-tawa', 'tint-sizzler',
+    'tint-chinese', 'tint-veg', 'tint-bread', 'tint-dessert', 'tint-drink',
+    'tint-selected', 'ember-deep', 'on-ember-muted', 'hero-hairline-lifted',
+    'veg-tint', 'veg-bright', 'non-veg-bright', 'closed', 'closed-foreground',
+    'switch-track-off',
+  ];
+
+  it.each(EXPOSED)('--color-%s is exposed to Tailwind', name => {
+    expect(varValue(`--color-${name}`)).not.toBeNull();
+  });
+
+  it('the cuisine tints are named by hue in Layer A, by cuisine in Layer B', () => {
+    expect(varValue('--tint-mutton')).toBe('var(--clay-50)');
+    expect(varValue('--tint-tandoor')).toBe('var(--ember-50)');
+  });
+});
