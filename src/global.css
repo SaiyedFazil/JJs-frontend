@@ -55,6 +55,10 @@
   --chili: #c22a1b;
   --warning-amber: #e08a00;
   --info-teal: #0e7c86;
+
+  /* ON-HERO · tints lifted for legibility on Ink 900 (auth flow, D6) */
+  --warm-300: #a89a87; /* captions on charcoal — 6.88:1 on Ink 900 */
+  --chili-300: #ef6b58; /* errors on charcoal — 6.23:1 on Ink 900 */
 }
 
 /* ---------------------------------------------------------------------------
@@ -124,6 +128,10 @@
   --canvas: var(--cream-50); /* the app ground */
   --hero: var(--ink-900); /* splash & immersive surfaces */
   --hero-foreground: var(--cream-50);
+  --hero-surface: var(--ink-800); /* fields, tiles and wells on hero */
+  --hero-hairline: var(--ink-700); /* borders on hero */
+  --hero-muted: var(--warm-300); /* captions and placeholders on hero */
+  --hero-danger: var(--chili-300); /* inline errors on hero */
   --sunken: var(--sand-100); /* chips, wells, skeletons */
   --hairline: var(--border-warm);
   --ink: var(--ink-800); /* body text */
@@ -144,6 +152,10 @@
   --color-canvas: var(--canvas);
   --color-hero: var(--hero);
   --color-hero-foreground: var(--hero-foreground);
+  --color-hero-surface: var(--hero-surface);
+  --color-hero-hairline: var(--hero-hairline);
+  --color-hero-muted: var(--hero-muted);
+  --color-hero-danger: var(--hero-danger);
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
   --color-sunken: var(--sunken);
@@ -219,6 +231,11 @@
   --text-caption: 12px;
   --text-caption--line-height: 16px;
   --text-caption--letter-spacing: 1.68px;
+
+  /* Fine · legal and consent copy · Jakarta 12 / 500, sentence case */
+  --text-fine: 12px;
+  --text-fine--line-height: 18px;
+  --text-fine--letter-spacing: 0px;
 
   /* — SPACING (PDF section 03, 4px base) —
      The 4px base keeps numeric utilities (px-6 = 24px) working alongside

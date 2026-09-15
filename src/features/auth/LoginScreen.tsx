@@ -4,18 +4,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Keyboard,
-  Dimensions,
   NativeModules,
 } from 'react-native';
-import Animated, {
-  SlideInDown,
-  FadeInUp,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,14 +17,9 @@ import { AuthService } from '@/services/auth.service';
 import { clearAuthData } from '@/utils/storage';
 import { useAppToast } from '@/hooks/useAppToast';
 import { Text, Button, TextField } from '@/components/ui';
+import { BrandMark } from './BrandMark';
 
 const { PhoneNumberHintModule } = NativeModules;
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const HEADER_HEIGHT = SCREEN_HEIGHT * 0.45;
-const MIN_HEADER_HEIGHT = 200;
-const CARD_OVERLAP = 48;
-const MIN_CARD_OVERLAP = 34; // keep the sheet's rounded corners visible
 
 type RootStackParamList = {
   Login: { prefillPhone?: string };
@@ -49,37 +38,10 @@ export const LoginScreen = () => {
 
   const toast = useAppToast();
 
-  const headerProgress = useSharedValue(1);
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    height:
-      MIN_HEADER_HEIGHT +
-      headerProgress.value * (HEADER_HEIGHT - MIN_HEADER_HEIGHT),
-    overflow: 'hidden' as const,
-  }));
-
-  const animatedCardStyle = useAnimatedStyle(() => ({
-    marginTop: -(
-      MIN_CARD_OVERLAP +
-      headerProgress.value * (CARD_OVERLAP - MIN_CARD_OVERLAP)
-    ),
-  }));
-
   useEffect(() => {
     // Proactively clear stale auth data to prevent token conflicts during login
     clearAuthData();
-
-    const showSub = Keyboard.addListener('keyboardDidShow', () => {
-      headerProgress.value = withTiming(0, { duration: 220 });
-    });
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
-      headerProgress.value = withTiming(1, { duration: 220 });
-    });
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, [headerProgress]);
+  }, []);
 
   // ── Auto-detect phone number on mount (Android only) ──────────────────
   // Shows the Google Phone Number Hint picker automatically when the
@@ -157,94 +119,74 @@ export const LoginScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       className="flex-1 bg-hero"
     >
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
+
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 16 },
+        ]}
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-canvas"
         bounces={false}
         keyboardShouldPersistTaps="handled"
+        className="px-lg"
       >
-        {/* Hero header — Ink 900, collapses when the keyboard opens */}
-        <Animated.View
-          style={animatedHeaderStyle}
-          className="w-full bg-hero items-center justify-center"
-        >
-          <Animated.View
-            entering={FadeInUp.duration(1000)}
-            className="items-center gap-md"
-          >
-            <View className="w-24 h-24 rounded-pill bg-ember items-center justify-center shadow-ember-glow">
-              <Text variant="display" tone="on-ember">
-                JJ
-              </Text>
-            </View>
-            <Text variant="h1" tone="on-hero">
-              JJ's Kitchen
-            </Text>
-            <Text variant="caption" tone="on-hero" className="opacity-70">
-              Dine in & catering
-            </Text>
-          </Animated.View>
+        <Animated.View entering={FadeInUp.duration(600)}>
+          <BrandMark size="sm" />
+          <Text variant="h2" tone="on-hero" className="mt-xl">
+            Smoke, spice{'\n'}& everything grilled.
+          </Text>
+          <Text variant="body" tone="hero-muted" className="mt-sm">
+            Enter your phone number to get started. We'll send a one-time code.
+          </Text>
         </Animated.View>
 
-        {/* Sheet */}
-        <Animated.View
-          entering={SlideInDown.duration(600)}
-          className="flex-1 bg-canvas rounded-t-sheet px-xl pt-xl shadow-e3"
-          style={[{ paddingBottom: insets.bottom + 20 }, animatedCardStyle]}
-        >
-          <View className="items-center mb-xl gap-lg">
-            <View className="w-16 h-1.5 rounded-pill bg-hairline" />
-            <Text variant="title" className="text-center">
-              Let's start with your phone number
+        <Text variant="caption" tone="hero-muted" className="mt-xl mb-sm ml-xs">
+          Phone number
+        </Text>
+        <View className="flex-row gap-sm">
+          <View className="h-14 px-md rounded-lg border border-hero-hairline bg-hero-surface items-center justify-center">
+            <Text variant="item" tone="on-hero">
+              +91
             </Text>
           </View>
-
           <TextField
-            label="Phone number"
-            prefix="+91"
+            surface="hero"
             value={phone}
             onChangeText={handlePhoneChange}
-            placeholder="98765 43210"
             error={error || undefined}
             keyboardType="number-pad"
             textContentType="telephoneNumber"
             autoComplete="tel"
             maxLength={10}
             isDisabled={isLoading}
+            className="flex-1"
           />
+        </View>
 
+        <View className="mt-auto pt-xl">
           <Button
-            label="Send OTP"
-            loadingLabel="Sending OTP"
+            surface="hero"
+            label="Send code"
+            loadingLabel="Sending code"
             onPress={handleContinue}
             isDisabled={!isButtonActive && !isLoading}
             isLoading={isLoading}
           />
-
-          <View className="mt-auto pt-xl pb-md">
-            <Text variant="body" tone="muted" className="text-center">
-              By continuing, you automatically accept our{'\n'}
-              <Text variant="body" className="underline">
-                Terms & Conditions
-              </Text>
-              ,{' '}
-              <Text variant="body" className="underline">
-                Privacy Policy
-              </Text>{' '}
-              and{' '}
-              <Text variant="body" className="underline">
-                Cookies Policy
-              </Text>
-            </Text>
-          </View>
-        </Animated.View>
+          <Text variant="fine" tone="hero-muted" className="mt-md text-center">
+            By continuing you agree to our Terms & Privacy Policy.
+          </Text>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
-/** Layout-only: the ScrollView must be able to grow past the viewport. */
+/** Layout-only: lets the footer pin to the bottom yet scroll on short screens. */
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,

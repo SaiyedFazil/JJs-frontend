@@ -5,6 +5,8 @@
  * type, spacing, radius and elevation all resolve from src/global.css, so a
  * change there moves the whole app. Enforced by __tests__/design-tokens.test.ts.
  */
+export type { Surface } from './surface';
+
 export { Text } from './Text';
 export type { TextProps, TextVariant, TextTone } from './Text';
 

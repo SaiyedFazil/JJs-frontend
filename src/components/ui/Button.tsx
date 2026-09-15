@@ -1,7 +1,9 @@
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { Spinner } from 'heroui-native';
+import { useCSSVariable } from 'uniwind';
 import { Text, type TextTone } from './Text';
+import type { Surface } from './surface';
 
 /** PDF section 05 · Buttons. `disabled` is a state, not a variant. */
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
@@ -28,8 +30,15 @@ const LABEL_TONE: Record<ButtonVariant, TextTone> = {
   destructive: 'on-ember',
 };
 
-/** Sand ground with a muted label reads as disabled without a new token. */
-const DISABLED_SURFACE = 'bg-sunken border border-hairline';
+/**
+ * On canvas, a sand ground with a muted label reads as disabled without a new
+ * token. On hero, a sand slab would glare against Ink 900, so the button keeps
+ * its ember ground at half strength instead.
+ */
+const INACTIVE: Record<Surface, { ground: string; tone: TextTone }> = {
+  canvas: { ground: 'bg-sunken border border-hairline', tone: 'muted' },
+  hero: { ground: 'bg-ember/50', tone: 'on-ember' },
+};
 
 export interface ButtonProps {
   label: string;
@@ -40,6 +49,8 @@ export interface ButtonProps {
   isLoading?: boolean;
   loadingLabel?: string;
   icon?: React.ReactNode;
+  /** The ground the button sits on. Defaults to the Cream 50 canvas. */
+  surface?: Surface;
   className?: string;
 }
 
@@ -52,11 +63,19 @@ export const Button = ({
   isLoading = false,
   loadingLabel,
   icon,
+  surface = 'canvas',
   className = '',
 }: ButtonProps) => {
+  const onEmber = useCSSVariable('--color-on-ember');
   const inactive = isDisabled || isLoading;
-  const surface = inactive ? DISABLED_SURFACE : SURFACE[variant];
-  const tone: TextTone = inactive ? 'muted' : LABEL_TONE[variant];
+  const ground = inactive ? INACTIVE[surface].ground : SURFACE[variant];
+  const tone: TextTone = inactive
+    ? INACTIVE[surface].tone
+    : LABEL_TONE[variant];
+
+  // The default spinner is ember, which vanishes on the hero's ember ground.
+  const spinnerColor =
+    surface === 'hero' && typeof onEmber === 'string' ? onEmber : undefined;
 
   return (
     <TouchableOpacity
@@ -66,10 +85,10 @@ export const Button = ({
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: inactive, busy: isLoading }}
-      className={`${BASE} ${SIZE[size]} ${surface} ${className}`.trim()}
+      className={`${BASE} ${SIZE[size]} ${ground} ${className}`.trim()}
     >
       <View className="flex-row items-center gap-sm">
-        {isLoading ? <Spinner size="sm" /> : icon}
+        {isLoading ? <Spinner size="sm" color={spinnerColor} /> : icon}
         {/* `item` is Jakarta 17/600 — >= 14px bold keeps white-on-ember inside
             WCAG AA Large. See the spec's Contrast audit. */}
         <Text variant="item" tone={tone}>

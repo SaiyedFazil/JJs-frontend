@@ -23,27 +23,27 @@
 
 ## File Structure
 
-| File | Responsibility |
-| --- | --- |
-| `src/global.css` | **The** source of truth. Raw palette, semantic tokens (incl. HeroUI overrides), `@theme inline` utility exposure. |
-| `react-native.config.js` | Points the asset linker at `src/assets/fonts`. |
-| `src/assets/fonts/*.ttf` | 9 static font instances + 2 OFL licenses. |
-| `__tests__/design-tokens.test.ts` | Ratcheting guard: no hex, no `dark:`, no dead imports. |
-| `__tests__/global-css-contract.test.ts` | Asserts every PDF swatch and every HeroUI variable name is present with the exact value. |
-| `src/components/ui/Text.tsx` | Type scale as a `variant` prop. The only place font families are named. |
-| `src/components/ui/Button.tsx` | 6 button variants over HeroUI `Button`. |
-| `src/components/ui/TextField.tsx` | Label + input + error, with focus/error/disabled states. |
-| `src/components/ui/OtpInput.tsx` | 6-digit OTP with hidden input and slot rendering. |
-| `src/components/ui/Badges.tsx` | `VegBadge`, `RatingBadge`, `Tag`, `SpiceBadge`. |
-| `src/components/ui/PriceTag.tsx` | Price, strike-through, Full/Half portion. |
-| `src/components/ui/CategoryChip.tsx` | Horizontal filter chip. |
-| `src/components/ui/Segmented.tsx` | Takeaway / Dine-in service mode. |
-| `src/components/ui/QuantityStepper.tsx` | `ADD` → `− n +`. |
-| `src/components/ui/FoodCard.tsx` | List and grid food item card. Replaces `FoodListItem`. |
-| `src/components/ui/AppBar.tsx` | `TopAppBar` + `LocationBar`. |
-| `src/components/ui/States.tsx` | `EmptyState`, `ErrorState`, `SkeletonCard`. |
-| `src/components/ui/OrderTimeline.tsx` | Order status timeline. |
-| `src/components/ui/index.ts` | Barrel export. |
+| File                                    | Responsibility                                                                                                    |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `src/global.css`                        | **The** source of truth. Raw palette, semantic tokens (incl. HeroUI overrides), `@theme inline` utility exposure. |
+| `react-native.config.js`                | Points the asset linker at `src/assets/fonts`.                                                                    |
+| `src/assets/fonts/*.ttf`                | 9 static font instances + 2 OFL licenses.                                                                         |
+| `__tests__/design-tokens.test.ts`       | Ratcheting guard: no hex, no `dark:`, no dead imports.                                                            |
+| `__tests__/global-css-contract.test.ts` | Asserts every PDF swatch and every HeroUI variable name is present with the exact value.                          |
+| `src/components/ui/Text.tsx`            | Type scale as a `variant` prop. The only place font families are named.                                           |
+| `src/components/ui/Button.tsx`          | 6 button variants over HeroUI `Button`.                                                                           |
+| `src/components/ui/TextField.tsx`       | Label + input + error, with focus/error/disabled states.                                                          |
+| `src/components/ui/OtpInput.tsx`        | 6-digit OTP with hidden input and slot rendering.                                                                 |
+| `src/components/ui/Badges.tsx`          | `VegBadge`, `RatingBadge`, `Tag`, `SpiceBadge`.                                                                   |
+| `src/components/ui/PriceTag.tsx`        | Price, strike-through, Full/Half portion.                                                                         |
+| `src/components/ui/CategoryChip.tsx`    | Horizontal filter chip.                                                                                           |
+| `src/components/ui/Segmented.tsx`       | Takeaway / Dine-in service mode.                                                                                  |
+| `src/components/ui/QuantityStepper.tsx` | `ADD` → `− n +`.                                                                                                  |
+| `src/components/ui/FoodCard.tsx`        | List and grid food item card. Replaces `FoodListItem`.                                                            |
+| `src/components/ui/AppBar.tsx`          | `TopAppBar` + `LocationBar`.                                                                                      |
+| `src/components/ui/States.tsx`          | `EmptyState`, `ErrorState`, `SkeletonCard`.                                                                       |
+| `src/components/ui/OrderTimeline.tsx`   | Order status timeline.                                                                                            |
+| `src/components/ui/index.ts`            | Barrel export.                                                                                                    |
 
 **Deleted:** `src/theme/index.ts`, `src/store/theme.store.ts`, `src/features/auth/complete-profile/components/styles.ts`, `src/features/auth/complete-profile/components/GlassInput.tsx`, `src/components/common/FoodListItem.tsx`.
 
@@ -60,9 +60,11 @@ This is a theming migration. The regressions that actually happen are: a hex lit
 Builds the enforcement mechanism first, with every currently-violating file allowlisted so it passes green today. Each later task deletes entries from the allowlist — that deletion is the failing test that drives the work.
 
 **Files:**
+
 - Create: `__tests__/design-tokens.test.ts`
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `ALLOWLIST` array in `__tests__/design-tokens.test.ts` — later tasks remove exact string entries from it.
 
@@ -107,7 +109,8 @@ const SKIP_FILES = ['global.css', 'uniwind-types.d.ts', 'env.d.ts'];
 
 const HEX = /#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{1,5})?\b/;
 const DARK_VARIANT = /(?:^|["'`\s{])dark:/;
-const DEAD_IMPORT = /from\s+['"](?:@\/)?(?:\.\.\/)*(?:store\/theme\.store|theme(?:\/index)?)['"]/;
+const DEAD_IMPORT =
+  /from\s+['"](?:@\/)?(?:\.\.\/)*(?:store\/theme\.store|theme(?:\/index)?)['"]/;
 
 function collect(dir: string, out: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -167,10 +170,13 @@ describe('design token guard', () => {
     },
   );
 
-  it.each(files)('$rel does not import a deleted theme module', ({ rel, abs }) => {
-    const hits = offendingLines(abs, DEAD_IMPORT);
-    expect(`${rel}: ${hits.join(' | ')}`).toBe(`${rel}: `);
-  });
+  it.each(files)(
+    '$rel does not import a deleted theme module',
+    ({ rel, abs }) => {
+      const hits = offendingLines(abs, DEAD_IMPORT);
+      expect(`${rel}: ${hits.join(' | ')}`).toBe(`${rel}: `);
+    },
+  );
 
   it('allowlist only names files that exist', () => {
     const missing = ALLOWLIST.filter(
@@ -226,11 +232,13 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 Nine static instances, correctly named so Android (resolves by filename) and iOS (resolves by PostScript name) both land on the same string. Verified: for both families the PostScript name is identical to the filename stem.
 
 **Files:**
+
 - Create: `src/assets/fonts/` (9 `.ttf` + 2 `OFL.txt`)
 - Create: `react-native.config.js`
 - Modify: `package.json` (add `fonts:link` script)
 
 **Interfaces:**
+
 - Produces: font family strings usable as React Native `fontFamily` values —
   `BricolageGrotesque-Regular`, `BricolageGrotesque-SemiBold`, `BricolageGrotesque-Bold`, `BricolageGrotesque-ExtraBold`,
   `PlusJakartaSans-Regular`, `PlusJakartaSans-Medium`, `PlusJakartaSans-SemiBold`, `PlusJakartaSans-Bold`, `PlusJakartaSans-ExtraBold`.
@@ -369,12 +377,14 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 3: Rewrite `global.css` as the single source of truth
 
 **Files:**
+
 - Modify: `src/global.css` (full rewrite)
 - Delete: `src/theme/index.ts`
 - Create: `__tests__/global-css-contract.test.ts`
 - Modify: `__tests__/design-tokens.test.ts` (remove `theme/index.ts` from `ALLOWLIST`)
 
 **Interfaces:**
+
 - Consumes: font family strings from Task 2.
 - Produces: the utility vocabulary every later task uses —
   colors `bg-canvas bg-hero bg-surface bg-sunken bg-ember bg-ember-tint bg-saffron bg-veg bg-non-veg text-ink text-muted text-ember text-veg text-non-veg text-on-ember text-on-hero border-hairline`;
@@ -830,12 +840,14 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 4: Remove dark mode branching
 
 **Files:**
+
 - Modify: `App.tsx`
 - Delete: `src/store/theme.store.ts`
 - Modify: `src/components/common/PlaceholderScreen.tsx`
 - Modify: `__tests__/design-tokens.test.ts` (remove `components/common/PlaceholderScreen.tsx` from `ALLOWLIST`)
 
 **Interfaces:**
+
 - Consumes: `bg-canvas`, `text-title`, `text-body`, `font-jakarta-700`, `text-ink`, `text-muted` from Task 3.
 - Produces: an `App.tsx` with no theme store and no `dark` class. No later task may reintroduce either.
 
@@ -962,18 +974,35 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 The single place in the app where a font family is named. Every other file uses `variant`.
 
 **Files:**
+
 - Create: `src/components/ui/Text.tsx`
 - Create: `src/components/ui/index.ts`
 
 **Interfaces:**
+
 - Consumes: type tokens from Task 3.
 - Produces:
+
   ```ts
-  type TextVariant = 'display' | 'h1' | 'h2' | 'title' | 'item' | 'body' | 'caption';
-  type TextTone = 'ink' | 'muted' | 'ember' | 'on-ember' | 'on-hero' | 'veg' | 'non-veg' | 'chili';
-  interface TextProps extends RNTextProps { variant?: TextVariant; tone?: TextTone; className?: string; }
-  const Text: React.FC<TextProps>   // default variant 'body', default tone 'ink'
+  type TextVariant =
+    'display' | 'h1' | 'h2' | 'title' | 'item' | 'body' | 'caption';
+  type TextTone =
+    | 'ink'
+    | 'muted'
+    | 'ember'
+    | 'on-ember'
+    | 'on-hero'
+    | 'veg'
+    | 'non-veg'
+    | 'chili';
+  interface TextProps extends RNTextProps {
+    variant?: TextVariant;
+    tone?: TextTone;
+    className?: string;
+  }
+  const Text: React.FC<TextProps>; // default variant 'body', default tone 'ink'
   ```
+
   Every later task imports `Text` from `@/components/ui`.
 
 - [ ] **Step 1: Create the primitive**
@@ -994,13 +1023,7 @@ import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
  * Native cannot synthesize a weight from a static face.
  */
 export type TextVariant =
-  | 'display'
-  | 'h1'
-  | 'h2'
-  | 'title'
-  | 'item'
-  | 'body'
-  | 'caption';
+  'display' | 'h1' | 'h2' | 'title' | 'item' | 'body' | 'caption';
 
 export type TextTone =
   | 'ink'
@@ -1099,6 +1122,7 @@ npm run android
 ```
 
 Expected, checked against PDF section 02:
+
 - `display`, `h1`, `h2` are the wide geometric Bricolage face; `title` and below are Jakarta.
 - `display` is visibly tighter than default tracking; `caption` is visibly loose and uppercase.
 - Body copy is Ink 800 on cream; the caption is ember.
@@ -1122,21 +1146,30 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 6: `Button` primitive
 
 **Files:**
+
 - Create: `src/components/ui/Button.tsx`
 - Modify: `src/components/ui/index.ts`
 
 **Interfaces:**
+
 - Consumes: `Text` (Task 5); color/radius/elevation tokens (Task 3).
 - Produces:
+
   ```ts
   type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
   type ButtonSize = 'md' | 'sm';
   interface ButtonProps {
-    label: string; onPress?: () => void; variant?: ButtonVariant; size?: ButtonSize;
-    isDisabled?: boolean; isLoading?: boolean; loadingLabel?: string;
-    icon?: React.ReactNode; className?: string;
+    label: string;
+    onPress?: () => void;
+    variant?: ButtonVariant;
+    size?: ButtonSize;
+    isDisabled?: boolean;
+    isLoading?: boolean;
+    loadingLabel?: string;
+    icon?: React.ReactNode;
+    className?: string;
   }
-  const Button: React.FC<ButtonProps>
+  const Button: React.FC<ButtonProps>;
   ```
 
 - [ ] **Step 1: Create the primitive**
@@ -1295,30 +1328,52 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 7: `TextField` and `OtpInput`
 
 **Files:**
+
 - Create: `src/components/ui/TextField.tsx`
 - Create: `src/components/ui/OtpInput.tsx`
 - Modify: `src/components/ui/index.ts`
 
 **Interfaces:**
+
 - Consumes: `Text` (Task 5).
 - Produces:
+
   ```ts
   interface TextFieldProps {
-    label?: string; value: string; onChangeText: (t: string) => void;
-    placeholder?: string; error?: string; icon?: React.ReactNode;
-    prefix?: string; isDisabled?: boolean; className?: string;
+    label?: string;
+    value: string;
+    onChangeText: (t: string) => void;
+    placeholder?: string;
+    error?: string;
+    icon?: React.ReactNode;
+    prefix?: string;
+    isDisabled?: boolean;
+    className?: string;
     keyboardType?: 'default' | 'email-address' | 'number-pad' | 'phone-pad';
-    autoCapitalize?: 'none' | 'words'; returnKeyType?: 'default' | 'next' | 'done';
-    maxLength?: number; onFocus?: () => void; onBlur?: () => void;
-    onSubmitEditing?: () => void; textContentType?: string; autoComplete?: string;
+    autoCapitalize?: 'none' | 'words';
+    returnKeyType?: 'default' | 'next' | 'done';
+    maxLength?: number;
+    onFocus?: () => void;
+    onBlur?: () => void;
+    onSubmitEditing?: () => void;
+    textContentType?: string;
+    autoComplete?: string;
   }
-  const TextField: React.ForwardRefExoticComponent<TextFieldProps & RefAttributes<RNTextInput>>
+  const TextField: React.ForwardRefExoticComponent<
+    TextFieldProps & RefAttributes<RNTextInput>
+  >;
 
   interface OtpInputProps {
-    value: string; onChangeText: (t: string) => void; length?: number;  // default 6
-    error?: string; autoFocus?: boolean; onFocusChange?: (f: boolean) => void;
+    value: string;
+    onChangeText: (t: string) => void;
+    length?: number; // default 6
+    error?: string;
+    autoFocus?: boolean;
+    onFocusChange?: (f: boolean) => void;
   }
-  const OtpInput: React.ForwardRefExoticComponent<OtpInputProps & RefAttributes<RNTextInput>>
+  const OtpInput: React.ForwardRefExoticComponent<
+    OtpInputProps & RefAttributes<RNTextInput>
+  >;
   ```
 
 - [ ] **Step 1: Create `TextField`**
@@ -1339,18 +1394,17 @@ import { Text } from './Text';
  * PDF section 05 · Text fields. Three visual states — idle, focused, error —
  * plus disabled. Colors come from tokens; the focus ring is the ember border.
  */
-export interface TextFieldProps
-  extends Pick<
-    TextInputProps,
-    | 'keyboardType'
-    | 'autoCapitalize'
-    | 'returnKeyType'
-    | 'maxLength'
-    | 'onSubmitEditing'
-    | 'textContentType'
-    | 'autoComplete'
-    | 'submitBehavior'
-  > {
+export interface TextFieldProps extends Pick<
+  TextInputProps,
+  | 'keyboardType'
+  | 'autoCapitalize'
+  | 'returnKeyType'
+  | 'maxLength'
+  | 'onSubmitEditing'
+  | 'textContentType'
+  | 'autoComplete'
+  | 'submitBehavior'
+> {
   label?: string;
   value: string;
   onChangeText: (text: string) => void;
@@ -1585,6 +1639,7 @@ export type { OtpInputProps } from './OtpInput';
 Run: `npx tsc --noEmit` → PASS.
 
 Temporarily render in `PlaceholderScreen`: one `TextField` with a `+91` prefix, one with an `error` set, one `isDisabled`, and an `OtpInput` with `autoFocus`. Confirm against PDF section 05:
+
 - idle border is the warm hairline, focused border is ember, error border is chili with chili caption below;
 - typing into the OTP fills slots left to right with an ember-tint ground and a visible ember caret on the next empty slot;
 - **the placeholder is muted warm grey, not the platform default blue-grey.** If `placeholderClassName` is unsupported by Uniwind, the placeholder will look wrong — resolve it now, before six screens depend on the component.
@@ -1607,20 +1662,27 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 8: Badges and `PriceTag`
 
 **Files:**
+
 - Create: `src/components/ui/Badges.tsx`
 - Create: `src/components/ui/PriceTag.tsx`
 - Modify: `src/components/ui/index.ts`
 
 **Interfaces:**
+
 - Consumes: `Text` (Task 5).
 - Produces:
+
   ```ts
-  const VegBadge: React.FC<{ isVeg: boolean; size?: number }>          // default size 16
-  const RatingBadge: React.FC<{ rating: number; reviews?: number }>
-  const Tag: React.FC<{ label: string; tone?: 'ember' | 'saffron' }>   // default 'ember'
-  const SpiceBadge: React.FC<{ label?: string }>                        // default 'SPICY'
-  const PriceTag: React.FC<{ price: number; strikePrice?: number; size?: 'md' | 'sm' }>
-  const PortionPrice: React.FC<{ full: number; half?: number }>
+  const VegBadge: React.FC<{ isVeg: boolean; size?: number }>; // default size 16
+  const RatingBadge: React.FC<{ rating: number; reviews?: number }>;
+  const Tag: React.FC<{ label: string; tone?: 'ember' | 'saffron' }>; // default 'ember'
+  const SpiceBadge: React.FC<{ label?: string }>; // default 'SPICY'
+  const PriceTag: React.FC<{
+    price: number;
+    strikePrice?: number;
+    size?: 'md' | 'sm';
+  }>;
+  const PortionPrice: React.FC<{ full: number; half?: number }>;
   ```
 
 - [ ] **Step 1: Create `Badges.tsx`**
@@ -1787,20 +1849,34 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 9: `CategoryChip`, `Segmented`, `QuantityStepper`
 
 **Files:**
+
 - Create: `src/components/ui/CategoryChip.tsx`
 - Create: `src/components/ui/Segmented.tsx`
 - Create: `src/components/ui/QuantityStepper.tsx`
 - Modify: `src/components/ui/index.ts`
 
 **Interfaces:**
+
 - Consumes: `Text` (Task 5).
 - Produces:
+
   ```ts
-  const CategoryChip: React.FC<{ label: string; isActive?: boolean; onPress?: () => void }>
-  const Segmented: React.FC<{ options: string[]; value: string; onChange: (v: string) => void }>
+  const CategoryChip: React.FC<{
+    label: string;
+    isActive?: boolean;
+    onPress?: () => void;
+  }>;
+  const Segmented: React.FC<{
+    options: string[];
+    value: string;
+    onChange: (v: string) => void;
+  }>;
   const QuantityStepper: React.FC<{
-    quantity: number; onAdd: () => void; onRemove: () => void; addLabel?: string;  // default 'ADD'
-  }>
+    quantity: number;
+    onAdd: () => void;
+    onRemove: () => void;
+    addLabel?: string; // default 'ADD'
+  }>;
   ```
 
 - [ ] **Step 1: Create `CategoryChip.tsx`**
@@ -1972,26 +2048,41 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 10: `FoodCard` — replaces `FoodListItem`
 
 **Files:**
+
 - Create: `src/components/ui/FoodCard.tsx`
 - Delete: `src/components/common/FoodListItem.tsx`
 - Modify: `src/components/ui/index.ts`
 - Modify: `__tests__/design-tokens.test.ts` (remove `components/common/FoodListItem.tsx` from `ALLOWLIST`)
 
 **Interfaces:**
+
 - Consumes: `Text`, `VegBadge`, `RatingBadge`, `Tag`, `PriceTag`, `QuantityStepper`.
 - Produces:
+
   ```ts
   interface FoodItem {
-    id: string; name: string; price: number; rating: number; image: string;
-    description?: string; isVeg?: boolean; reviews?: number;
-    strikePrice?: number; tag?: string; isSpicy?: boolean;
+    id: string;
+    name: string;
+    price: number;
+    rating: number;
+    image: string;
+    description?: string;
+    isVeg?: boolean;
+    reviews?: number;
+    strikePrice?: number;
+    tag?: string;
+    isSpicy?: boolean;
   }
   interface FoodCardProps {
-    item: FoodItem; layout?: 'list' | 'grid';  // default 'list'
-    quantity?: number; onAdd?: () => void; onRemove?: () => void;
+    item: FoodItem;
+    layout?: 'list' | 'grid'; // default 'list'
+    quantity?: number;
+    onAdd?: () => void;
+    onRemove?: () => void;
   }
-  const FoodCard: React.FC<FoodCardProps>
+  const FoodCard: React.FC<FoodCardProps>;
   ```
+
   `HomeScreen` (Task 17) imports `FoodCard` and `FoodItem`.
 
 - [ ] **Step 1: Create the component**
@@ -2165,17 +2256,28 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 11: `TopAppBar` and `LocationBar`
 
 **Files:**
+
 - Create: `src/components/ui/AppBar.tsx`
 - Modify: `src/components/ui/index.ts`
 
 **Interfaces:**
+
 - Consumes: `Text` (Task 5).
 - Produces:
+
   ```ts
   const TopAppBar: React.FC<{
-    title: string; onBack?: () => void; right?: React.ReactNode; onHero?: boolean;  // default false
-  }>
-  const LocationBar: React.FC<{ label: string; address: string; onPress?: () => void; onHero?: boolean }>
+    title: string;
+    onBack?: () => void;
+    right?: React.ReactNode;
+    onHero?: boolean; // default false
+  }>;
+  const LocationBar: React.FC<{
+    label: string;
+    address: string;
+    onPress?: () => void;
+    onHero?: boolean;
+  }>;
   ```
 
 - [ ] **Step 1: Create `AppBar.tsx`**
@@ -2306,19 +2408,38 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 12: State components and `OrderTimeline`
 
 **Files:**
+
 - Create: `src/components/ui/States.tsx`
 - Create: `src/components/ui/OrderTimeline.tsx`
 - Modify: `src/components/ui/index.ts`
 
 **Interfaces:**
+
 - Consumes: `Text` (Task 5), `Button` (Task 6).
 - Produces:
+
   ```ts
-  const EmptyState: React.FC<{ title: string; message: string; actionLabel?: string; onAction?: () => void; icon?: React.ReactNode }>
-  const ErrorState: React.FC<{ title?: string; message?: string; onRetry?: () => void }>
-  const SkeletonCard: React.FC<{ count?: number }>   // default 3
-  interface TimelineStep { label: string; detail?: string; time?: string; isDone: boolean; isCurrent?: boolean }
-  const OrderTimeline: React.FC<{ steps: TimelineStep[] }>
+  const EmptyState: React.FC<{
+    title: string;
+    message: string;
+    actionLabel?: string;
+    onAction?: () => void;
+    icon?: React.ReactNode;
+  }>;
+  const ErrorState: React.FC<{
+    title?: string;
+    message?: string;
+    onRetry?: () => void;
+  }>;
+  const SkeletonCard: React.FC<{ count?: number }>; // default 3
+  interface TimelineStep {
+    label: string;
+    detail?: string;
+    time?: string;
+    isDone: boolean;
+    isCurrent?: boolean;
+  }
+  const OrderTimeline: React.FC<{ steps: TimelineStep[] }>;
   ```
 
 - [ ] **Step 1: Create `States.tsx`**
@@ -2504,11 +2625,13 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 13: `SplashScreen`
 
 **Files:**
+
 - Modify: `src/features/auth/SplashScreen.tsx`
 - Modify: `src/assets/animations/jjs_kitchen_splash.json`
 - Modify: `__tests__/design-tokens.test.ts` (remove `features/auth/SplashScreen.tsx` from `ALLOWLIST`)
 
 **Interfaces:**
+
 - Consumes: `Text` (Task 5); `bg-hero`, `text-hero-foreground`.
 
 - [ ] **Step 1: Retune the Lottie fill**
@@ -2621,7 +2744,11 @@ export const SplashScreen = () => {
       style={StyleSheet.absoluteFill}
       className="bg-hero items-center justify-center overflow-hidden"
     >
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
 
       <LottieView
         source={splashAnimation}
@@ -2694,10 +2821,12 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 14: `LoginScreen`
 
 **Files:**
+
 - Modify: `src/features/auth/LoginScreen.tsx`
 - Modify: `__tests__/design-tokens.test.ts` (remove `features/auth/LoginScreen.tsx` from `ALLOWLIST`)
 
 **Interfaces:**
+
 - Consumes: `Text`, `Button`, `TextField`.
 
 - [ ] **Step 1: Rewrite the presentation, keep the logic**
@@ -2854,6 +2983,7 @@ npx jest
 - [ ] **Step 3: Verify on device**
 
 `npm run android`. Walk the screen:
+
 - Charcoal hero with an ember monogram; cream sheet with a 28px top radius overlapping it.
 - Focus the field → border turns ember. Type 9 digits and submit → chili error text and chili border.
 - Type 10 digits → the button becomes ember with a glow; press it → spinner plus "Sending OTP".
@@ -2876,10 +3006,12 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 15: `OtpVerificationScreen`
 
 **Files:**
+
 - Modify: `src/features/auth/OtpVerificationScreen.tsx`
 - Modify: `__tests__/design-tokens.test.ts` (remove `features/auth/OtpVerificationScreen.tsx` from `ALLOWLIST`)
 
 **Interfaces:**
+
 - Consumes: `Text`, `Button`, `OtpInput`.
 
 - [ ] **Step 1: Replace the slot rendering with `OtpInput`**
@@ -2999,6 +3131,7 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 The largest visual change in the migration. The flow is currently violet glassmorphism with a `ChefHat` watermark; the PDF has no glass language.
 
 **Files:**
+
 - Modify: `src/features/auth/complete-profile/index.tsx`
 - Modify: `src/features/auth/complete-profile/NameStep.tsx`
 - Modify: `src/features/auth/complete-profile/EmailStep.tsx`
@@ -3007,6 +3140,7 @@ The largest visual change in the migration. The flow is currently violet glassmo
 - Modify: `__tests__/design-tokens.test.ts` (remove all five `complete-profile` entries from `ALLOWLIST`)
 
 **Interfaces:**
+
 - Consumes: `Text`, `Button`, `TextField`, `OtpInput`.
 - The `isDarkMode` / `isDark` prop is removed from `NameStep` and `EmailStep`. `EMAIL_REGEX` moves into `index.tsx`.
 
@@ -3199,10 +3333,12 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 17: `HomeScreen`
 
 **Files:**
+
 - Modify: `src/features/home/HomeScreen.tsx`
 - Modify: `__tests__/design-tokens.test.ts` (remove `features/home/HomeScreen.tsx` from `ALLOWLIST`)
 
 **Interfaces:**
+
 - Consumes: `Text`, `FoodCard`, `FoodItem`, `CategoryChip`, `LocationBar`, `TextField`.
 
 - [ ] **Step 1: Retype the mock data and swap the categories**
@@ -3210,7 +3346,13 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 Type the mock arrays as `FoodItem[]` and replace the generic Burger/Pizza/Sushi categories with the PDF's, which are what this restaurant actually serves:
 
 ```tsx
-import { Text, FoodCard, CategoryChip, LocationBar, type FoodItem } from '@/components/ui';
+import {
+  Text,
+  FoodCard,
+  CategoryChip,
+  LocationBar,
+  type FoodItem,
+} from '@/components/ui';
 
 const CATEGORIES = [
   'All',
@@ -3221,8 +3363,10 @@ const CATEGORIES = [
   'Veg only',
 ];
 
-const POPULAR_ITEMS: FoodItem[] = [ /* keep the existing objects, add tag: 'BESTSELLER' to the first */ ];
-const MOST_ORDERED: FoodItem[] = [ /* keep the existing objects */ ];
+const POPULAR_ITEMS: FoodItem[] = [
+  /* keep the existing objects, add tag: 'BESTSELLER' to the first */
+];
+const MOST_ORDERED: FoodItem[] = [/* keep the existing objects */];
 ```
 
 - [ ] **Step 2: Rewrite the render tree**
@@ -3285,7 +3429,10 @@ export const HomeScreen = () => {
             contentContainerStyle={styles.categoryScrollContent}
           >
             {CATEGORIES.map((name, index) => (
-              <Animated.View key={name} entering={FadeInRight.delay(index * 60)}>
+              <Animated.View
+                key={name}
+                entering={FadeInRight.delay(index * 60)}
+              >
                 <CategoryChip
                   label={name}
                   isActive={name === category}
@@ -3300,7 +3447,10 @@ export const HomeScreen = () => {
           <SectionHeader title="Popular items" />
           <View className="px-lg">
             {POPULAR_ITEMS.map((item, index) => (
-              <Animated.View key={item.id} entering={FadeInDown.delay(index * 100)}>
+              <Animated.View
+                key={item.id}
+                entering={FadeInDown.delay(index * 100)}
+              >
                 <FoodCard item={item} onAdd={() => {}} />
               </Animated.View>
             ))}
@@ -3311,7 +3461,10 @@ export const HomeScreen = () => {
           <SectionHeader title="Most ordered" />
           <View className="px-lg">
             {MOST_ORDERED.map((item, index) => (
-              <Animated.View key={item.id} entering={FadeInDown.delay(index * 100)}>
+              <Animated.View
+                key={item.id}
+                entering={FadeInDown.delay(index * 100)}
+              >
                 <FoodCard item={item} onAdd={() => {}} />
               </Animated.View>
             ))}
@@ -3361,10 +3514,12 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 18: `ProfileScreen`
 
 **Files:**
+
 - Modify: `src/features/profile/ProfileScreen.tsx`
 - Modify: `__tests__/design-tokens.test.ts` (remove `features/profile/ProfileScreen.tsx` from `ALLOWLIST`)
 
 **Interfaces:**
+
 - Consumes: `Text`, `Tag`.
 
 - [ ] **Step 1: Retokenize the menu configuration**
@@ -3375,7 +3530,15 @@ Every icon in `MENU_SECTIONS` currently carries `className="text-primary dark:te
 
 ```tsx
 const MenuItem = memo(
-  ({ icon, title, subtitle, onPress, tone = 'ink', delay = 0, badge }: MenuItemProps) => (
+  ({
+    icon,
+    title,
+    subtitle,
+    onPress,
+    tone = 'ink',
+    delay = 0,
+    badge,
+  }: MenuItemProps) => (
     <Animated.View entering={FadeInDown.delay(delay).duration(500).springify()}>
       <TouchableOpacity
         onPress={onPress}
@@ -3419,7 +3582,9 @@ const MenuItem = memo(
 
   <View className="items-center gap-sm">
     <Text variant="h2">
-      {user?.firstName ? `${user.firstName} ${user.lastName || ''}` : 'User Name'}
+      {user?.firstName
+        ? `${user.firstName} ${user.lastName || ''}`
+        : 'User Name'}
     </Text>
     <View className="bg-sunken px-md py-sm rounded-pill">
       <Text variant="caption" tone="muted">
@@ -3456,10 +3621,12 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 19: `CustomTabBar`
 
 **Files:**
+
 - Modify: `src/components/navigation/CustomTabBar.tsx`
 - Modify: `__tests__/design-tokens.test.ts` (remove `components/navigation/CustomTabBar.tsx` from `ALLOWLIST`)
 
 **Interfaces:**
+
 - Consumes: `Text` (Task 5).
 
 - [ ] **Step 1: Replace the hardcoded icon colors**
@@ -3475,9 +3642,23 @@ const TabIcon = memo(({ name, isFocused, cartCount }: TabIconProps) => {
 
   switch (name) {
     case 'Home':
-      return <Home size={size} className={className} strokeWidth={strokeWidth} fill={fill} />;
+      return (
+        <Home
+          size={size}
+          className={className}
+          strokeWidth={strokeWidth}
+          fill={fill}
+        />
+      );
     case 'Saved':
-      return <Bookmark size={size} className={className} strokeWidth={strokeWidth} fill={fill} />;
+      return (
+        <Bookmark
+          size={size}
+          className={className}
+          strokeWidth={strokeWidth}
+          fill={fill}
+        />
+      );
     case 'Cart':
       return (
         <View className="bg-ember p-md rounded-pill -mt-10 shadow-ember-glow">
@@ -3492,9 +3673,23 @@ const TabIcon = memo(({ name, isFocused, cartCount }: TabIconProps) => {
         </View>
       );
     case 'Orders':
-      return <ClipboardList size={size} className={className} strokeWidth={strokeWidth} fill={fill} />;
+      return (
+        <ClipboardList
+          size={size}
+          className={className}
+          strokeWidth={strokeWidth}
+          fill={fill}
+        />
+      );
     case 'Profile':
-      return <User size={size} className={className} strokeWidth={strokeWidth} fill={fill} />;
+      return (
+        <User
+          size={size}
+          className={className}
+          strokeWidth={strokeWidth}
+          fill={fill}
+        />
+      );
     default:
       return null;
   }
@@ -3514,11 +3709,17 @@ const TabIcon = memo(({ name, isFocused, cartCount }: TabIconProps) => {
 And the label:
 
 ```tsx
-{route.name !== 'Cart' ? (
-  <Text variant="caption" tone={isFocused ? 'ember' : 'muted'} className="mt-xs">
-    {route.name}
-  </Text>
-) : null}
+{
+  route.name !== 'Cart' ? (
+    <Text
+      variant="caption"
+      tone={isFocused ? 'ember' : 'muted'}
+      className="mt-xs"
+    >
+      {route.name}
+    </Text>
+  ) : null;
+}
 ```
 
 Reduce `styles` to layout only — drop `shadowColor: '#000'` and the border radii (now Tailwind):
@@ -3561,10 +3762,12 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 ### Task 20: Close the ratchet and verify the whole app
 
 **Files:**
+
 - Modify: `__tests__/design-tokens.test.ts`
 - Modify: `CLAUDE.md`
 
 **Interfaces:**
+
 - Consumes: everything.
 
 - [ ] **Step 1: Assert the allowlist is empty, permanently**
@@ -3667,22 +3870,22 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
 
 **Allowlist arithmetic.** Task 1 seeds 14 entries, each claimed by exactly one later task:
 
-| Entry | Removed by |
-| --- | --- |
-| `theme/index.ts` | Task 3 |
-| `components/common/PlaceholderScreen.tsx` | Task 4 |
-| `components/common/FoodListItem.tsx` | Task 10 |
-| `features/auth/SplashScreen.tsx` | Task 13 |
-| `features/auth/LoginScreen.tsx` | Task 14 |
-| `features/auth/OtpVerificationScreen.tsx` | Task 15 |
-| `features/auth/complete-profile/index.tsx` | Task 16 |
-| `features/auth/complete-profile/NameStep.tsx` | Task 16 |
-| `features/auth/complete-profile/EmailStep.tsx` | Task 16 |
-| `features/auth/complete-profile/components/GlassInput.tsx` | Task 16 |
-| `features/auth/complete-profile/components/styles.ts` | Task 16 |
-| `features/home/HomeScreen.tsx` | Task 17 |
-| `features/profile/ProfileScreen.tsx` | Task 18 |
-| `components/navigation/CustomTabBar.tsx` | Task 19 |
+| Entry                                                      | Removed by |
+| ---------------------------------------------------------- | ---------- |
+| `theme/index.ts`                                           | Task 3     |
+| `components/common/PlaceholderScreen.tsx`                  | Task 4     |
+| `components/common/FoodListItem.tsx`                       | Task 10    |
+| `features/auth/SplashScreen.tsx`                           | Task 13    |
+| `features/auth/LoginScreen.tsx`                            | Task 14    |
+| `features/auth/OtpVerificationScreen.tsx`                  | Task 15    |
+| `features/auth/complete-profile/index.tsx`                 | Task 16    |
+| `features/auth/complete-profile/NameStep.tsx`              | Task 16    |
+| `features/auth/complete-profile/EmailStep.tsx`             | Task 16    |
+| `features/auth/complete-profile/components/GlassInput.tsx` | Task 16    |
+| `features/auth/complete-profile/components/styles.ts`      | Task 16    |
+| `features/home/HomeScreen.tsx`                             | Task 17    |
+| `features/profile/ProfileScreen.tsx`                       | Task 18    |
+| `components/navigation/CustomTabBar.tsx`                   | Task 19    |
 
 14 seeded, 14 removed. `ALLOWLIST` reaches `[]` at Task 19, which Task 20 asserts permanently. `src/hooks/useAppToast.tsx` is deliberately absent from the seed list: it holds no hex and rethemes for free via D2.
 

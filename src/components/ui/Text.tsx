@@ -11,7 +11,7 @@ import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
  * Native cannot synthesize a weight from a static face.
  */
 export type TextVariant =
-  'display' | 'h1' | 'h2' | 'title' | 'item' | 'body' | 'caption';
+  'display' | 'h1' | 'h2' | 'title' | 'item' | 'body' | 'caption' | 'fine';
 
 export type TextTone =
   | 'ink'
@@ -19,6 +19,8 @@ export type TextTone =
   | 'ember'
   | 'on-ember'
   | 'on-hero'
+  | 'hero-muted'
+  | 'hero-danger'
   | 'veg'
   | 'non-veg'
   | 'chili';
@@ -31,6 +33,7 @@ const VARIANT: Record<TextVariant, string> = {
   item: 'font-jakarta-600 text-item',
   body: 'font-jakarta-500 text-body',
   caption: 'font-jakarta-700 text-caption uppercase',
+  fine: 'font-jakarta-500 text-fine',
 };
 
 const TONE: Record<TextTone, string> = {
@@ -39,6 +42,8 @@ const TONE: Record<TextTone, string> = {
   ember: 'text-ember',
   'on-ember': 'text-on-ember',
   'on-hero': 'text-hero-foreground',
+  'hero-muted': 'text-hero-muted',
+  'hero-danger': 'text-hero-danger',
   veg: 'text-veg',
   'non-veg': 'text-non-veg',
   chili: 'text-chili',

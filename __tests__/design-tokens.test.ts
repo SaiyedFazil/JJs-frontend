@@ -203,6 +203,7 @@ describe('every color utility resolves to a token in global.css', () => {
     'item',
     'body',
     'caption',
+    'fine',
     // alignment and border-side utilities the pattern also matches
     'center',
     'left',

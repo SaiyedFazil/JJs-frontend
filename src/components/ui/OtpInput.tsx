@@ -6,7 +6,8 @@ import {
   StyleSheet,
 } from 'react-native';
 import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
-import { Text } from './Text';
+import { Text, type TextTone } from './Text';
+import type { Surface } from './surface';
 
 /**
  * PDF section 05 · OTP input, 6-digit.
@@ -22,15 +23,59 @@ export interface OtpInputProps {
   error?: string;
   autoFocus?: boolean;
   onFocusChange?: (focused: boolean) => void;
+  /** The ground the input sits on. Defaults to the Cream 50 canvas. */
+  surface?: Surface;
 }
+
+const THEME: Record<
+  Surface,
+  {
+    /** On hero the slots stretch to share the full row, as in the auth flow. */
+    slot: string;
+    idleBorder: string;
+    errorBorder: string;
+    emptyGround: string;
+    filledGround: string;
+    charTone: TextTone;
+    errorTone: TextTone;
+  }
+> = {
+  canvas: {
+    slot: 'w-11 h-14',
+    idleBorder: 'border-hairline',
+    errorBorder: 'border-chili',
+    emptyGround: 'bg-surface',
+    filledGround: 'bg-ember-tint',
+    charTone: 'ink',
+    errorTone: 'chili',
+  },
+  hero: {
+    slot: 'flex-1 h-12',
+    idleBorder: 'border-hero-hairline',
+    errorBorder: 'border-hero-danger',
+    emptyGround: 'bg-hero-surface',
+    filledGround: 'bg-hero-surface',
+    charTone: 'on-hero',
+    errorTone: 'hero-danger',
+  },
+};
 
 export const OtpInput = forwardRef<RNTextInput, OtpInputProps>(
   (
-    { value, onChangeText, length = 6, error, autoFocus, onFocusChange },
+    {
+      value,
+      onChangeText,
+      length = 6,
+      error,
+      autoFocus,
+      onFocusChange,
+      surface = 'canvas',
+    },
     ref,
   ) => {
     const [isFocused, setIsFocused] = useState(false);
     const innerRef = useRef<RNTextInput>(null);
+    const theme = THEME[surface];
 
     /** Keeps the forwarded ref usable while still owning focus internally. */
     const setRefs = (node: RNTextInput | null) => {
@@ -76,21 +121,23 @@ export const OtpInput = forwardRef<RNTextInput, OtpInputProps>(
             const char = value[i];
             const isActive = isFocused && i === value.length;
             const border = error
-              ? 'border-chili'
+              ? theme.errorBorder
               : isActive
                 ? 'border-ember'
-                : 'border-hairline';
-            const fill = char ? 'bg-ember-tint' : 'bg-surface';
+                : theme.idleBorder;
+            const ground = char ? theme.filledGround : theme.emptyGround;
 
             return (
               <View
                 key={i}
                 pointerEvents="none"
-                className={`w-11 h-14 rounded-md border items-center justify-center ${border} ${fill}`}
+                className={`${theme.slot} rounded-md border items-center justify-center ${border} ${ground}`}
               >
                 {char ? (
                   <Animated.View entering={ZoomIn.duration(160)}>
-                    <Text variant="h2">{char}</Text>
+                    <Text variant="h2" tone={theme.charTone}>
+                      {char}
+                    </Text>
                   </Animated.View>
                 ) : null}
                 {isActive ? (
@@ -103,7 +150,11 @@ export const OtpInput = forwardRef<RNTextInput, OtpInputProps>(
 
         {error ? (
           <Animated.View entering={FadeIn.duration(200)}>
-            <Text variant="caption" tone="chili" className="mt-sm text-center">
+            <Text
+              variant="caption"
+              tone={theme.errorTone}
+              className="mt-sm text-center"
+            >
               {error}
             </Text>
           </Animated.View>

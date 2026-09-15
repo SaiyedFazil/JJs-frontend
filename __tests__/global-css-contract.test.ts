@@ -92,7 +92,16 @@ describe('global.css — no legacy palette survives', () => {
 });
 
 describe('global.css — type scale', () => {
-  const STEPS = ['display', 'h1', 'h2', 'title', 'item', 'body', 'caption'];
+  const STEPS = [
+    'display',
+    'h1',
+    'h2',
+    'title',
+    'item',
+    'body',
+    'caption',
+    'fine',
+  ];
 
   it.each(STEPS)('--text-%s has a size and a line height', step => {
     expect(varValue(`--text-${step}`)).not.toBeNull();

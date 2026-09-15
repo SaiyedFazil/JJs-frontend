@@ -5,7 +5,8 @@ import {
   type TextInputProps,
 } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Text } from './Text';
+import { Text, type TextTone } from './Text';
+import type { Surface } from './surface';
 
 /**
  * PDF section 05 · Text fields. Three visual states — idle, focused, error —
@@ -32,10 +33,50 @@ export interface TextFieldProps extends Pick<
   /** Static leading text, e.g. the "+91" dial code. */
   prefix?: string;
   isDisabled?: boolean;
+  /** The ground the field sits on. Defaults to the Cream 50 canvas. */
+  surface?: Surface;
   className?: string;
   onFocus?: () => void;
   onBlur?: () => void;
 }
+
+const THEME: Record<
+  Surface,
+  {
+    idleBorder: string;
+    errorBorder: string;
+    ground: string;
+    disabledGround: string;
+    input: string;
+    placeholder: string;
+    labelTone: TextTone;
+    valueTone: TextTone;
+    errorTone: TextTone;
+  }
+> = {
+  canvas: {
+    idleBorder: 'border-hairline',
+    errorBorder: 'border-chili',
+    ground: 'bg-surface',
+    disabledGround: 'bg-sunken',
+    input: 'text-ink',
+    placeholder: 'text-muted',
+    labelTone: 'muted',
+    valueTone: 'ink',
+    errorTone: 'chili',
+  },
+  hero: {
+    idleBorder: 'border-hero-hairline',
+    errorBorder: 'border-hero-danger',
+    ground: 'bg-hero-surface',
+    disabledGround: 'bg-hero-surface',
+    input: 'text-hero-foreground',
+    placeholder: 'text-hero-muted',
+    labelTone: 'hero-muted',
+    valueTone: 'on-hero',
+    errorTone: 'hero-danger',
+  },
+};
 
 export const TextField = forwardRef<RNTextInput, TextFieldProps>(
   (
@@ -48,6 +89,7 @@ export const TextField = forwardRef<RNTextInput, TextFieldProps>(
       icon,
       prefix,
       isDisabled = false,
+      surface = 'canvas',
       className = '',
       onFocus,
       onBlur,
@@ -56,30 +98,35 @@ export const TextField = forwardRef<RNTextInput, TextFieldProps>(
     ref,
   ) => {
     const [isFocused, setIsFocused] = useState(false);
+    const theme = THEME[surface];
 
     const border = error
-      ? 'border-chili'
+      ? theme.errorBorder
       : isFocused
         ? 'border-ember'
-        : 'border-hairline';
-    const surface = isDisabled ? 'bg-sunken' : 'bg-surface';
+        : theme.idleBorder;
+    const ground = isDisabled ? theme.disabledGround : theme.ground;
 
     return (
       <View className={`mb-md ${className}`.trim()}>
         {label ? (
-          <Text variant="caption" tone="muted" className="mb-sm ml-xs">
+          <Text
+            variant="caption"
+            tone={theme.labelTone}
+            className="mb-sm ml-xs"
+          >
             {label}
           </Text>
         ) : null}
 
         <View
-          className={`flex-row items-center h-14 rounded-lg px-md border ${border} ${surface} ${
+          className={`flex-row items-center h-14 rounded-lg px-md border ${border} ${ground} ${
             isDisabled ? 'opacity-60' : ''
           }`}
         >
           {icon ? <View className="mr-sm opacity-60">{icon}</View> : null}
           {prefix ? (
-            <Text variant="item" className="mr-sm">
+            <Text variant="item" tone={theme.valueTone} className="mr-sm">
               {prefix}
             </Text>
           ) : null}
@@ -89,8 +136,8 @@ export const TextField = forwardRef<RNTextInput, TextFieldProps>(
             onChangeText={onChangeText}
             placeholder={placeholder}
             editable={!isDisabled}
-            className="flex-1 font-jakarta-600 text-item text-ink p-0"
-            placeholderTextColorClassName="text-muted"
+            className={`flex-1 font-jakarta-600 text-item p-0 ${theme.input}`}
+            placeholderTextColorClassName={theme.placeholder}
             cursorColorClassName="text-ember"
             selectionColorClassName="text-ember"
             onFocus={() => {
@@ -108,7 +155,11 @@ export const TextField = forwardRef<RNTextInput, TextFieldProps>(
 
         {error ? (
           <Animated.View entering={FadeIn.duration(200)}>
-            <Text variant="caption" tone="chili" className="mt-sm ml-xs">
+            <Text
+              variant="caption"
+              tone={theme.errorTone}
+              className="mt-sm ml-xs"
+            >
               {error}
             </Text>
           </Animated.View>

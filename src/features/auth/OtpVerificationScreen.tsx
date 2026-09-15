@@ -4,37 +4,29 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Keyboard,
   TextInput,
-  Dimensions,
+  TouchableOpacity,
   NativeModules,
   NativeEventEmitter,
 } from 'react-native';
-import Animated, {
-  SlideInDown,
-  FadeInUp,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronLeft } from 'lucide-react-native';
 import { Spinner } from 'heroui-native';
 import { AuthService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { useAppToast } from '@/hooks/useAppToast';
-import { Text, Button, OtpInput } from '@/components/ui';
+import { Text, OtpInput } from '@/components/ui';
 
 // ── Native modules ────────────────────────────────────────────────────────────
 const { SmsRetrieverModule } = NativeModules;
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const HEADER_HEIGHT = SCREEN_HEIGHT * 0.45;
-const MIN_HEADER_HEIGHT = 160;
-const CARD_OVERLAP = 40;
-const MIN_CARD_OVERLAP = 35; // keep the sheet's rounded corners visible
+const OTP_LENGTH = 6;
 
 type RootStackParamList = {
   Login: { prefillPhone?: string };
@@ -57,6 +49,8 @@ export const OtpVerificationScreen = () => {
   const [canResend, setCanResend] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inputRef = useRef<TextInput>(null);
+  /** The code last sent for verification, so each entry is submitted once. */
+  const submittedOtpRef = useRef('');
   const setAuth = useAuthStore(state => state.setAuth);
   const toast = useAppToast();
 
@@ -78,22 +72,6 @@ export const OtpVerificationScreen = () => {
     }, 1000);
   }, []);
 
-  const headerProgress = useSharedValue(1);
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    height:
-      MIN_HEADER_HEIGHT +
-      headerProgress.value * (HEADER_HEIGHT - MIN_HEADER_HEIGHT),
-    overflow: 'hidden' as const,
-  }));
-
-  const animatedCardStyle = useAnimatedStyle(() => ({
-    marginTop: -(
-      MIN_CARD_OVERLAP +
-      headerProgress.value * (CARD_OVERLAP - MIN_CARD_OVERLAP)
-    ),
-  }));
-
   // Start timer on mount; clean up on unmount.
   useEffect(() => {
     startResendTimer();
@@ -103,12 +81,8 @@ export const OtpVerificationScreen = () => {
   }, [startResendTimer]);
 
   useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      headerProgress.value = withTiming(0, { duration: 220 });
-    });
     const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
       inputRef.current?.blur();
-      headerProgress.value = withTiming(1, { duration: 220 });
     });
 
     const timer = setTimeout(() => {
@@ -159,7 +133,6 @@ export const OtpVerificationScreen = () => {
     }
 
     return () => {
-      showSubscription.remove();
       hideSubscription.remove();
       clearTimeout(timer);
       if (Platform.OS === 'android') {
@@ -168,10 +141,10 @@ export const OtpVerificationScreen = () => {
         SmsRetrieverModule.stopSmsRetriever?.();
       }
     };
-  }, [headerProgress]);
+  }, []);
 
-  const handleVerify = async () => {
-    if (otp.length === 6) {
+  const handleVerify = useCallback(async () => {
+    if (otp.length === OTP_LENGTH) {
       setIsLoading(true);
       setError('');
 
@@ -197,7 +170,19 @@ export const OtpVerificationScreen = () => {
         setIsLoading(false);
       }
     }
-  };
+  }, [otp, authToken, setAuth]);
+
+  // Verify as soon as the last digit lands — typed or filled from the SMS.
+  // Editing the code re-arms it, so the same code can be retried.
+  useEffect(() => {
+    if (otp.length < OTP_LENGTH) {
+      submittedOtpRef.current = '';
+      return;
+    }
+    if (submittedOtpRef.current === otp) return;
+    submittedOtpRef.current = otp;
+    handleVerify();
+  }, [otp, handleVerify]);
 
   const handleResendOtp = async () => {
     setIsResending(true);
@@ -223,135 +208,105 @@ export const OtpVerificationScreen = () => {
     }
   };
 
-  const isButtonActive = otp.length === 6 && !isLoading;
+  const renderStatus = () => {
+    if (isLoading || isResending) {
+      return (
+        <View className="flex-row items-center justify-center gap-sm">
+          <Spinner size="sm" />
+          <Text variant="body" tone="ember">
+            {isLoading ? 'Verifying...' : 'Sending code...'}
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <Text variant="body" tone="hero-muted" className="text-center">
+        Didn't get it?{' '}
+        {canResend ? (
+          <Text
+            variant="body"
+            tone="ember"
+            className="font-jakarta-700"
+            accessibilityRole="button"
+            onPress={handleResendOtp}
+            suppressHighlighting
+          >
+            Resend code
+          </Text>
+        ) : (
+          <Text variant="body" tone="ember" className="font-jakarta-700">
+            Resend in 0:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}
+          </Text>
+        )}
+      </Text>
+    );
+  };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       className="flex-1 bg-hero"
     >
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
+
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 },
+        ]}
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-canvas"
         bounces={false}
         keyboardShouldPersistTaps="handled"
+        className="px-lg"
       >
-        {/* Hero header — collapses when the keyboard opens */}
-        <Animated.View
-          style={animatedHeaderStyle}
-          className="w-full bg-hero items-center justify-center"
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Login', { prefillPhone: phone })}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Change phone number"
+          className="w-10 h-10 self-start rounded-md border border-hero-hairline bg-hero-surface items-center justify-center"
         >
-          <Animated.View
-            entering={FadeInUp.duration(1000)}
-            className="items-center gap-md"
-          >
-            <View className="w-24 h-24 rounded-pill bg-ember items-center justify-center shadow-ember-glow">
-              <Text variant="display" tone="on-ember">
-                JJ
-              </Text>
-            </View>
-            <Text variant="h1" tone="on-hero">
-              Verify OTP
+          <ChevronLeft size={20} className="text-hero-foreground" />
+        </TouchableOpacity>
+
+        <Animated.View entering={FadeInUp.duration(600)}>
+          <Text variant="h2" tone="on-hero" className="mt-xl">
+            Verify your number
+          </Text>
+          <Text variant="body" tone="hero-muted" className="mt-sm">
+            Enter the {OTP_LENGTH}-digit code sent to{' '}
+            <Text variant="body" tone="on-hero" className="font-jakarta-700">
+              +91 {phone.slice(0, 5)} {phone.slice(5)}
             </Text>
-          </Animated.View>
+          </Text>
         </Animated.View>
 
-        {/* Sheet */}
-        <Animated.View
-          entering={SlideInDown.duration(600)}
-          className="flex-1 bg-canvas rounded-t-sheet px-xl pt-xl shadow-e3"
-          style={[{ paddingBottom: insets.bottom + 40 }, animatedCardStyle]}
-        >
-          <View className="items-center mb-sm gap-sm">
-            <View className="w-16 h-1.5 rounded-pill bg-hairline mb-md" />
-            <Text variant="title" className="text-center">
-              JJ's Kitchen has sent a 6-digit code to
-            </Text>
-            <View className="flex-row items-center gap-sm mt-xs">
-              <Text variant="item">+91 {phone}</Text>
-              <Button
-                label="Change"
-                variant="secondary"
-                size="sm"
-                onPress={() =>
-                  navigation.navigate('Login', { prefillPhone: phone })
-                }
-              />
-            </View>
-          </View>
-
-          <View className="items-center mb-sm">
-            <OtpInput
-              ref={inputRef}
-              value={otp}
-              onChangeText={text => {
-                setOtp(text);
-                if (text.length === 6) Keyboard.dismiss();
-              }}
-              error={error || undefined}
-            />
-
-            {isResending ? (
-              <View className="mt-md flex-row items-center justify-center gap-sm">
-                <Spinner size="sm" />
-                <Text variant="body" tone="ember">
-                  Sending code...
-                </Text>
-              </View>
-            ) : !canResend ? (
-              <View className="mt-md items-center">
-                <Text variant="body" tone="muted">
-                  Resend code in{' '}
-                  <Text variant="body" tone="ember">
-                    0:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}
-                  </Text>
-                </Text>
-              </View>
-            ) : (
-              <Button
-                label="Resend OTP"
-                variant="ghost"
-                size="sm"
-                onPress={handleResendOtp}
-                isDisabled={isLoading}
-                className="mt-md self-center"
-              />
-            )}
-          </View>
-
-          <Button
-            label="Verify & Login"
-            loadingLabel="Verifying..."
-            onPress={handleVerify}
-            isDisabled={!isButtonActive && !isLoading}
-            isLoading={isLoading}
-            className="mt-md"
+        <View className="mt-lg">
+          <OtpInput
+            ref={inputRef}
+            surface="hero"
+            length={OTP_LENGTH}
+            value={otp}
+            onChangeText={text => {
+              setOtp(text);
+              if (text.length === OTP_LENGTH) Keyboard.dismiss();
+            }}
+            error={error || undefined}
           />
+        </View>
 
-          <View className="mt-auto pt-xl">
-            <Text variant="body" tone="muted" className="text-center">
-              By continuing, you automatically accept our{'\n'}
-              <Text variant="body" className="underline">
-                Terms & Conditions
-              </Text>
-              ,{' '}
-              <Text variant="body" className="underline">
-                Privacy Policy
-              </Text>{' '}
-              and{' '}
-              <Text variant="body" className="underline">
-                Cookies Policy
-              </Text>
-            </Text>
-          </View>
-        </Animated.View>
+        <View className="mt-auto pt-xl">{renderStatus()}</View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
-/** Layout-only: the ScrollView must be able to grow past the viewport. */
+/** Layout-only: lets the resend line pin to the bottom yet scroll on short screens. */
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
