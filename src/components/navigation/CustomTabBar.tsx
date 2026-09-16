@@ -1,14 +1,7 @@
 import React, { useMemo, memo } from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import {
-  Home,
-  Bookmark,
-  ShoppingBag,
-  ClipboardList,
-  User,
-} from 'lucide-react-native';
-import { useCartStore } from '@/store/cart.store';
+import { Home, Bookmark, ClipboardList, User } from 'lucide-react-native';
 import { Text } from '@/components/ui';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -22,10 +15,9 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 interface TabIconProps {
   name: string;
   isFocused: boolean;
-  cartCount: number;
 }
 
-const TabIcon = memo(({ name, isFocused, cartCount }: TabIconProps) => {
+const TabIcon = memo(({ name, isFocused }: TabIconProps) => {
   const className = isFocused ? 'text-ember' : 'text-muted';
   const size = 24;
   const strokeWidth = isFocused ? 2.5 : 1.9;
@@ -49,19 +41,6 @@ const TabIcon = memo(({ name, isFocused, cartCount }: TabIconProps) => {
           strokeWidth={strokeWidth}
           fill={fill}
         />
-      );
-    case 'Cart':
-      return (
-        <View className="bg-ember p-md rounded-pill -mt-10 shadow-ember-glow">
-          <ShoppingBag size={28} className="text-on-ember" strokeWidth={2.5} />
-          {cartCount > 0 ? (
-            <View className="absolute -top-1 -right-1 w-5 h-5 rounded-pill bg-surface items-center justify-center border-2 border-ember">
-              <Text variant="caption" tone="ember">
-                {cartCount}
-              </Text>
-            </View>
-          ) : null}
-        </View>
       );
     case 'Orders':
       return (
@@ -94,9 +73,6 @@ TabIcon.displayName = 'TabIcon';
  */
 export const CustomTabBar = memo(
   ({ state, navigation, insets }: BottomTabBarProps) => {
-    const cartItemsCount = useCartStore(s => s.totalItems());
-    const hasItemsInCart = cartItemsCount > 0;
-
     // Use insets from props instead of useSafeAreaInsets hook to be safe
     const containerStyle = useMemo(
       () => [styles.tabContainer, { paddingBottom: insets.bottom + 10 }],
@@ -111,8 +87,6 @@ export const CustomTabBar = memo(
         <View className="flex-row items-center justify-around px-md">
           {state.routes.map((route, index) => {
             const isFocused = state.index === index;
-
-            if (route.name === 'Cart' && !hasItemsInCart) return null;
 
             const onPress = () => {
               const event = navigation.emit({
@@ -136,20 +110,14 @@ export const CustomTabBar = memo(
                 style={styles.tabButton}
                 activeOpacity={0.7}
               >
-                <TabIcon
-                  name={route.name}
-                  isFocused={isFocused}
-                  cartCount={cartItemsCount}
-                />
-                {route.name !== 'Cart' ? (
-                  <Text
-                    variant="caption"
-                    tone={isFocused ? 'ember' : 'muted'}
-                    className="mt-xs"
-                  >
-                    {route.name}
-                  </Text>
-                ) : null}
+                <TabIcon name={route.name} isFocused={isFocused} />
+                <Text
+                  variant="caption"
+                  tone={isFocused ? 'ember' : 'muted'}
+                  className="mt-xs"
+                >
+                  {route.name}
+                </Text>
               </TouchableOpacity>
             );
           })}
@@ -160,6 +128,9 @@ export const CustomTabBar = memo(
 );
 
 CustomTabBar.displayName = 'CustomTabBar';
+
+/** The bar's own height, excluding the safe-area inset the navigator adds. */
+export const TAB_BAR_HEIGHT = 72;
 
 /** Layout-only: the bar floats above content at the screen's full width. */
 const styles = StyleSheet.create({
