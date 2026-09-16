@@ -29,10 +29,6 @@ const IMAGE_HEIGHT: Record<Surface, string> = {
   hero: 'h-24',
 };
 
-/** A mock rating, stable per dish — the menu carries no ratings yet. */
-const ratingFor = (item: MenuItem) =>
-  (4.3 + (item.name.length % 6) * 0.1).toFixed(1);
-
 /** The horizontal-rail dish card. Spec §7.2. */
 export const DishCard = memo(
   ({
@@ -54,11 +50,11 @@ export const DishCard = memo(
             <VegBadge isVeg={item.veg} size={13} />
           </View>
 
-          {showRating ? (
+          {showRating && item.rating != null ? (
             <View className="absolute bottom-sm left-sm flex-row items-center gap-xs bg-veg px-xs py-0.5 rounded-sm">
               <Star size={9} className="text-on-ember" fill="currentColor" />
               <Text variant="caption" tone="on-ember">
-                {ratingFor(item)}
+                {item.rating.toFixed(1)}
               </Text>
             </View>
           ) : null}

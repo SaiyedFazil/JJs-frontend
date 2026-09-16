@@ -33,4 +33,6 @@ export interface MenuItem {
   mrp?: boolean;
   /** Reserved. Nothing sets this yet; ImageTile falls back to a tinted tile. */
   image?: string;
+  /** Reserved. Nothing sets this yet; the rating pill only renders when present. */
+  rating?: number;
 }
