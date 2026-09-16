@@ -11,5 +11,7 @@ web-build/
 *.keystore
 package-lock.json
 src/uniwind-types.d.ts
-# Design handoff copy — kept byte-verbatim against the original
-docs/
+# Design handoff copy — kept byte-verbatim against the original, so it
+# alone is exempt from reformatting. The rest of docs/ is ordinary
+# Markdown and should be linted like any other source file.
+docs/design/menu-data.js

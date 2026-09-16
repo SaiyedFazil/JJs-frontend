@@ -123,7 +123,9 @@ Added under a new `CATEGORY TINTS` block and appended to the existing blocks:
 
 Every entry above gets a Layer B alias and a `--color-*` entry in `@theme inline`. Layer C names, which are the utility vocabulary the components are written against:
 
-`tint-tandoor` (aliases `--ember-tint`), `tint-mutton`, `tint-seafood`, `tint-tawa`, `tint-sizzler`, `tint-chinese`, `tint-veg`, `tint-bread`, `tint-dessert`, `tint-drink`, `tint-selected`, `ember-deep`, `on-ember-muted`, `hero-hairline-lifted`, `veg-tint`, `veg-bright`, `non-veg-bright`, `closed`, `closed-foreground`, `track-off`.
+`tint-tandoor` (aliases `--ember-tint`), `tint-mutton`, `tint-seafood`, `tint-tawa`, `tint-sizzler`, `tint-chinese`, `tint-veg`, `tint-bread`, `tint-dessert`, `tint-drink`, `tint-selected`, `ember-deep`, `on-ember-muted`, `hero-hairline-lifted`, `veg-tint`, `veg-bright`, `non-veg-bright`, `closed`, `closed-foreground`, `switch-track-off`.
+
+(Named `switch-track-off` in the implementation, not `track-off` — the extra prefix disambiguates it from other track-style tokens as the Layer C vocabulary grew. `--track-off` at Layer A is unaffected.)
 
 > `hero-hairline-lifted` (`#38291D`) is deliberately *lighter* than the existing `hero-hairline` (`#2E241B`). It is the border of a card sitting on `hero-surface` inside a spotlight panel, where the darker hairline disappears.
 
@@ -273,7 +275,7 @@ Reusable beyond this screen.
 | Component | Contract |
 | --- | --- |
 | `ImageTile` | `{ uri?, categoryId, className, radius }` — photo, else tinted tile + emoji (D4) |
-| `DishCard` | `{ item, quantity, onAdd, onRemove, surface }` — `canvas` = 166px light card; `hero` = 150px card on `hero-surface` with a `hero-hairline-lifted` border. One component, both mock cards. |
+| `DishCard` | `{ item, quantity, onAdd, onRemove, surface }` — `canvas` = 166px light card in the mock, implemented as `w-40` (160px); `hero` = 150px card in the mock, implemented as `w-36` (144px), on `hero-surface` with a `hero-hairline-lifted` border. Both snap to the nearest scale step under D3's own rule rather than the mock's literal px. One component, both mock cards. |
 | `CategoryTile` | `{ id, label, emoji, tint, isActive, onPress }` — 64px tile, 2px ember ring + `tint-selected` when active |
 | `VegSwitch` | `{ value, onChange }` — the Pure Veg pill toggle |
 | `SearchButton` | `{ placeholder, onPress }` — a *button* that looks like a field, not a `TextInput` |
@@ -303,7 +305,7 @@ Top to bottom inside one vertical `ScrollView` on `bg-canvas`:
 6. **`SkeletonRail`** while loading, otherwise 7–10.
 7. **`CategoryRail`** — `title` heading "What are you craving?" over ten `CategoryTile`s.
 8. **`BestsellerRail`** — `title` heading "Bestsellers 🔥" + "See all", eight `DishCard surface="canvas"`.
-9. **`SizzlerSpotlight`** — `bg-hero` panel, `xl` radius, `RadialGlow`, `caption` eyebrow "SERVED SPITTING HOT" in saffron over `title` "Special Sizzlers", animated flame, three `DishCard surface="hero"`.
+9. **`SizzlerSpotlight`** — `bg-hero` panel, `xl` radius, `RadialGlow`, `caption` eyebrow "SERVED SPITTING HOT" in saffron over `title` "Special Sizzlers", a static flame glyph (implemented as static, not animated — a deliberate omission; React Native emoji/text animation wasn't worth the complexity for a decorative flourish), three `DishCard surface="hero"`.
 10. **`ReorderRow`** — white, **dashed** `hairline` border, `ember-tint` icon tile, `caption` "ORDER AGAIN" over a single ellipsised line, dark `Reorder` button.
 11. Bottom spacer clearing the tab bar and cart bar.
 
