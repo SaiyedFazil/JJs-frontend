@@ -1,4 +1,11 @@
 /**
+ * Mock restaurant metadata (hours, rating, ETA, distance) standing in for the API.
+ *
+ * The exported signatures (isOpenAt(), SERVICE, HOURS, OPENS_AT_LABEL)
+ * are the contract for API integration — preserve them when you swap the body.
+ */
+
+/**
  * Service hours. The home screen's closed strip is computed from these rather
  * than toggled, so it reflects reality — which means it does not appear at all
  * between open and close.

@@ -70,15 +70,27 @@ Use the `src/components/ui/` primitives (`Text`, `Button`, `TextField`, `OtpInpu
 
 ### Current State
 
-The app is **UI-only with mock data** — all API calls are simulated with `setTimeout`. No HTTP client is installed yet. The planned stack for the backend integration phase: axios, TanStack React Query v5, Socket.IO Client (real-time orders), MMKV (persistence).
+The app is **UI-only with mock data** — all API calls are simulated with `setTimeout`. Installed: `axios`, `react-native-mmkv`, and `react-native-config`. The planned stack for the backend integration phase: TanStack React Query v5 (data sync), Socket.IO Client (real-time orders).
+
+**The home screen is mock-only by design.** Everything it renders comes from `src/data/menu.ts` (125 dishes) and `src/data/restaurant.ts` (hours, rating, ETA, distance). `HomeScreen`'s loading state is a `setTimeout`, not a request. There are no network calls anywhere in `src/features/home/`.
+
+When the API phase starts, these are the seams:
+
+| Swap | Keep |
+| --- | --- |
+| the bodies of `src/data/menu.ts` and `src/data/restaurant.ts` | their exported signatures — `byId`, `bestsellers()`, `byCategory()`, `priceOf()`, `isOpenAt()` — which every section imports |
+| `HomeScreen`'s `isLoading` `setTimeout` | the `SkeletonRail` it already gates |
+| `MenuItem.image`, declared and unset | `ImageTile`, which already renders a photo when a `uri` exists |
 
 ### Feature Folder Convention
 
 Screens live under `src/features/<feature-name>/`. Components shared across features go in `src/components/`. Types will go in `src/types/`.
 
+Shared mock data lives in `src/data/` (`menu.ts`, `restaurant.ts`) and its types in `src/types/`. Home-only composition components live in `src/features/home/components/`; anything reusable belongs in `src/components/ui/`.
+
 ## Environment
 
-`.env` at project root. `API_URL` and `ENVIRONMENT` are defined there. No `react-native-config` installed yet — when adding env var support, check README for the planned approach.
+`.env` at project root. `API_URL` and `ENVIRONMENT` are defined there.
 
 ## Code Quality
 

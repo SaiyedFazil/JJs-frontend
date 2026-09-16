@@ -1,3 +1,9 @@
+/**
+ * Mock menu data (125 dishes) standing in for the API.
+ *
+ * The exported signatures (byId, bestsellers(), byCategory(), priceOf())
+ * are the contract for API integration — preserve them when you swap the body.
+ */
 import type { MenuCategory, MenuItem, MenuTag } from '@/types/menu';
 
 export const CATEGORIES: MenuCategory[] = [
