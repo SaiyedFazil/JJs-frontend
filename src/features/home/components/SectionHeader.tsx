@@ -20,7 +20,7 @@ export const SectionHeader = ({
     {actionLabel ? (
       <TouchableOpacity
         onPress={onAction}
-        accessibilityRole="button"
+        accessibilityRole={onAction ? 'button' : undefined}
         hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
       >
         <Text variant="fine" tone="ember" weight="700">
