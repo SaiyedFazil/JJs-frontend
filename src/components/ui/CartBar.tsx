@@ -17,7 +17,7 @@ export const CartBar = ({
     onPress={onPress}
     activeOpacity={0.9}
     accessibilityRole={onPress ? 'button' : undefined}
-    accessibilityLabel={`View cart, ${count} items, ${total} rupees`}
+    accessibilityLabel={`View cart, ${count} ${count === 1 ? 'item' : 'items'}, ${total} rupees`}
     className="flex-row items-center justify-between bg-ember rounded-lg px-md py-sm shadow-ember-glow"
   >
     <View className="flex-row items-center gap-sm">
