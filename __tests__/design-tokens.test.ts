@@ -217,6 +217,13 @@ describe('every color utility resolves to a token in global.css', () => {
     'r',
     'x',
     'y',
+    // border-style keywords the pattern also matches
+    'solid',
+    'dashed',
+    'dotted',
+    'double',
+    'none',
+    'hidden',
   ]);
 
   const definedTokens = (): Set<string> => {
