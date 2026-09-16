@@ -25,7 +25,7 @@ export const OffersRail = () => (
   <ScrollView
     horizontal
     showsHorizontalScrollIndicator={false}
-    contentContainerStyle={styles.rail}
+    contentContainerClassName="px-md py-sm gap-sm"
   >
     <View className="relative overflow-hidden w-64 rounded-lg p-md gap-xs">
       <LinearFill from="ember" to="ember-deep" />
@@ -62,9 +62,9 @@ export const OffersRail = () => (
   </ScrollView>
 );
 
-/** Layout-only: rail padding, and a glyph bled past the card's bottom edge. */
+/** Layout-only: a glyph bled past the card's bottom edge from a runtime-free
+ * but Tailwind-inexpressible absolute offset. */
 const styles = StyleSheet.create({
-  rail: { paddingHorizontal: 16, paddingVertical: 12, gap: 12 },
   glyph: {
     position: 'absolute',
     right: 10,

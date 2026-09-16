@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import type { MenuItem } from '@/types/menu';
 import { DishCard } from '@/components/ui';
 import { bestsellers } from '@/data/menu';
@@ -27,7 +27,7 @@ export const BestsellerRail = ({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.rail}
+      contentContainerClassName="px-md gap-sm pb-sm"
     >
       {ITEMS.map(item => (
         <DishCard
@@ -42,7 +42,3 @@ export const BestsellerRail = ({
     </ScrollView>
   </View>
 );
-
-const styles = StyleSheet.create({
-  rail: { paddingHorizontal: 16, gap: 13, paddingBottom: 8 },
-});

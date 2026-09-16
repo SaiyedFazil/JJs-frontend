@@ -34,7 +34,7 @@ export const SizzlerSpotlight = ({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.rail}
+        contentContainerClassName="gap-sm"
       >
         {ITEMS.map(item => (
           <DishCard
@@ -52,6 +52,5 @@ export const SizzlerSpotlight = ({
 );
 
 const styles = StyleSheet.create({
-  rail: { gap: 12 },
   flame: { fontSize: 26 },
 });

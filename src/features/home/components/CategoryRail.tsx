@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { CategoryTile } from '@/components/ui';
 import { CATEGORIES } from '@/data/menu';
 import { SectionHeader } from './SectionHeader';
@@ -36,7 +36,7 @@ export const CategoryRail = ({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.rail}
+      contentContainerClassName="px-md gap-sm"
     >
       {RAIL.map(category => (
         <CategoryTile
@@ -50,7 +50,3 @@ export const CategoryRail = ({
     </ScrollView>
   </View>
 );
-
-const styles = StyleSheet.create({
-  rail: { paddingHorizontal: 16, gap: 14 },
-});
