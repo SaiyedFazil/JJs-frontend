@@ -17,7 +17,7 @@ export const SizzlerSpotlight = ({
 }) => (
   <View className="px-md pt-lg">
     <View className="relative overflow-hidden bg-hero rounded-xl p-md">
-      <RadialGlow size={200} opacity={0.28} style={{ top: -70, right: -40 }} />
+      <RadialGlow size={200} opacity={0.28} style={styles.glow} />
 
       <View className="flex-row items-center justify-between mb-md">
         <View>
@@ -53,4 +53,6 @@ export const SizzlerSpotlight = ({
 
 const styles = StyleSheet.create({
   flame: { fontSize: 26 },
+  /** Bleeds past the panel's top-right corner by design. */
+  glow: { top: -70, right: -40 },
 });

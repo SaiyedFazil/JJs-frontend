@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, ChevronDown } from 'lucide-react-native';
 import {
@@ -38,7 +38,7 @@ export const HomeHeader = ({
       className="relative overflow-hidden bg-hero px-md pb-md gap-md"
     >
       {/* Bleeds past the top-right corner, as in the design. */}
-      <RadialGlow size={240} style={{ top: -90, right: -50 }} />
+      <RadialGlow size={240} style={styles.glow} />
 
       <View className="flex-row items-center justify-between">
         <View>
@@ -105,3 +105,8 @@ export const HomeHeader = ({
     </View>
   );
 };
+
+/** Layout-only: the glow bleeds past the header's top-right corner by design. */
+const styles = StyleSheet.create({
+  glow: { top: -90, right: -50 },
+});

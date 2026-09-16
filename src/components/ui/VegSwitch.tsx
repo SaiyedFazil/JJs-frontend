@@ -1,11 +1,12 @@
 import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { Text } from './Text';
 
 /**
  * The Pure Veg pill. Interactive, but does not filter yet — spec decision D6.
- * The knob is absolutely positioned from a runtime value, which Tailwind
- * cannot express, so it uses an inline offset like Badges.tsx does.
+ * The knob's offset is a position Tailwind cannot express, so it comes from
+ * StyleSheet — two static positions the toggle picks between, rather than one
+ * object rebuilt on every render.
  */
 export const VegSwitch = ({
   value,
@@ -33,7 +34,7 @@ export const VegSwitch = ({
       }`}
     >
       <View
-        style={{ left: value ? 14 : 2 }}
+        style={value ? styles.knobOn : styles.knobOff}
         className="absolute w-3 h-3 rounded-pill bg-surface"
       />
     </View>
@@ -42,3 +43,9 @@ export const VegSwitch = ({
     </Text>
   </TouchableOpacity>
 );
+
+/** Layout-only: the knob's two resting positions inside a 28px track. */
+const styles = StyleSheet.create({
+  knobOff: { left: 2 },
+  knobOn: { left: 14 },
+});

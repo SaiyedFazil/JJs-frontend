@@ -1,5 +1,10 @@
 import React from 'react';
-import { TouchableOpacity, View, Text as RNText } from 'react-native';
+import {
+  TouchableOpacity,
+  View,
+  Text as RNText,
+  StyleSheet,
+} from 'react-native';
 import { Text } from './Text';
 import { CATEGORY_TINT, CATEGORY_EMOJI } from './ImageTile';
 
@@ -29,9 +34,7 @@ export const CategoryTile = ({
           : `${CATEGORY_TINT[id] ?? 'bg-sunken'} border-transparent`
       }`}
     >
-      <RNText style={{ fontSize: 28 }}>
-        {CATEGORY_EMOJI[id] ?? '\u{1F37D}'}
-      </RNText>
+      <RNText style={styles.glyph}>{CATEGORY_EMOJI[id] ?? '\u{1F37D}'}</RNText>
     </View>
     <Text
       variant="fine"
@@ -44,3 +47,8 @@ export const CategoryTile = ({
     </Text>
   </TouchableOpacity>
 );
+
+/** Layout-only: an emoji glyph has no place on the type scale. */
+const styles = StyleSheet.create({
+  glyph: { fontSize: 28 },
+});

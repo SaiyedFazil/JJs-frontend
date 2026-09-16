@@ -106,7 +106,7 @@ export const RadialGlow = ({
   return (
     <View
       pointerEvents="none"
-      style={[{ position: 'absolute', width: size, height: size }, style]}
+      style={[styles.glow, { width: size, height: size }, style]}
     >
       <Svg width={size} height={size}>
         <Defs>
@@ -120,3 +120,12 @@ export const RadialGlow = ({
     </View>
   );
 };
+
+/**
+ * Layout-only. The glow is taken out of flow so it can bleed past its
+ * container's edge; its size and offset stay inline because both are runtime
+ * values the caller supplies.
+ */
+const styles = StyleSheet.create({
+  glow: { position: 'absolute' },
+});
