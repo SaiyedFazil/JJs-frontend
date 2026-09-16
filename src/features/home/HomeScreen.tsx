@@ -29,6 +29,16 @@ const TOAST_MS = 1900;
 /** Mock latency, matching the app's existing setTimeout convention. */
 const LOAD_MS = 900;
 
+/** Vertical gap between the cart bar and the tab bar's real top edge. */
+const CART_BAR_GAP = 12;
+/**
+ * Room for the floating stack itself, above `floatingBottom`: Toast
+ * (px-md/py-sm + a 24px icon row, ~40) + the container's gap-sm (8) +
+ * CartBar (px-md/py-sm + its content row, ~56) ≈ 104, rounded up for
+ * breathing room.
+ */
+const FLOATING_STACK_ALLOWANCE = 110;
+
 export const HomeScreen = () => {
   const [serviceMode, setServiceMode] = useState('delivery');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -54,13 +64,16 @@ export const HomeScreen = () => {
   // on-screen footprint is TAB_BAR_HEIGHT + insets.bottom, not TAB_BAR_HEIGHT
   // alone. Both the floating layer and the scroll content's bottom padding
   // must clear that full footprint, so both depend on the runtime inset and
-  // can't be static StyleSheet.create values.
-  const floatingBottom = TAB_BAR_HEIGHT + insets.bottom + 12;
-  /** Layout-only: bottom clearance for the tab bar (plus its safe-area
-   * inset) and the cart bar. */
+  // can't be static StyleSheet.create values. Both are derived from the
+  // same tabBarFootprint below, so correcting TAB_BAR_HEIGHT keeps both
+  // right instead of drifting out of sync with each other.
+  const tabBarFootprint = TAB_BAR_HEIGHT + insets.bottom;
+  const floatingBottom = tabBarFootprint + CART_BAR_GAP;
+  /** Layout-only: scroll content must clear the tab bar's full footprint
+   * plus the floating stack (cart bar + toast) sitting above it. */
   const contentContainerStyle = useMemo(
-    () => ({ paddingBottom: 170 + insets.bottom }),
-    [insets.bottom],
+    () => ({ paddingBottom: floatingBottom + FLOATING_STACK_ALLOWANCE }),
+    [floatingBottom],
   );
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);

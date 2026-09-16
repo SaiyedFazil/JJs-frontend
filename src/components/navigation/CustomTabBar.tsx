@@ -129,8 +129,25 @@ export const CustomTabBar = memo(
 
 CustomTabBar.displayName = 'CustomTabBar';
 
-/** The bar's own height, excluding the safe-area inset the navigator adds. */
-export const TAB_BAR_HEIGHT = 72;
+/**
+ * The bar's own height, excluding the safe-area inset the navigator adds
+ * on top via `paddingBottom: insets.bottom + 10` below. Composed of:
+ *
+ *   border-t (border-hairline)               1
+ *   paddingTop (styles.tabContainer)        12
+ *   py-sm on the tab button (8 + 8)         16
+ *   icon (TabIcon size)                     24
+ *   mt-xs before the caption                 4
+ *   caption line-height                     16
+ *   paddingBottom (the "+ 10" in containerStyle,
+ *     insets.bottom is the other half)      10
+ *                                           ---
+ *                                            83
+ *
+ * Check this arithmetic against the JSX above before changing either the
+ * constant or the bar's layout.
+ */
+export const TAB_BAR_HEIGHT = 83;
 
 /** Layout-only: the bar floats above content at the screen's full width. */
 const styles = StyleSheet.create({
