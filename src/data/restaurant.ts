@@ -1,8 +1,8 @@
 /**
  * Mock restaurant metadata (hours, rating, ETA, distance) standing in for the API.
  *
- * The exported signatures (isOpenAt(), SERVICE, HOURS, OPENS_AT_LABEL)
- * are the contract for API integration — preserve them when you swap the body.
+ * Home screen imports: isOpenAt(), SERVICE, OPENS_AT_LABEL. Tests also import HOURS.
+ * Preserve all these exported signatures when you swap the body.
  */
 
 /**

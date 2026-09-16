@@ -78,9 +78,11 @@ When the API phase starts, these are the seams:
 
 | Swap | Keep |
 | --- | --- |
-| the bodies of `src/data/menu.ts` and `src/data/restaurant.ts` | their exported signatures — `byId`, `bestsellers()`, `byCategory()`, `priceOf()`, `isOpenAt()` — which every section imports |
+| the bodies of `src/data/menu.ts` and `src/data/restaurant.ts` | From `menu`: `CATEGORIES`, `byId`, `bestsellers()`, `byCategory()`. From `restaurant`: `isOpenAt()`, `SERVICE`, `OPENS_AT_LABEL`. |
 | `HomeScreen`'s `isLoading` `setTimeout` | the `SkeletonRail` it already gates |
 | `MenuItem.image`, declared and unset | `ImageTile`, which already renders a photo when a `uri` exists |
+
+`priceOf()` exists in `menu.ts` for deferred portion pricing (not yet active in the home screen) — preserve it during the swap even though the home screen does not yet import it.
 
 ### Feature Folder Convention
 
