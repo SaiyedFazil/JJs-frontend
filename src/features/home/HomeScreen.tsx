@@ -1,5 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { View, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MenuItem } from '@/types/menu';
 import { CartBar, Toast, SkeletonRail } from '@/components/ui';
 import { useCartStore } from '@/store/cart.store';
@@ -29,6 +36,8 @@ export const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
 
+  const insets = useSafeAreaInsets();
+
   const addItem = useCartStore(s => s.addItem);
   const decrementItem = useCartStore(s => s.decrementItem);
   const quantityOf = useCartStore(s => s.quantityOf);
@@ -39,6 +48,20 @@ export const HomeScreen = () => {
   const total = useCartStore(s => s.totalAmount());
 
   const isOpen = isOpenAt(new Date());
+
+  // CustomTabBar is pinned to the screen bottom with its own
+  // `paddingBottom: insets.bottom + 10` on top of TAB_BAR_HEIGHT, so its true
+  // on-screen footprint is TAB_BAR_HEIGHT + insets.bottom, not TAB_BAR_HEIGHT
+  // alone. Both the floating layer and the scroll content's bottom padding
+  // must clear that full footprint, so both depend on the runtime inset and
+  // can't be static StyleSheet.create values.
+  const floatingBottom = TAB_BAR_HEIGHT + insets.bottom + 12;
+  /** Layout-only: bottom clearance for the tab bar (plus its safe-area
+   * inset) and the cart bar. */
+  const contentContainerStyle = useMemo(
+    () => ({ paddingBottom: 170 + insets.bottom }),
+    [insets.bottom],
+  );
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToast = useCallback((message: string) => {
@@ -82,7 +105,7 @@ export const HomeScreen = () => {
     <View className="flex-1 bg-canvas">
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={contentContainerStyle}
       >
         <HomeHeader
           address={ADDRESS}
@@ -125,9 +148,10 @@ export const HomeScreen = () => {
         )}
       </ScrollView>
 
-      {/* Floating above the scroll view, clear of the tab bar. */}
+      {/* Floating above the scroll view, clear of the tab bar's full
+          footprint — TAB_BAR_HEIGHT plus its bottom safe-area inset. */}
       <View
-        style={{ bottom: TAB_BAR_HEIGHT + 12 }}
+        style={{ bottom: floatingBottom }}
         className="absolute left-md right-md gap-sm"
         pointerEvents="box-none"
       >
@@ -137,8 +161,3 @@ export const HomeScreen = () => {
     </View>
   );
 };
-
-/** Layout-only: bottom clearance for the tab bar and the cart bar. */
-const styles = StyleSheet.create({
-  content: { paddingBottom: 170 },
-});
