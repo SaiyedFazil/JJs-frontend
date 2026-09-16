@@ -377,3 +377,18 @@ One new suite, `__tests__/menu-data.test.ts`:
 - Destination screens for search, "See all", category tiles and the cart bar
 - Portion (Full / Half) selection — ADD uses `base`, the full-portion price
 - Any backend work; the screen stays UI-only on mock data
+
+### The mock-data boundary is deliberate
+
+The home screen renders entirely from `src/data/menu.ts` and `src/data/restaurant.ts`, and
+its loading state is a `setTimeout`. That is the intended state until the API phase, not a
+stopgap to be quietly replaced mid-build. The modules are shaped so the swap is a body
+change behind stable signatures:
+
+| Swapped later | Preserved |
+| --- | --- |
+| the bodies of both data modules | `byId`, `bestsellers()`, `byCategory()`, `priceOf()`, `isOpenAt()` — what every section imports |
+| `HomeScreen`'s `isLoading` timer | the `SkeletonRail` it gates |
+| `MenuItem.image`, declared and unset | `ImageTile`, which renders a photo the moment a `uri` exists (D4) |
+
+Nothing in `src/features/home/` may make a network call while this spec governs.

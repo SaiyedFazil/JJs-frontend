@@ -2772,11 +2772,51 @@ types in `src/types/`. Home-only composition components live in
 `src/components/ui/`.
 ```
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Record the mock-data boundary**
+
+The home screen is deliberately 100% mock — no HTTP, no query client, no socket. The API
+integration is a separate later phase, and the next person needs to know both that this is
+intentional and where the seams are. Add to `### Current State`:
+
+```markdown
+**The home screen is mock-only by design.** Everything it renders comes from
+`src/data/menu.ts` (125 dishes) and `src/data/restaurant.ts` (hours, rating,
+ETA, distance). `HomeScreen`'s loading state is a `setTimeout`, not a request.
+There are no network calls anywhere in `src/features/home/`.
+
+When the API phase starts, these are the seams:
+
+| Swap | Keep |
+| --- | --- |
+| the bodies of `src/data/menu.ts` and `src/data/restaurant.ts` | their exported signatures — `byId`, `bestsellers()`, `byCategory()`, `priceOf()`, `isOpenAt()` — which every section imports |
+| `HomeScreen`'s `isLoading` `setTimeout` | the `SkeletonRail` it already gates |
+| `MenuItem.image`, declared and unset | `ImageTile`, which already renders a photo when a `uri` exists |
+```
+
+- [ ] **Step 4: Mark the mock modules at their source**
+
+A note in `CLAUDE.md` is easy to miss when you are looking at the file itself. Put a header
+comment on each of `src/data/menu.ts` and `src/data/restaurant.ts` saying it is mock data
+standing in for an API, and that the exported function signatures are the contract a real
+client should preserve. Keep it to a few lines, matching the comment style already used in
+`src/components/ui/index.ts`.
+
+Do not restructure either module — this step adds comments only.
+
+- [ ] **Step 5: Verify and commit**
 
 ```bash
-git add CLAUDE.md
-git commit -m "docs: correct the stale dependency and structure notes"
+npx tsc --noEmit && npm run lint && npm test
+git add CLAUDE.md src/data/menu.ts src/data/restaurant.ts
+git commit -m "docs: correct stale notes and mark the mock-data boundary
+
+axios, react-native-mmkv and react-native-config are installed despite
+CLAUDE.md saying otherwise; only TanStack Query and Socket.IO remain
+planned.
+
+The home screen is mock-only on purpose and the API work is a later
+phase, so CLAUDE.md now names the swap seams and both data modules say
+at their head that they stand in for an API."
 ```
 
 ---
