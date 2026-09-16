@@ -16,6 +16,8 @@ export const LAST_ORDER = [
 
 const SUMMARY = LAST_ORDER.map(line => {
   const item = byId[line.id];
+  if (!item)
+    throw new Error(`Unknown dish in ReorderRow's last order: ${line.id}`);
   return line.quantity > 1 ? `${item.name} ×${line.quantity}` : item.name;
 }).join(', ');
 
