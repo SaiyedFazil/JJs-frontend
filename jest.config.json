@@ -1,0 +1,10 @@
+{
+  "preset": "@react-native/jest-preset",
+  "setupFiles": ["<rootDir>/jest.setup.js"],
+  "moduleNameMapper": {
+    "\\.css$": "<rootDir>/__mocks__/styleMock.js"
+  },
+  "transformIgnorePatterns": [
+    "node_modules/(?!(?:.pnpm/)?((jest-)?react-native|@react-native(-community)?|heroui-native|uniwind|lucide-react-native|react-native-.*|@react-navigation)/)"
+  ]
+}

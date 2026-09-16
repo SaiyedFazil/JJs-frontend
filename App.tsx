@@ -1,25 +1,18 @@
 import './src/global.css';
-import React, { useMemo } from 'react';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import React from 'react';
+import { StatusBar, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HeroUINativeProvider } from 'heroui-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RootNavigator } from './src/navigation/RootNavigator';
-import { useThemeStore } from './src/store/theme.store';
 
+/**
+ * The app renders one palette — JJ's Kitchen Design System v1.0 — in both
+ * light and dark device color schemes. There is deliberately no theme store
+ * and no `dark` class: every token lives in src/global.css with a single
+ * value. See docs/superpowers/specs/2026-09-06-design-system-v1-design.md.
+ */
 function App() {
-  const systemColorScheme = useColorScheme();
-  const { themeMode } = useThemeStore();
-
-  const activeTheme = useMemo(() => {
-    if (themeMode === 'system') {
-      return systemColorScheme ?? 'light';
-    }
-    return themeMode;
-  }, [themeMode, systemColorScheme]);
-
-  const isDarkMode = activeTheme === 'dark';
-
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
@@ -35,9 +28,11 @@ function App() {
             },
           }}
         >
-          <View style={styles.container} className={isDarkMode ? 'dark' : ''}>
+          <View style={styles.container}>
+            {/* Dark glyphs: the canvas is Cream 50 everywhere except the
+                splash, which sets its own bar style. */}
             <StatusBar
-              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+              barStyle="dark-content"
               backgroundColor="transparent"
               translucent
             />

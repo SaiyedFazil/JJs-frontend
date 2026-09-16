@@ -1,258 +1,176 @@
-import React, { memo } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  ImageBackground,
-  TextInput,
-  useColorScheme,
-} from 'react-native';
-import { MapPin, ChevronRight, Search } from 'lucide-react-native';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { View, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import type { MenuItem } from '@/types/menu';
+import { CartBar, Toast, SkeletonRail } from '@/components/ui';
+import { useCartStore } from '@/store/cart.store';
+import { byId } from '@/data/menu';
+import { isOpenAt } from '@/data/restaurant';
+import { TAB_BAR_HEIGHT } from '@/components/navigation/CustomTabBar';
+import { HomeHeader } from './components/HomeHeader';
+import { ClosedStrip } from './components/ClosedStrip';
+import { SignatureHero } from './components/SignatureHero';
+import { OffersRail } from './components/OffersRail';
+import { StatusStrip } from './components/StatusStrip';
+import { CategoryRail } from './components/CategoryRail';
+import { BestsellerRail } from './components/BestsellerRail';
+import { SizzlerSpotlight } from './components/SizzlerSpotlight';
+import { ReorderRow, LAST_ORDER } from './components/ReorderRow';
 
-// Components
-import { FoodListItem } from '@/components/common/FoodListItem';
+const ADDRESS = '351 Maison Street, Bandra W';
+const SIGNATURE = byId['tandoori-chicken'];
+const TOAST_MS = 1900;
+/** Mock latency, matching the app's existing setTimeout convention. */
+const LOAD_MS = 900;
 
-// ── Design-system color tokens (mirrors global.css :root values) ─────────────
-const COLORS = {
-  primary: '#170C79', // --primary
-  primaryDark: '#8E05C2', // --primary-dark
-  muted: '#6B7280', // --muted
-  mutedDark: '#9CA3AF', // --muted-dark
-} as const;
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BANNER_HEIGHT = SCREEN_HEIGHT * 0.42;
-
-const CATEGORIES = [
-  { id: '1', name: 'Burger', emoji: '🍔' },
-  { id: '2', name: 'Pizza', emoji: '🍕' },
-  { id: '3', name: 'Sushi', emoji: '🍣' },
-  { id: '4', name: 'Desserts', emoji: '🍰' },
-  { id: '5', name: 'Pasta', emoji: '🍝' },
-  { id: '6', name: 'Salads', emoji: '🥗' },
-];
-
-const POPULAR_ITEMS = [
-  {
-    id: '1',
-    name: 'Classic Cheeseburger',
-    price: 299,
-    rating: 4.8,
-    reviews: 120,
-    isVeg: false,
-    description:
-      'Juicy beef patty with melted cheddar, pickles, and our signature sauce.',
-    image:
-      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=500&auto=format&fit=crop',
-  },
-  {
-    id: '2',
-    name: 'Pepperoni Feast Pizza',
-    price: 449,
-    rating: 4.9,
-    reviews: 85,
-    isVeg: false,
-    description:
-      'Loaded with spicy pepperoni, mozzarella, and classic tomato sauce.',
-    image:
-      'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=500&auto=format&fit=crop',
-  },
-];
-
-const MOST_ORDERED = [
-  {
-    id: '3',
-    name: 'Spicy Paneer Tikka',
-    price: 349,
-    rating: 4.6,
-    reviews: 210,
-    isVeg: true,
-    description:
-      'Grilled paneer cubes marinated in spicy yogurt and indian spices.',
-    image:
-      'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?q=80&w=500&auto=format&fit=crop',
-  },
-  {
-    id: '4',
-    name: 'Garden Fresh Salad',
-    price: 179,
-    rating: 4.3,
-    reviews: 45,
-    isVeg: true,
-    description:
-      'A mix of organic greens, cherry tomatoes, and honey lemon dressing.',
-    image:
-      'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500&auto=format&fit=crop',
-  },
-];
-
+/** Vertical gap between the cart bar and the tab bar's real top edge. */
+const CART_BAR_GAP = 12;
 /**
- * Section Header Component
+ * Room for the floating stack itself, above `floatingBottom`: Toast
+ * (px-md/py-sm + a 24px icon row, ~40) + the container's gap-sm (8) +
+ * CartBar (px-md/py-sm + its content row, ~56) ≈ 104, rounded up for
+ * breathing room.
  */
-const SectionHeader = memo(({ title }: { title: string }) => {
-  // Hooks are valid inside memo components
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const chevronColor = isDark ? COLORS.primaryDark : COLORS.primary;
-
-  return (
-    <View className="flex-row justify-between items-center px-6 mb-4">
-      <Text className="text-xl font-black text-foreground dark:text-foreground-dark">
-        {title}
-      </Text>
-      <TouchableOpacity className="flex-row items-center">
-        <Text className="text-primary dark:text-primary-dark font-bold mr-1">
-          View all
-        </Text>
-        <ChevronRight size={16} color={chevronColor} />
-      </TouchableOpacity>
-    </View>
-  );
-});
-
-/**
- * Category Item Component
- */
-const CategoryItem = memo(({ cat, index }: { cat: any; index: number }) => (
-  <Animated.View
-    entering={FadeInRight.delay(index * 100)}
-    className="items-center mx-2.5"
-  >
-    <TouchableOpacity className="bg-surface dark:bg-surface-dark w-16 h-16 rounded-[20px] items-center justify-center shadow-md shadow-primary/10 border border-border/40 dark:border-border-dark/20 mb-2.5">
-      <Text className="text-2xl">{cat.emoji}</Text>
-    </TouchableOpacity>
-    <Text className="text-foreground dark:text-foreground-dark font-black text-[10px] uppercase tracking-wider">
-      {cat.name}
-    </Text>
-  </Animated.View>
-));
+const FLOATING_STACK_ALLOWANCE = 110;
 
 export const HomeScreen = () => {
+  const [serviceMode, setServiceMode] = useState('delivery');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [isVegOnly, setIsVegOnly] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [toast, setToast] = useState<string | null>(null);
+
   const insets = useSafeAreaInsets();
-  // Resolve theme-aware colors from global.css tokens
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const primaryColor = isDark ? COLORS.primaryDark : COLORS.primary;
-  const mutedColor = isDark ? COLORS.mutedDark : COLORS.muted;
-  // MapPin fill uses primary at 40% opacity
-  const mapPinFill = isDark
-    ? 'rgba(142, 5, 194, 0.4)' // --primary-dark / 40%
-    : 'rgba(23, 12, 121, 0.4)'; // --primary / 40%
+
+  const addItem = useCartStore(s => s.addItem);
+  const decrementItem = useCartStore(s => s.decrementItem);
+  const quantityOf = useCartStore(s => s.quantityOf);
+  // Subscribing to the derived values is what re-renders this screen on every
+  // cart change; quantityOf above is a stable reference that reads current
+  // state, so the rails recompute during that same render pass.
+  const count = useCartStore(s => s.totalItems());
+  const total = useCartStore(s => s.totalAmount());
+
+  const isOpen = isOpenAt(new Date());
+
+  // CustomTabBar is pinned to the screen bottom with its own
+  // `paddingBottom: insets.bottom + 10` on top of TAB_BAR_HEIGHT, so its true
+  // on-screen footprint is TAB_BAR_HEIGHT + insets.bottom, not TAB_BAR_HEIGHT
+  // alone. Both the floating layer and the scroll content's bottom padding
+  // must clear that full footprint, so both depend on the runtime inset and
+  // can't be static StyleSheet.create values. Both are derived from the
+  // same tabBarFootprint below, so correcting TAB_BAR_HEIGHT keeps both
+  // right instead of drifting out of sync with each other.
+  const tabBarFootprint = TAB_BAR_HEIGHT + insets.bottom;
+  const floatingBottom = tabBarFootprint + CART_BAR_GAP;
+  /** Layout-only: scroll content must clear the tab bar's full footprint
+   * plus the floating stack (cart bar + toast) sitting above it. */
+  const contentContainerStyle = useMemo(
+    () => ({ paddingBottom: floatingBottom + FLOATING_STACK_ALLOWANCE }),
+    [floatingBottom],
+  );
+
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showToast = useCallback((message: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast(message);
+    toastTimer.current = setTimeout(() => setToast(null), TOAST_MS);
+  }, []);
+
+  useEffect(() => {
+    const load = setTimeout(() => setIsLoading(false), LOAD_MS);
+    return () => {
+      clearTimeout(load);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  const handleAdd = useCallback(
+    (item: MenuItem) => {
+      addItem({ id: item.id, name: item.name, price: item.base });
+      showToast(`${item.name} added to cart`);
+    },
+    [addItem, showToast],
+  );
+
+  const handleRemove = useCallback(
+    (item: MenuItem) => decrementItem(item.id),
+    [decrementItem],
+  );
+
+  const handleReorder = useCallback(() => {
+    LAST_ORDER.forEach(line => {
+      const item = byId[line.id];
+      for (let i = 0; i < line.quantity; i++) {
+        addItem({ id: item.id, name: item.name, price: item.base });
+      }
+    });
+    showToast('Your last order is back in the cart');
+  }, [addItem, showToast]);
 
   return (
-    <View className="flex-1 bg-background dark:bg-background-dark">
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-        {/* Banner Section - Covers phone top */}
-        <ImageBackground
-          source={{
-            uri: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1000&auto=format&fit=crop',
-          }}
-          style={[styles.banner, { height: BANNER_HEIGHT }]}
-          imageStyle={styles.bannerImage}
-        >
-          {/* Address Header Overlay */}
-          <View
-            style={{ paddingTop: insets.top + 10 }}
-            className="items-center w-full"
-          >
-            <View className="bg-black/70 backdrop-blur-md px-5 py-2 rounded-full border border-white/10 items-center">
-              <Text className="text-white/60 text-[9px] font-black uppercase tracking-widest mb-0.5">
-                Delivery location
-              </Text>
-              <TouchableOpacity className="flex-row items-center">
-                <MapPin size={16} color={primaryColor} fill={mapPinFill} />
-                <Text
-                  className="text-white w-40 font-black text-sm mx-2"
-                  numberOfLines={1}
-                >
-                  351 Maison Street, NY
-                </Text>
-                <ChevronRight size={14} color="white" />
-              </TouchableOpacity>
-            </View>
-          </View>
+    <View className="flex-1 bg-canvas">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={contentContainerStyle}
+      >
+        <HomeHeader
+          address={ADDRESS}
+          serviceMode={serviceMode}
+          onServiceModeChange={setServiceMode}
+        />
 
-          {/* Search Bar Overlay - At the bottom of the banner */}
-          <View className="mt-auto px-6 mb-8">
-            <View className="flex-row items-center bg-white dark:bg-surface-dark h-14 rounded-full px-5 shadow-2xl border border-primary/5">
-              <Search size={20} color={mutedColor} />
-              <TextInput
-                placeholder="Search by item name..."
-                placeholderTextColor="#9ca3af"
-                className="flex-1 ml-3 text-foreground dark:text-foreground-dark font-bold text-sm"
-              />
-            </View>
-          </View>
-        </ImageBackground>
+        {!isOpen ? <ClosedStrip /> : null}
 
-        {/* Categories Horizontal Scroll */}
-        <View className="mt-8">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryScrollContent}
-          >
-            {CATEGORIES.map((cat, index) => (
-              <CategoryItem key={cat.id} cat={cat} index={index} />
-            ))}
-          </ScrollView>
-        </View>
+        <SignatureHero item={SIGNATURE} onAdd={() => handleAdd(SIGNATURE)} />
+        <OffersRail />
+        <StatusStrip
+          isOpen={isOpen}
+          isVegOnly={isVegOnly}
+          onVegChange={setIsVegOnly}
+        />
 
-        {/* Popular Items Section */}
-        <View className="mt-12">
-          <SectionHeader title="Popular Items" />
-          <View className="px-6">
-            {POPULAR_ITEMS.map((item, index) => (
-              <Animated.View
-                key={item.id}
-                entering={FadeInDown.delay(index * 100)}
-              >
-                <FoodListItem
-                  item={item}
-                  onAdd={() => console.log('Add', item.name)}
-                />
-              </Animated.View>
-            ))}
+        {isLoading ? (
+          <View className="pt-lg">
+            <SkeletonRail />
           </View>
-        </View>
-
-        {/* Most Ordered Section */}
-        <View className="mt-8 mb-32">
-          <SectionHeader title="Most Ordered" />
-          <View className="px-6">
-            {MOST_ORDERED.map((item, index) => (
-              <Animated.View
-                key={item.id}
-                entering={FadeInDown.delay(index * 100)}
-              >
-                <FoodListItem
-                  item={item}
-                  onAdd={() => console.log('Add', item.name)}
-                />
-              </Animated.View>
-            ))}
-          </View>
-        </View>
+        ) : (
+          <>
+            <CategoryRail
+              activeId={activeCategory}
+              onSelect={setActiveCategory}
+            />
+            <BestsellerRail
+              quantityOf={quantityOf}
+              onAdd={handleAdd}
+              onRemove={handleRemove}
+            />
+            <SizzlerSpotlight
+              quantityOf={quantityOf}
+              onAdd={handleAdd}
+              onRemove={handleRemove}
+            />
+            <ReorderRow onReorder={handleReorder} />
+          </>
+        )}
       </ScrollView>
+
+      {/* Floating above the scroll view, clear of the tab bar's full
+          footprint — TAB_BAR_HEIGHT plus its bottom safe-area inset. */}
+      <View
+        style={{ bottom: floatingBottom }}
+        className="absolute left-md right-md gap-sm"
+        pointerEvents="box-none"
+      >
+        {toast ? <Toast message={toast} /> : null}
+        {count > 0 ? <CartBar count={count} total={total} /> : null}
+      </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  banner: {
-    width: '100%',
-    justifyContent: 'flex-start',
-  },
-  bannerImage: {
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
-  },
-  categoryScrollContent: {
-    paddingHorizontal: 16,
-  },
-});

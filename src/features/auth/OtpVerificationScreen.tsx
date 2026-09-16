@@ -1,50 +1,32 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
+  StatusBar,
   StyleSheet,
   Keyboard,
   TextInput,
-  Dimensions,
+  TouchableOpacity,
   NativeModules,
   NativeEventEmitter,
-  useColorScheme,
 } from 'react-native';
-
-// ── Design-system color tokens (mirrors global.css :root values) ─────────────
-const COLORS = {
-  primary: '#170C79', // --primary
-  primaryDark: '#8E05C2', // --primary-dark
-} as const;
-import Animated, {
-  SlideInDown,
-  FadeInUp,
-  ZoomIn,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  FadeIn,
-} from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronLeft } from 'lucide-react-native';
 import { Spinner } from 'heroui-native';
 import { AuthService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { useAppToast } from '@/hooks/useAppToast';
+import { Text, OtpInput } from '@/components/ui';
 
 // ── Native modules ────────────────────────────────────────────────────────────
 const { SmsRetrieverModule } = NativeModules;
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const HEADER_HEIGHT = SCREEN_HEIGHT * 0.45;
-const MIN_HEADER_HEIGHT = 160;
-const CARD_OVERLAP = 40; // -mt-10 = 10 * 4
-const MIN_CARD_OVERLAP = 35; // keep card rounded corners visible inside header
+const OTP_LENGTH = 6;
 
 type RootStackParamList = {
   Login: { prefillPhone?: string };
@@ -62,20 +44,15 @@ export const OtpVerificationScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
   const [authToken, setAuthToken] = useState(route.params.authToken);
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inputRef = useRef<TextInput>(null);
+  /** The code last sent for verification, so each entry is submitted once. */
+  const submittedOtpRef = useRef('');
   const setAuth = useAuthStore(state => state.setAuth);
   const toast = useAppToast();
-
-  // Resolve theme-aware colors from global.css tokens
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
-  // Spinner color matches the surrounding label: text-primary in light, white in dark
-  const resendSpinnerColor = isDarkMode ? '#FFFFFF' : COLORS.primary;
 
   /** Resets and starts the 60-second countdown. */
   const startResendTimer = useCallback(() => {
@@ -95,22 +72,6 @@ export const OtpVerificationScreen = () => {
     }, 1000);
   }, []);
 
-  const headerProgress = useSharedValue(1);
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    height:
-      MIN_HEADER_HEIGHT +
-      headerProgress.value * (HEADER_HEIGHT - MIN_HEADER_HEIGHT),
-    overflow: 'hidden' as const,
-  }));
-
-  const animatedCardStyle = useAnimatedStyle(() => ({
-    marginTop: -(
-      MIN_CARD_OVERLAP +
-      headerProgress.value * (CARD_OVERLAP - MIN_CARD_OVERLAP)
-    ),
-  }));
-
   // Start timer on mount; clean up on unmount.
   useEffect(() => {
     startResendTimer();
@@ -120,13 +81,8 @@ export const OtpVerificationScreen = () => {
   }, [startResendTimer]);
 
   useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      headerProgress.value = withTiming(0, { duration: 220 });
-    });
     const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
       inputRef.current?.blur();
-      setIsFocused(false);
-      headerProgress.value = withTiming(1, { duration: 220 });
     });
 
     const timer = setTimeout(() => {
@@ -177,7 +133,6 @@ export const OtpVerificationScreen = () => {
     }
 
     return () => {
-      showSubscription.remove();
       hideSubscription.remove();
       clearTimeout(timer);
       if (Platform.OS === 'android') {
@@ -186,10 +141,10 @@ export const OtpVerificationScreen = () => {
         SmsRetrieverModule.stopSmsRetriever?.();
       }
     };
-  }, [headerProgress]);
+  }, []);
 
-  const handleVerify = async () => {
-    if (otp.length === 6) {
+  const handleVerify = useCallback(async () => {
+    if (otp.length === OTP_LENGTH) {
       setIsLoading(true);
       setError('');
 
@@ -215,7 +170,19 @@ export const OtpVerificationScreen = () => {
         setIsLoading(false);
       }
     }
-  };
+  }, [otp, authToken, setAuth]);
+
+  // Verify as soon as the last digit lands — typed or filled from the SMS.
+  // Editing the code re-arms it, so the same code can be retried.
+  useEffect(() => {
+    if (otp.length < OTP_LENGTH) {
+      submittedOtpRef.current = '';
+      return;
+    }
+    if (submittedOtpRef.current === otp) return;
+    submittedOtpRef.current = otp;
+    handleVerify();
+  }, [otp, handleVerify]);
 
   const handleResendOtp = async () => {
     setIsResending(true);
@@ -241,244 +208,107 @@ export const OtpVerificationScreen = () => {
     }
   };
 
-  const isButtonActive = otp.length === 6 && !isLoading;
-
-  const renderSlots = () => {
-    const slots = [];
-    for (let i = 0; i < 6; i++) {
-      const char = otp[i];
-      const isActive = isFocused && i === otp.length;
-
-      slots.push(
-        <View
-          key={i}
-          className={`w-11 h-14 rounded-xl border-2 justify-center items-center bg-white ${
-            isActive
-              ? 'border-primary dark:border-primary-dark'
-              : 'border-border dark:border-border-dark'
-          }`}
-          pointerEvents="none"
-        >
-          {char ? (
-            <Animated.Text
-              entering={ZoomIn.duration(200)}
-              className="text-2xl font-black text-[#170C79]"
-            >
-              {char}
-            </Animated.Text>
-          ) : null}
-          {isActive && (
-            <View className="w-0.5 h-6 bg-primary dark:bg-primary-dark absolute" />
-          )}
-        </View>,
+  const renderStatus = () => {
+    if (isLoading || isResending) {
+      return (
+        <View className="flex-row items-center justify-center gap-sm">
+          <Spinner size="sm" />
+          <Text variant="body" tone="ember">
+            {isLoading ? 'Verifying...' : 'Sending code...'}
+          </Text>
+        </View>
       );
     }
-    return slots;
+
+    return (
+      <Text variant="body" tone="hero-muted" className="text-center">
+        Didn't get it?{' '}
+        {canResend ? (
+          <Text
+            variant="body"
+            tone="ember"
+            className="font-jakarta-700"
+            accessibilityRole="button"
+            onPress={handleResendOtp}
+            suppressHighlighting
+          >
+            Resend code
+          </Text>
+        ) : (
+          <Text variant="body" tone="ember" className="font-jakarta-700">
+            Resend in 0:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}
+          </Text>
+        )}
+      </Text>
+    );
   };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      className="flex-1 bg-primary dark:bg-primary-dark"
+      className="flex-1 bg-hero"
     >
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
+
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 },
+        ]}
         showsVerticalScrollIndicator={false}
-        className="flex-1 bg-background dark:bg-background-dark"
         bounces={false}
         keyboardShouldPersistTaps="handled"
+        className="px-lg"
       >
-        {/* Header — collapses when keyboard opens */}
-        <Animated.View
-          style={animatedHeaderStyle}
-          className="w-full bg-primary dark:bg-primary-dark items-center justify-center"
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Login', { prefillPhone: phone })}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Change phone number"
+          className="w-10 h-10 self-start rounded-md border border-hero-hairline bg-hero-surface items-center justify-center"
         >
-          <Animated.View
-            entering={FadeInUp.duration(1000)}
-            className="items-center"
-          >
-            <View className="w-24 h-24 bg-primary-foreground/20 dark:bg-primary-foreground/20 rounded-full items-center justify-center">
-              <Text className="text-5xl">🍔</Text>
-            </View>
-            <Text className="text-primary-foreground dark:text-primary-foreground text-3xl font-black mt-3">
-              Verify OTP
+          <ChevronLeft size={20} className="text-hero-foreground" />
+        </TouchableOpacity>
+
+        <Animated.View entering={FadeInUp.duration(600)}>
+          <Text variant="h2" tone="on-hero" className="mt-xl">
+            Verify your number
+          </Text>
+          <Text variant="body" tone="hero-muted" className="mt-sm">
+            Enter the {OTP_LENGTH}-digit code sent to{' '}
+            <Text variant="body" tone="on-hero" className="font-jakarta-700">
+              +91 {phone.slice(0, 5)} {phone.slice(5)}
             </Text>
-          </Animated.View>
+          </Text>
         </Animated.View>
 
-        {/* Floating Card Section */}
-        <Animated.View
-          entering={SlideInDown.duration(600)}
-          className="flex-1 bg-surface dark:bg-surface-dark rounded-t-[40px] px-8 pt-8"
-          style={[
-            styles.cardShadow,
-            { paddingBottom: insets.bottom + 40 },
-            animatedCardStyle,
-          ]}
-        >
-          <View className="items-center mb-2">
-            <View className="w-16 h-1.5 bg-muted/30 dark:bg-muted-dark/30 rounded-full mb-6" />
-            <Text className="text-foreground/80 dark:text-foreground-dark/80 font-medium text-lg text-center px-1 leading-8">
-              JJ's Kitchen has sent a 6-digit code to
-            </Text>
-            <View className="flex-row items-center justify-center mt-2">
-              <Text className="text-foreground dark:text-foreground-dark font-semibold text-base">
-                +91 {phone}
-              </Text>
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate('Login', { prefillPhone: phone })
-                }
-                className="ml-3 bg-muted/10 border border-border dark:border-border-dark px-2 py-1 rounded-xl flex-row items-center shadow-sm active:bg-muted/20"
-              >
-                <Text className="text-primary dark:text-white mr-1.5 text-[10px]">
-                  ✎
-                </Text>
-                <Text className="text-primary dark:text-white font-bold text-[10px] uppercase tracking-wider">
-                  Change
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+        <View className="mt-lg">
+          <OtpInput
+            ref={inputRef}
+            surface="hero"
+            length={OTP_LENGTH}
+            value={otp}
+            onChangeText={text => {
+              setOtp(text);
+              if (text.length === OTP_LENGTH) Keyboard.dismiss();
+            }}
+            error={error || undefined}
+          />
+        </View>
 
-          <View className="items-center mb-2">
-            {/* Hidden TextInput */}
-            <TextInput
-              ref={inputRef}
-              value={otp}
-              onChangeText={text => {
-                const cleaned = text.replace(/[^0-9]/g, '').slice(0, 6);
-                setOtp(cleaned);
-                if (cleaned.length === 6) {
-                  Keyboard.dismiss();
-                }
-              }}
-              keyboardType="number-pad"
-              textContentType="oneTimeCode"
-              autoComplete="one-time-code"
-              maxLength={6}
-              style={styles.hiddenInput}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-            />
-
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => inputRef.current?.focus()}
-              style={styles.otpRow}
-            >
-              {renderSlots()}
-            </TouchableOpacity>
-
-            {error ? (
-              <Animated.View entering={FadeIn.duration(300)}>
-                <Text className="mt-2 text-red-500 font-medium text-sm text-center">
-                  {error}
-                </Text>
-              </Animated.View>
-            ) : null}
-
-            {isResending ? (
-              <View className="mt-4 flex-row items-center justify-center">
-                <Spinner color={resendSpinnerColor} size="sm" />
-                <Text className="text-primary dark:text-white font-bold text-base ml-2">
-                  Sending code...
-                </Text>
-              </View>
-            ) : !canResend ? (
-              /* Countdown — button disabled */
-              <View className="mt-4 items-center">
-                <Text className="text-muted dark:text-muted-dark text-sm font-medium">
-                  Resend code in{' '}
-                  <Text className="text-primary dark:text-white font-bold">
-                    0:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}
-                  </Text>
-                </Text>
-              </View>
-            ) : (
-              /* Timer expired — button active */
-              <TouchableOpacity
-                className="mt-4 self-center px-4 py-2 rounded-xl active:opacity-70"
-                activeOpacity={0.7}
-                onPress={handleResendOtp}
-                disabled={isLoading}
-              >
-                <Text className="text-primary dark:text-white font-bold text-base underline text-center">
-                  Resend OTP
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <TouchableOpacity
-            onPress={handleVerify}
-            disabled={!isButtonActive}
-            activeOpacity={0.8}
-            className={`h-16 rounded-2xl shadow-lg mt-4 items-center justify-center ${isButtonActive ? 'bg-primary dark:bg-primary-dark' : 'bg-primary/30 dark:bg-primary-dark/30 shadow-none'}`}
-          >
-            {isLoading ? (
-              <View className="flex-row items-center justify-center">
-                <Spinner color="white" size="sm" />
-                <Text className="text-primary-foreground dark:text-primary-foreground text-xl font-black ml-3">
-                  Verifying...
-                </Text>
-              </View>
-            ) : (
-              <Text
-                className={`text-xl font-black ${isButtonActive ? 'text-primary-foreground dark:text-primary-foreground' : 'text-muted dark:text-muted-dark'}`}
-              >
-                Verify & Login
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          <View className="mt-auto pt-10">
-            <Text className="text-muted dark:text-muted-dark font-medium text-[10px] text-center leading-4">
-              By continuing, you automatically accept our{'\n'}
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline">
-                Terms & Conditions
-              </Text>
-              ,
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline">
-                {' '}
-                Privacy Policy
-              </Text>{' '}
-              and
-              <Text className="text-foreground dark:text-foreground-dark font-bold underline">
-                {' '}
-                Cookies Policy
-              </Text>
-            </Text>
-          </View>
-        </Animated.View>
+        <View className="mt-auto pt-xl">{renderStatus()}</View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
+/** Layout-only: lets the resend line pin to the bottom yet scroll on short screens. */
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
-  },
-  hiddenInput: {
-    position: 'absolute',
-    width: 1,
-    height: 1,
-    opacity: 0,
-  },
-  otpRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    gap: 8,
-    paddingVertical: 10,
-  },
-  cardShadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 20,
   },
 });

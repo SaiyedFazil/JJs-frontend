@@ -44,16 +44,25 @@ index.js → App.tsx (providers) → RootNavigator → AuthNavigator | MainTabNa
 Zustand stores in `src/store/`:
 
 - `auth.store.ts` — `isAuthenticated`, `login()`, `logout()`, `skipAuth()`
-- `theme.store.ts` — `themeMode: 'light' | 'dark' | 'system'`, `setThemeMode()`
+- `cart.store.ts` — cart items, `totalItems()`
 
 ### Styling
 
-Tailwind v4 via **Uniwind** (the React Native Tailwind adapter), with **HeroUI Native** component library on top. CSS entry point is `src/global.css`, configured in `metro.config.js`. Design tokens are defined there and in `src/theme/index.ts` (color palette for light/dark modes).
+Tailwind v4 via **Uniwind** (the React Native Tailwind adapter), with **HeroUI Native** on top. CSS entry point is `src/global.css`, configured in `metro.config.js`.
 
-- Primary brand colors: `#170C79` (light), `#8E05C2` (dark)
-- Background: `#EFE3CA` (warm beige, light), `#000000` (dark)
+**`src/global.css` is the single source of truth** for every color, type style, spacing, radius and elevation value in the app. It is the only file permitted to contain a hex literal. Change a token there and it changes everywhere.
 
-Use Tailwind utility classes via Uniwind. Do not use `StyleSheet.create` unless Tailwind cannot express the style.
+Design system: **JJ's Kitchen v1.0 (Charcoal + Ember)**. Spec: `docs/superpowers/specs/2026-09-06-design-system-v1-design.md`.
+
+- Canvas `#FBF7F1` · hero/splash `#14100D` · action `#EC5B13`
+- Type: Bricolage Grotesque (≥24px) + Plus Jakarta Sans (≤20px), bundled as static instances in `src/assets/fonts/` and linked via `npm run fonts:link`
+- **One palette renders in both light and dark device schemes.** There is no theme store, no `dark:` variant, and no `-dark` token.
+- Weight is selected by font family name (`font-jakarta-600`), never `fontWeight` — React Native cannot synthesize weights from a static face.
+- `global.css` deliberately overrides HeroUI Native's own CSS variables (`--background`, `--accent`, `--field-*`, …). That is what rethemes all of its components at once, so do not wrap or restyle them individually.
+
+Use the `src/components/ui/` primitives (`Text`, `Button`, `TextField`, `OtpInput`, `FoodCard`, `CategoryChip`, `QuantityStepper`, …) rather than restyling from scratch. Use Tailwind utility classes via Uniwind; do not use `StyleSheet.create` unless Tailwind cannot express the style (layout-only cases such as absolute positioning from runtime values).
+
+`npm test` fails the build on any hardcoded hex, any `dark:` variant, or any color utility that does not resolve to a token. Its allowlist is empty and must stay empty — if new code needs a color, add a token to `global.css`.
 
 ### Path Alias
 
@@ -61,15 +70,29 @@ Use Tailwind utility classes via Uniwind. Do not use `StyleSheet.create` unless 
 
 ### Current State
 
-The app is **UI-only with mock data** — all API calls are simulated with `setTimeout`. No HTTP client is installed yet. The planned stack for the backend integration phase: axios, TanStack React Query v5, Socket.IO Client (real-time orders), MMKV (persistence).
+The app is **UI-only with mock data** — all API calls are simulated with `setTimeout`. Installed: `axios`, `react-native-mmkv`, and `react-native-config`. The planned stack for the backend integration phase: TanStack React Query v5 (data sync), Socket.IO Client (real-time orders).
+
+**The home screen is mock-only by design.** Everything it renders comes from `src/data/menu.ts` (125 dishes) and `src/data/restaurant.ts` (hours, rating, ETA, distance). `HomeScreen`'s loading state is a `setTimeout`, not a request. There are no network calls anywhere in `src/features/home/`.
+
+When the API phase starts, these are the seams:
+
+| Swap | Keep |
+| --- | --- |
+| the bodies of `src/data/menu.ts` and `src/data/restaurant.ts` | From `menu`: `CATEGORIES`, `byId`, `bestsellers()`, `byCategory()`. From `restaurant`: `isOpenAt()`, `SERVICE`, `OPENS_AT_LABEL`. |
+| `HomeScreen`'s `isLoading` `setTimeout` | the `SkeletonRail` it already gates |
+| `MenuItem.image`, declared and unset | `ImageTile`, which already renders a photo when a `uri` exists |
+
+`priceOf()` exists in `menu.ts` for deferred portion pricing (not yet active in the home screen) — preserve it during the swap even though the home screen does not yet import it.
 
 ### Feature Folder Convention
 
 Screens live under `src/features/<feature-name>/`. Components shared across features go in `src/components/`. Types will go in `src/types/`.
 
+Shared mock data lives in `src/data/` (`menu.ts`, `restaurant.ts`) and its types in `src/types/`. Home-only composition components live in `src/features/home/components/`; anything reusable belongs in `src/components/ui/`.
+
 ## Environment
 
-`.env` at project root. `API_URL` and `ENVIRONMENT` are defined there. No `react-native-config` installed yet — when adding env var support, check README for the planned approach.
+`.env` at project root. `API_URL` and `ENVIRONMENT` are defined there.
 
 ## Code Quality
 
