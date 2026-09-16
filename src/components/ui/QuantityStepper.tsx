@@ -67,6 +67,7 @@ export const QuantityStepper = ({
         accessibilityRole="button"
         accessibilityLabel="Decrease quantity"
         className="p-xs"
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       >
         <Minus size={s.icon} className="text-on-ember" strokeWidth={3} />
       </TouchableOpacity>
@@ -78,6 +79,7 @@ export const QuantityStepper = ({
         accessibilityRole="button"
         accessibilityLabel="Increase quantity"
         className="p-xs"
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       >
         <Plus size={s.icon} className="text-on-ember" strokeWidth={3} />
       </TouchableOpacity>

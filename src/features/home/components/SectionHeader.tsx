@@ -18,7 +18,11 @@ export const SectionHeader = ({
   <View className="flex-row items-baseline justify-between px-md pb-md">
     <Text variant="title">{title}</Text>
     {actionLabel ? (
-      <TouchableOpacity onPress={onAction} accessibilityRole="button">
+      <TouchableOpacity
+        onPress={onAction}
+        accessibilityRole="button"
+        hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+      >
         <Text variant="fine" tone="ember" weight="700">
           {actionLabel}
         </Text>

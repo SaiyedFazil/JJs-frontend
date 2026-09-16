@@ -25,6 +25,7 @@ export const VegSwitch = ({
     className={`flex-row items-center gap-sm rounded-pill border-2 px-sm py-xs ${
       value ? 'bg-veg-tint border-veg' : 'bg-surface border-hairline'
     }`}
+    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
   >
     <View
       className={`w-7 h-4 rounded-pill justify-center ${

@@ -65,8 +65,11 @@ export const HomeHeader = ({
         <View className="flex-row gap-sm">
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Notifications"
+            accessibilityLabel={
+              hasUnread ? 'Notifications, unread' : 'Notifications'
+            }
             className="w-10 h-10 rounded-md bg-hero-surface items-center justify-center"
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
           >
             <Bell
               size={19}
@@ -79,9 +82,9 @@ export const HomeHeader = ({
           </TouchableOpacity>
 
           <TouchableOpacity
-            accessibilityRole="button"
             accessibilityLabel="Your profile"
             className="relative overflow-hidden w-10 h-10 rounded-md items-center justify-center"
+            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
           >
             <LinearFill from="ember" to="saffron" diagonal />
             <Text variant="item" tone="on-ember">

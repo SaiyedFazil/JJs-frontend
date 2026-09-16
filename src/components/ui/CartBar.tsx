@@ -16,7 +16,7 @@ export const CartBar = ({
   <TouchableOpacity
     onPress={onPress}
     activeOpacity={0.9}
-    accessibilityRole="button"
+    accessibilityRole={onPress ? 'button' : undefined}
     accessibilityLabel={`View cart, ${count} items, ${total} rupees`}
     className="flex-row items-center justify-between bg-ember rounded-lg px-md py-sm shadow-ember-glow"
   >
