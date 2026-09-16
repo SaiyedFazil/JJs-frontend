@@ -34,7 +34,7 @@ export const SizzlerSpotlight = ({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerClassName="gap-sm"
+        contentContainerClassName="gap-md"
       >
         {ITEMS.map(item => (
           <DishCard

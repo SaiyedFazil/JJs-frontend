@@ -36,7 +36,7 @@ export const CategoryRail = ({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerClassName="px-md gap-sm"
+      contentContainerClassName="px-md gap-md"
     >
       {RAIL.map(category => (
         <CategoryTile

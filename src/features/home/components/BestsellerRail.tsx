@@ -27,7 +27,7 @@ export const BestsellerRail = ({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerClassName="px-md gap-sm pb-sm"
+      contentContainerClassName="px-md gap-md pb-sm"
     >
       {ITEMS.map(item => (
         <DishCard

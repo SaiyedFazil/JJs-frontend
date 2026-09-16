@@ -25,7 +25,7 @@ export const OffersRail = () => (
   <ScrollView
     horizontal
     showsHorizontalScrollIndicator={false}
-    contentContainerClassName="px-md py-sm gap-sm"
+    contentContainerClassName="px-md py-sm gap-md"
   >
     <View className="relative overflow-hidden w-64 rounded-lg p-md gap-xs">
       <LinearFill from="ember" to="ember-deep" />
