@@ -77,6 +77,37 @@ describe('global.css — HeroUI Native contract is overridden', () => {
   it.each(HEROUI_VARS)('%s is defined', name => {
     expect(varValue(name)).not.toBeNull();
   });
+
+  /**
+   * We WRITE heroui-native's variables (that is what rethemes its components)
+   * but Layer C must never READ one.
+   *
+   * heroui-native declares them inside `@layer theme`, including a `@variant
+   * dark` block. Our unlayered `:root` is supposed to outbid that, and in a
+   * browser it would — but it does not at runtime here. A `--color-*` entry
+   * pointing at one of these resolves to heroui's default instead of ours.
+   *
+   * This shipped: `--color-ember: var(--accent)` rendered every ADD button,
+   * price and active tab in heroui's blue (`oklch(0.6204 0.195 253.83)`)
+   * instead of Ember `#ec5b13`. The fix is for Layer C to read only names we
+   * own, so resolution never depends on another library's cascade.
+   */
+  it('no --color-* token reads a heroui-native contract variable', () => {
+    const owned = new Set(HEROUI_VARS);
+    const offenders: string[] = [];
+    // Comments stripped first: the rule is documented in global.css by quoting
+    // the very declaration it forbids, and a guard that trips on its own
+    // explanation is useless.
+    const declarations = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+
+    for (const m of declarations.matchAll(
+      /(--color-[a-z0-9-]+)\s*:\s*var\((--[a-z0-9-]+)\)/g,
+    )) {
+      if (owned.has(m[2])) offenders.push(`${m[1]} -> ${m[2]}`);
+    }
+
+    expect(offenders).toEqual([]);
+  });
 });
 
 describe('global.css — no legacy palette survives', () => {

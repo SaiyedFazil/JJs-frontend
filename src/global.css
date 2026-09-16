@@ -88,10 +88,17 @@
 
    The names below are NOT arbitrary. Everything from `--background` down to
    `--radius` is the variable contract that heroui-native's components read
-   internally. heroui-native declares them inside `@layer theme`; an unlayered
-   `:root` block outbids a layered one in the CSS cascade, so redefining them
-   here rethemes the entire component library at once — no wrappers, no
-   per-component overrides.
+   internally. Redefining them here is what rethemes the component library at
+   once — no wrappers, no per-component overrides.
+
+   IMPORTANT, and the reverse of what this comment used to claim: this block
+   is WRITE-ONLY as far as our own tokens are concerned. heroui-native
+   declares these inside `@layer theme` with a `@variant dark` block, and an
+   unlayered `:root` does NOT reliably outbid that at runtime here, whatever
+   the CSS cascade says on paper. So Layer C must never read one of these
+   names — `--color-ember: var(--accent)` shipped once and painted every ADD
+   button, price and active tab in heroui's blue. Layer C reads Layer A or a
+   JJ semantic below; the guard in global-css-contract.test.ts enforces it.
 
    Consequence worth knowing: src/hooks/useAppToast.tsx needs no changes. It
    delegates to HeroUI's success/danger/warning/accent variants and therefore
@@ -195,7 +202,18 @@
    Turns Layer B into the utility vocabulary the app is written in.
    ------------------------------------------------------------------------ */
 @theme inline {
-  /* — COLOR — */
+  /* — COLOR —
+
+     Every entry here reads a name WE own — Layer A, or a JJ semantic from
+     Layer B. None reads a heroui-native contract variable (--accent,
+     --surface, --muted, --warning, …), even though Layer B sets those.
+
+     We WRITE heroui's variables to retheme its components; we must not READ
+     them. heroui declares them inside `@layer theme` with a `@variant dark`
+     block, and our unlayered `:root` does not actually outbid that at runtime
+     here. `--color-ember: var(--accent)` shipped once and painted every ADD
+     button, price and active tab in heroui's blue instead of Ember.
+     Enforced by __tests__/global-css-contract.test.ts. */
   --color-canvas: var(--canvas);
   --color-hero: var(--hero);
   --color-hero-foreground: var(--hero-foreground);
@@ -203,16 +221,16 @@
   --color-hero-hairline: var(--hero-hairline);
   --color-hero-muted: var(--hero-muted);
   --color-hero-danger: var(--hero-danger);
-  --color-surface: var(--surface);
-  --color-surface-foreground: var(--surface-foreground);
+  --color-surface: var(--surface-0);
+  --color-surface-foreground: var(--ink);
   --color-sunken: var(--sunken);
   --color-hairline: var(--hairline);
 
   --color-ink: var(--ink);
   --color-ink-strong: var(--ink-strong);
-  --color-muted: var(--muted);
+  --color-muted: var(--muted-warm);
 
-  --color-ember: var(--accent);
+  --color-ember: var(--ember-500);
   --color-ember-pressed: var(--ember-pressed);
   --color-ember-tint: var(--ember-tint);
   --color-saffron: var(--saffron-400);
@@ -221,7 +239,7 @@
   --color-veg: var(--veg);
   --color-non-veg: var(--non-veg);
   --color-chili: var(--chili);
-  --color-warning: var(--warning);
+  --color-warning: var(--warning-amber);
   --color-info: var(--info-teal);
 
   --color-price: var(--price);
