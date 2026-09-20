@@ -123,3 +123,28 @@ ESLint (`@react-native` ruleset) + Prettier (single quotes, trailing commas) + H
 
 - adb uninstall com.jjskitchen.app
 - npm run android
+
+## After any dependency change, reset the Metro cache
+
+Run `npm run start:reset` (not `npm start`) after anything that rewrites
+`node_modules` — `npm install`, `npm ci`, a lockfile bump, a dependency upgrade.
+
+`react-native-worklets` compiles its worklet "unpackers" into JS at build time
+via its Babel plugin, and `libworklets.so` evaluates those strings at startup.
+The two sides are version-locked. Metro's transform cache is keyed on file
+contents, not on the installed plugin version, so after an upgrade it will
+happily replay JS built by the *previous* worklets plugin against the *new*
+native library. The mismatch aborts the process on the JS thread before any app
+code runs:
+
+```
+Fatal signal 6 (SIGABRT) in tid … (mqt_v_js)
+Abort message: 'jsi.h: Object facebook::jsi::Value::getObject(Runtime &) &&:
+                assertion "isObject()" failed'
+  #02 libworklets.so  jsi::Value::getObject
+  #03 worklets::UnpackerLoader::installUnpacker
+```
+
+It looks like a native/build failure, but the build is fine and Gradle reports
+no error — only the JS is stale. `--reset-cache` is the fix; a Gradle clean is
+not, and will cost a long rebuild for nothing.
