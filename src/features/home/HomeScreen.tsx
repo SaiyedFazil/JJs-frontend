@@ -17,7 +17,6 @@ import { HomeHeader } from './components/HomeHeader';
 import { ClosedStrip } from './components/ClosedStrip';
 import { SignatureHero } from './components/SignatureHero';
 import { OffersRail } from './components/OffersRail';
-import { StatusStrip } from './components/StatusStrip';
 import { CategoryRail } from './components/CategoryRail';
 import { BestsellerRail } from './components/BestsellerRail';
 import { SizzlerSpotlight } from './components/SizzlerSpotlight';
@@ -41,9 +40,7 @@ const CART_BAR_GAP = 12;
 const FLOATING_STACK_ALLOWANCE = 110;
 
 export const HomeScreen = () => {
-  const [serviceMode, setServiceMode] = useState('delivery');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [isVegOnly, setIsVegOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -121,21 +118,12 @@ export const HomeScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={contentContainerStyle}
       >
-        <HomeHeader
-          address={ADDRESS}
-          serviceMode={serviceMode}
-          onServiceModeChange={setServiceMode}
-        />
+        <HomeHeader address={ADDRESS} />
 
         {!isOpen ? <ClosedStrip /> : null}
 
         <SignatureHero items={SIGNATURES} onAdd={handleAdd} />
         <OffersRail />
-        {/* <StatusStrip
-          isOpen={isOpen}
-          isVegOnly={isVegOnly}
-          onVegChange={setIsVegOnly}
-        /> */}
 
         {isLoading ? (
           <View className="pt-lg">
