@@ -1,3 +1,5 @@
+import type { ImageSourcePropType } from 'react-native';
+
 /** A dish sold in two sizes. Full is the representative price. */
 export interface Portion {
   full: number;
@@ -31,8 +33,11 @@ export interface MenuItem {
   soldOut?: boolean;
   /** Priced at MRP — renders as "MRP ₹20". */
   mrp?: boolean;
-  /** Reserved. Nothing sets this yet; ImageTile falls back to a tinted tile. */
-  image?: string;
+  /**
+   * A bundled photo (`require(...)`) or a remote URL. Only a handful of dishes
+   * carry one; the rest fall back to ImageTile's tinted cuisine tile.
+   */
+  image?: ImageSourcePropType;
   /** Reserved. Nothing sets this yet; the rating pill only renders when present. */
   rating?: number;
 }

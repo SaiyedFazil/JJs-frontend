@@ -55,6 +55,7 @@ export const HomeHeader = ({
               {address}
             </Text>
             <ChevronDown
+              color={"#fff"}
               size={15}
               className="text-hero-muted"
               strokeWidth={2.4}
@@ -72,6 +73,7 @@ export const HomeHeader = ({
             hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
           >
             <Bell
+              color={"#fff"}
               size={19}
               className="text-hero-foreground"
               strokeWidth={1.9}
@@ -94,12 +96,12 @@ export const HomeHeader = ({
         </View>
       </View>
 
-      <Segmented
+      {/* <Segmented
         options={SERVICE_MODES}
         value={serviceMode}
         onChange={onServiceModeChange}
         surface="hero"
-      />
+      /> */}
 
       <SearchButton onPress={onSearch} />
     </View>

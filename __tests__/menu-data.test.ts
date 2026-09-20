@@ -5,7 +5,9 @@ import {
   priceOf,
   bestsellers,
   byCategory,
+  signatures,
 } from '../src/data/menu';
+import { DISH_IMAGES } from '../src/data/dish-images';
 import { isOpenAt, HOURS } from '../src/data/restaurant';
 
 /**
@@ -42,6 +44,16 @@ describe('rail selectors', () => {
     ]);
   });
 
+  it('every signature slide carries a photo', () => {
+    // A slide is a full-bleed photograph; an unphotographed dish would render
+    // the tinted placeholder tile at 224px, which reads as a hole.
+    expect(signatures().filter(i => i.image == null)).toEqual([]);
+  });
+
+  it('signatures leads with the hero dish', () => {
+    expect(signatures()[0].id).toBe('tandoori-chicken');
+  });
+
   it('the sizzler spotlight holds exactly three dishes', () => {
     expect(byCategory('sizzlers').map(i => i.id)).toEqual([
       'veg-sizzler',
@@ -64,6 +76,27 @@ describe('data integrity', () => {
 
   it('every item has a usable representative price', () => {
     expect(MENU.filter(i => !(i.base > 0)).map(i => i.id)).toEqual([]);
+  });
+});
+
+/**
+ * A photo is addressed by slug, exactly like the home screen addresses a dish.
+ * Renaming a dish silently orphans its photo back to the tinted tile, and
+ * nothing else catches that.
+ */
+describe('dish photography', () => {
+  it('every photographed id is a real dish', () => {
+    const orphans = Object.keys(DISH_IMAGES).filter(id => !byId[id]);
+    expect(orphans).toEqual([]);
+  });
+
+  it('every mapped dish carries a resolved source', () => {
+    const photographed = MENU.filter(m => m.image != null);
+    expect(photographed).toHaveLength(Object.keys(DISH_IMAGES).length);
+  });
+
+  it('an unphotographed dish stays undefined, so ImageTile tints it', () => {
+    expect(byId['tawa-roti'].image).toBeUndefined();
   });
 });
 

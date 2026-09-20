@@ -14,7 +14,7 @@ import { useCSSVariable } from 'uniwind';
  * a token is read at runtime rather than applied as a utility. No hex literal
  * appears here — useCSSVariable resolves the Layer C token from global.css.
  */
-const useToken = (name: string): string => {
+export const useToken = (name: string): string => {
   const value = useCSSVariable(name);
   return typeof value === 'string' ? value : 'transparent';
 };
@@ -77,6 +77,34 @@ export const ScrimFill = ({ token = 'hero' }: { token?: string }) => {
           <Stop offset="0.06" stopColor={color} stopOpacity={0.92} />
           <Stop offset="0.52" stopColor={color} stopOpacity={0.2} />
           <Stop offset="1" stopColor={color} stopOpacity={0} />
+        </LinearGradient>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
+    </Svg>
+  );
+};
+
+/**
+ * The light sweeping across a pane of glass.
+ *
+ * Distinct from LinearFill, which runs edge to edge at a constant rate: real
+ * glass catches light in a concentrated band near the lit edge and falls off
+ * fast, so this front-loads its stops. Without that asymmetry the surface
+ * reads as flat translucent plastic rather than something with a curved,
+ * polished face.
+ */
+export const GlassSheen = () => {
+  const lit = useToken('--color-glass-sheen');
+  const fade = useToken('--color-glass-sheen-fade');
+  const id = useGradientId('gs');
+
+  return (
+    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Defs>
+        <LinearGradient id={id} x1="0%" y1="0%" x2="55%" y2="100%">
+          <Stop offset="0" stopColor={lit} />
+          <Stop offset="0.34" stopColor={fade} />
+          <Stop offset="1" stopColor={fade} />
         </LinearGradient>
       </Defs>
       <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />

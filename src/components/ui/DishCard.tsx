@@ -44,7 +44,7 @@ export const DishCard = memo(
     return (
       <View className={`${CARD[surface]} ${item.soldOut ? 'opacity-50' : ''}`}>
         <View className={`relative w-full ${IMAGE_HEIGHT[surface]}`}>
-          <ImageTile categoryId={item.cat} uri={item.image} emojiSize={30} />
+          <ImageTile categoryId={item.cat} source={item.image} emojiSize={30} />
 
           <View className="absolute top-sm left-sm bg-surface rounded-sm p-0.5 shadow-e1">
             <VegBadge isVeg={item.veg} size={13} />

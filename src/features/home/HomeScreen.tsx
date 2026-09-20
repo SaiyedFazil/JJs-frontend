@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MenuItem } from '@/types/menu';
 import { CartBar, Toast, SkeletonRail } from '@/components/ui';
 import { useCartStore } from '@/store/cart.store';
-import { byId } from '@/data/menu';
+import { byId, signatures } from '@/data/menu';
 import { isOpenAt } from '@/data/restaurant';
 import { TAB_BAR_HEIGHT } from '@/components/navigation/CustomTabBar';
 import { HomeHeader } from './components/HomeHeader';
@@ -24,7 +24,8 @@ import { SizzlerSpotlight } from './components/SizzlerSpotlight';
 import { ReorderRow, LAST_ORDER } from './components/ReorderRow';
 
 const ADDRESS = '351 Maison Street, Bandra W';
-const SIGNATURE = byId['tandoori-chicken'];
+/** Every photographed dish, in menu order — the hero carousel's slides. */
+const SIGNATURES = signatures();
 const TOAST_MS = 1900;
 /** Mock latency, matching the app's existing setTimeout convention. */
 const LOAD_MS = 900;
@@ -128,13 +129,13 @@ export const HomeScreen = () => {
 
         {!isOpen ? <ClosedStrip /> : null}
 
-        <SignatureHero item={SIGNATURE} onAdd={() => handleAdd(SIGNATURE)} />
+        <SignatureHero items={SIGNATURES} onAdd={handleAdd} />
         <OffersRail />
-        <StatusStrip
+        {/* <StatusStrip
           isOpen={isOpen}
           isVegOnly={isVegOnly}
           onVegChange={setIsVegOnly}
-        />
+        /> */}
 
         {isLoading ? (
           <View className="pt-lg">
