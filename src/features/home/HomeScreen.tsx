@@ -10,21 +10,21 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MenuItem } from '@/types/menu';
 import { CartBar, Toast, SkeletonRail } from '@/components/ui';
 import { useCartStore } from '@/store/cart.store';
-import { byId } from '@/data/menu';
+import { byId, signatures } from '@/data/menu';
 import { isOpenAt } from '@/data/restaurant';
 import { TAB_BAR_HEIGHT } from '@/components/navigation/CustomTabBar';
 import { HomeHeader } from './components/HomeHeader';
 import { ClosedStrip } from './components/ClosedStrip';
 import { SignatureHero } from './components/SignatureHero';
 import { OffersRail } from './components/OffersRail';
-import { StatusStrip } from './components/StatusStrip';
 import { CategoryRail } from './components/CategoryRail';
 import { BestsellerRail } from './components/BestsellerRail';
 import { SizzlerSpotlight } from './components/SizzlerSpotlight';
 import { ReorderRow, LAST_ORDER } from './components/ReorderRow';
 
 const ADDRESS = '351 Maison Street, Bandra W';
-const SIGNATURE = byId['tandoori-chicken'];
+/** Every photographed dish, in menu order — the hero carousel's slides. */
+const SIGNATURES = signatures();
 const TOAST_MS = 1900;
 /** Mock latency, matching the app's existing setTimeout convention. */
 const LOAD_MS = 900;
@@ -40,9 +40,7 @@ const CART_BAR_GAP = 12;
 const FLOATING_STACK_ALLOWANCE = 110;
 
 export const HomeScreen = () => {
-  const [serviceMode, setServiceMode] = useState('delivery');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [isVegOnly, setIsVegOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -120,21 +118,12 @@ export const HomeScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={contentContainerStyle}
       >
-        <HomeHeader
-          address={ADDRESS}
-          serviceMode={serviceMode}
-          onServiceModeChange={setServiceMode}
-        />
+        <HomeHeader address={ADDRESS} />
 
         {!isOpen ? <ClosedStrip /> : null}
 
-        <SignatureHero item={SIGNATURE} onAdd={() => handleAdd(SIGNATURE)} />
+        <SignatureHero items={SIGNATURES} onAdd={handleAdd} />
         <OffersRail />
-        <StatusStrip
-          isOpen={isOpen}
-          isVegOnly={isVegOnly}
-          onVegChange={setIsVegOnly}
-        />
 
         {isLoading ? (
           <View className="pt-lg">

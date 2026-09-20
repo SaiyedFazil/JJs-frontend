@@ -2,8 +2,10 @@ import React from 'react';
 import {
   TouchableOpacity,
   View,
+  Image,
   Text as RNText,
   StyleSheet,
+  type ImageSourcePropType,
 } from 'react-native';
 import { Text } from './Text';
 import { CATEGORY_TINT, CATEGORY_EMOJI } from './ImageTile';
@@ -12,11 +14,14 @@ import { CATEGORY_TINT, CATEGORY_EMOJI } from './ImageTile';
 export const CategoryTile = ({
   id,
   label,
+  image,
   isActive = false,
   onPress,
 }: {
   id: string;
   label: string;
+  /** Cuisine photo. Absent — see category-images.ts — falls back to the glyph. */
+  image?: ImageSourcePropType;
   isActive?: boolean;
   onPress?: () => void;
 }) => (
@@ -28,13 +33,24 @@ export const CategoryTile = ({
     className="w-18 items-center gap-sm"
   >
     <View
-      className={`w-16 h-16 rounded-xl items-center justify-center border-2 ${
+      className={`w-16 h-16 rounded-xl items-center justify-center overflow-hidden border-2 ${
         isActive
           ? 'bg-tint-selected border-ember'
           : `${CATEGORY_TINT[id] ?? 'bg-sunken'} border-transparent`
       }`}
     >
-      <RNText style={styles.glyph}>{CATEGORY_EMOJI[id] ?? '\u{1F37D}'}</RNText>
+      {image ? (
+        <Image
+          source={image}
+          className="w-full h-full"
+          resizeMode="cover"
+          accessible={false}
+        />
+      ) : (
+        <RNText style={styles.glyph}>
+          {CATEGORY_EMOJI[id] ?? '\u{1F37D}'}
+        </RNText>
+      )}
     </View>
     <Text
       variant="fine"

@@ -5,6 +5,7 @@
  * are the contract for API integration — preserve them when you swap the body.
  */
 import type { MenuCategory, MenuItem, MenuTag } from '@/types/menu';
+import { DISH_IMAGES } from './dish-images';
 
 export const CATEGORIES: MenuCategory[] = [
   { id: 'popular', name: 'Popular', short: 'Popular' },
@@ -688,12 +689,17 @@ const slug = (s: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 
-export const MENU: MenuItem[] = raw.map(it => ({
-  tags: [],
-  ...it,
-  id: slug(it.name),
-  base: it.portion ? it.portion.full : (it.price as number),
-}));
+export const MENU: MenuItem[] = raw.map(it => {
+  const id = slug(it.name);
+  return {
+    tags: [],
+    ...it,
+    id,
+    base: it.portion ? it.portion.full : (it.price as number),
+    // Undefined for most dishes — ImageTile then renders the tinted tile.
+    image: DISH_IMAGES[id],
+  };
+});
 
 export const byId: Record<string, MenuItem> = Object.fromEntries(
   MENU.map(m => [m.id, m]),
@@ -717,3 +723,13 @@ export const bestsellers = (): MenuItem[] =>
 
 export const byCategory = (cat: string): MenuItem[] =>
   MENU.filter(m => m.cat === cat);
+
+/**
+ * The signature carousel. A hero slide is a full-bleed photograph, so only a
+ * photographed dish can fill one — a tinted placeholder tile reads as a hole
+ * at that size. Driven by the data rather than a hardcoded id list, like
+ * bestsellers() above: shooting a dish promotes it, per spec decision D5.
+ *
+ * Ordered by MENU position so the lead slide is stable across reloads.
+ */
+export const signatures = (): MenuItem[] => MENU.filter(m => m.image != null);

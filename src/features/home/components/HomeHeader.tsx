@@ -2,31 +2,14 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, ChevronDown } from 'lucide-react-native';
-import {
-  Text,
-  Segmented,
-  SearchButton,
-  RadialGlow,
-  LinearFill,
-  type SegmentedOption,
-} from '@/components/ui';
-
-export const SERVICE_MODES: SegmentedOption[] = [
-  { value: 'delivery', label: 'Delivery' },
-  { value: 'takeaway', label: 'Takeaway' },
-  { value: 'dinein', label: 'Dine-in' },
-];
+import { Text, SearchButton, RadialGlow, LinearFill } from '@/components/ui';
 
 export const HomeHeader = ({
   address,
-  serviceMode,
-  onServiceModeChange,
   onSearch,
   hasUnread = true,
 }: {
   address: string;
-  serviceMode: string;
-  onServiceModeChange: (value: string) => void;
   onSearch?: () => void;
   hasUnread?: boolean;
 }) => {
@@ -93,13 +76,6 @@ export const HomeHeader = ({
           </TouchableOpacity>
         </View>
       </View>
-
-      <Segmented
-        options={SERVICE_MODES}
-        value={serviceMode}
-        onChange={onServiceModeChange}
-        surface="hero"
-      />
 
       <SearchButton onPress={onSearch} />
     </View>

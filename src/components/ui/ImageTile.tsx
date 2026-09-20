@@ -1,5 +1,10 @@
 import React from 'react';
-import { View, Image, Text as RNText } from 'react-native';
+import {
+  View,
+  Image,
+  Text as RNText,
+  type ImageSourcePropType,
+} from 'react-native';
 
 /**
  * Cuisine coding, shared by the category rail and every image placeholder.
@@ -45,8 +50,8 @@ export const CATEGORY_EMOJI: Record<string, string> = {
 };
 
 export interface ImageTileProps {
-  /** A photo URL. Nothing sets this yet — see spec decision D4. */
-  uri?: string;
+  /** A bundled photo (`require(...)`) or a remote URL. Optional — see D4. */
+  source?: ImageSourcePropType;
   categoryId: string;
   /** Placeholder glyph size. Numeric like Badges.tsx, not a type token. */
   emojiSize?: number;
@@ -58,13 +63,13 @@ export interface ImageTileProps {
  * real photography is a data change, never a UI change.
  */
 export const ImageTile = ({
-  uri,
+  source,
   categoryId,
   emojiSize = 28,
 }: ImageTileProps) => {
-  if (uri) {
+  if (source) {
     return (
-      <Image source={{ uri }} className="w-full h-full" resizeMode="cover" />
+      <Image source={source} className="w-full h-full" resizeMode="cover" />
     );
   }
 

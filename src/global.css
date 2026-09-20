@@ -81,6 +81,20 @@
   /* ON-HERO · tints lifted for legibility on Ink 900 (auth flow, D6) */
   --warm-300: #a89a87; /* captions on charcoal — 6.88:1 on Ink 900 */
   --chili-300: #ef6b58; /* errors on charcoal — 6.23:1 on Ink 900 */
+
+  /* GLASS · the floating tab bar's liquid-glass pill.
+     A real backdrop blur (@react-native-community/blur) does the diffusion;
+     these are the TINT laid over it, so every alpha here is deliberately low.
+     Raise them and the blur stops reading as glass and starts reading as
+     frosted plastic.
+
+     --glass-tint is the Android `overlayColor`, where the library's own
+     default is a dark charcoal that would sink the whole pill. */
+  --glass-tint: rgba(255, 255, 255, 0.06); /* the wash over the blur */
+  --glass-sheen-in: rgba(255, 255, 255, 0.22); /* lit top-left of the sheen */
+  --glass-sheen-out: rgba(255, 255, 255, 0); /* its falloff, to nothing */
+  --glass-rim: rgba(255, 255, 255, 0.95); /* specular edge, the bright line */
+  --glass-edge: rgba(255, 255, 255, 0.6); /* outer stroke around the pill */
 }
 
 /* ---------------------------------------------------------------------------
@@ -195,6 +209,13 @@
   --tint-dessert: var(--rose-50);
   --tint-drink: var(--ice-50);
   --tint-selected: var(--ember-25);
+
+  /* — Glass tab bar — */
+  --glass: var(--glass-tint); /* wash over the native blur */
+  --glass-sheen: var(--glass-sheen-in); /* the diagonal light sweep */
+  --glass-sheen-fade: var(--glass-sheen-out); /* its far end */
+  --glass-highlight: var(--glass-rim); /* the specular top edge */
+  --glass-hairline: var(--glass-edge); /* the outer stroke */
 }
 
 /* ---------------------------------------------------------------------------
@@ -266,6 +287,12 @@
   --color-tint-dessert: var(--tint-dessert);
   --color-tint-drink: var(--tint-drink);
   --color-tint-selected: var(--tint-selected);
+
+  --color-glass: var(--glass);
+  --color-glass-sheen: var(--glass-sheen);
+  --color-glass-sheen-fade: var(--glass-sheen-fade);
+  --color-glass-highlight: var(--glass-highlight);
+  --color-glass-hairline: var(--glass-hairline);
 
   /* — TYPOGRAPHY (PDF section 02) —
      Bricolage Grotesque carries display sizes (>= 24px per the PDF);
@@ -348,4 +375,12 @@
   --shadow-e2: 0px 4px 12px rgba(20, 16, 13, 0.1);
   --shadow-e3: 0px -8px 28px rgba(20, 16, 13, 0.14);
   --shadow-ember-glow: 0px 6px 20px rgba(236, 91, 19, 0.32);
+
+  /* The floating glass pill. Unlike e3 — which casts UPWARD because the old
+     bar was anchored to the screen edge — this pill is inset on all four
+     sides, so it casts down and out like a physical object lying on the
+     canvas. Very wide and very soft, at low opacity: glass barely occludes
+     light, so a tight or dark shadow immediately reads as an opaque card
+     sitting on the page rather than a pane floating above it. */
+  --shadow-glass: 0px 16px 44px rgba(20, 16, 13, 0.13);
 }

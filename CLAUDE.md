@@ -80,7 +80,7 @@ When the API phase starts, these are the seams:
 | --- | --- |
 | the bodies of `src/data/menu.ts` and `src/data/restaurant.ts` | From `menu`: `CATEGORIES`, `byId`, `bestsellers()`, `byCategory()`. From `restaurant`: `isOpenAt()`, `SERVICE`, `OPENS_AT_LABEL`. |
 | `HomeScreen`'s `isLoading` `setTimeout` | the `SkeletonRail` it already gates |
-| `MenuItem.image`, declared and unset | `ImageTile`, which already renders a photo when a `uri` exists |
+| the `require()` values in `src/data/dish-images.ts`, swapped for API URLs | `DISH_IMAGES`' slug keys, and `ImageTile`, which renders either a bundled module or a URL |
 
 `priceOf()` exists in `menu.ts` for deferred portion pricing (not yet active in the home screen) — preserve it during the swap even though the home screen does not yet import it.
 
@@ -89,6 +89,14 @@ When the API phase starts, these are the seams:
 Screens live under `src/features/<feature-name>/`. Components shared across features go in `src/components/`. Types will go in `src/types/`.
 
 Shared mock data lives in `src/data/` (`menu.ts`, `restaurant.ts`) and its types in `src/types/`. Home-only composition components live in `src/features/home/components/`; anything reusable belongs in `src/components/ui/`.
+
+### Dish Photography
+
+Photos are bundled in `src/assets/images/` and mapped to dishes by slug id in `src/data/dish-images.ts`. `menu.ts` attaches them in its `MENU.map`, so a dish's `image` is set purely by adding a key to that map.
+
+Only a few dishes are shot. Anything absent from `DISH_IMAGES` renders `ImageTile`'s tinted cuisine tile instead, so an unphotographed dish is a complete card rather than a hole — never add a placeholder image for one.
+
+Metro only bundles `jpg`, `jpeg`, `png`, `webp` and `gif`. `.avif` and `.jfif` are **not** in `assetExts`: convert them before adding, or the bundler silently fails to resolve the `require()`.
 
 ## Environment
 
@@ -115,3 +123,28 @@ ESLint (`@react-native` ruleset) + Prettier (single quotes, trailing commas) + H
 
 - adb uninstall com.jjskitchen.app
 - npm run android
+
+## After any dependency change, reset the Metro cache
+
+Run `npm run start:reset` (not `npm start`) after anything that rewrites
+`node_modules` — `npm install`, `npm ci`, a lockfile bump, a dependency upgrade.
+
+`react-native-worklets` compiles its worklet "unpackers" into JS at build time
+via its Babel plugin, and `libworklets.so` evaluates those strings at startup.
+The two sides are version-locked. Metro's transform cache is keyed on file
+contents, not on the installed plugin version, so after an upgrade it will
+happily replay JS built by the *previous* worklets plugin against the *new*
+native library. The mismatch aborts the process on the JS thread before any app
+code runs:
+
+```
+Fatal signal 6 (SIGABRT) in tid … (mqt_v_js)
+Abort message: 'jsi.h: Object facebook::jsi::Value::getObject(Runtime &) &&:
+                assertion "isObject()" failed'
+  #02 libworklets.so  jsi::Value::getObject
+  #03 worklets::UnpackerLoader::installUnpacker
+```
+
+It looks like a native/build failure, but the build is fine and Gradle reports
+no error — only the JS is stale. `--reset-cache` is the fix; a Gradle clean is
+not, and will cost a long rebuild for nothing.

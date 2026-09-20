@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { CategoryTile } from '@/components/ui';
 import { CATEGORIES } from '@/data/menu';
+import { CATEGORY_IMAGES } from '@/data/category-images';
 import { SectionHeader } from './SectionHeader';
 
 /** The ten cuisines the design surfaces, in its order. Spec §5.4. */
@@ -43,6 +44,7 @@ export const CategoryRail = ({
           key={category.id}
           id={category.id}
           label={category.short}
+          image={CATEGORY_IMAGES[category.id]}
           isActive={activeId === category.id}
           onPress={() => onSelect(category.id)}
         />
