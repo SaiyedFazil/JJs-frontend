@@ -47,6 +47,8 @@ export {
   useToken,
 } from './Gradient';
 
+export { Icon } from './Icon';
+
 export { ImageTile, CATEGORY_TINT, CATEGORY_EMOJI } from './ImageTile';
 export type { ImageTileProps } from './ImageTile';
 

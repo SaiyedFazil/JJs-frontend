@@ -11,6 +11,7 @@ import {
 } from '@/utils/storage';
 import { AuthResponse } from '@/types/api.types';
 import { AuthService } from '@/services/auth.service';
+import { useProfileStore } from '@/store/profile.store';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // State Shape
@@ -185,7 +186,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // 2. Wipe every piece of personal info from persistent storage
       clearAuthData();
 
-      // 3. Reset in-memory state — nothing personal remains in RAM either
+      // 3. Device-local preferences are personal too. clearAuthData() drops
+      //    the stored avatar; this drops the copy already in memory, so the
+      //    next sign-in on this device starts from the default.
+      useProfileStore.getState().reset();
+
+      // 4. Reset in-memory state — nothing personal remains in RAM either
       set({
         isAuthenticated: false,
         user: null,

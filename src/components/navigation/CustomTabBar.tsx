@@ -1,5 +1,12 @@
 import React, { useMemo, memo, useCallback } from 'react';
-import { View, Pressable, StyleSheet, Platform } from 'react-native';
+import {
+  View,
+  Pressable,
+  StyleSheet,
+  Platform,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Home, Bookmark, ClipboardList, User } from 'lucide-react-native';
 import { BlurView } from '@react-native-community/blur';
@@ -179,7 +186,7 @@ TabButton.displayName = 'TabButton';
  * the cream canvas and survives content scrolling beneath it.
  */
 export const CustomTabBar = memo(
-  ({ state, navigation, insets }: BottomTabBarProps) => {
+  ({ state, navigation, descriptors, insets }: BottomTabBarProps) => {
     // Insets come from props rather than useSafeAreaInsets to keep this a
     // pure memoized component with no hook-order risk under the navigator.
     const containerStyle = useMemo(
@@ -198,6 +205,19 @@ export const CustomTabBar = memo(
     // on. It must be opaque, or the pill becomes an unreadable ghost for the
     // users who enabled that setting precisely to avoid one.
     const fallbackColor = useToken('--color-surface');
+
+    // A screen nested inside a tab can ask for the whole viewport by setting
+    // `tabBarStyle: { display: 'none' }`, the same contract the default bar
+    // honours. Flattened rather than read directly, because the option is a
+    // StyleProp and may arrive as an array.
+    //
+    // This sits AFTER every hook above on purpose: an early return placed
+    // among them would change the hook count between renders.
+    const focusedOptions = descriptors[state.routes[state.index].key]?.options;
+    const tabBarStyle = StyleSheet.flatten(
+      focusedOptions?.tabBarStyle as StyleProp<ViewStyle>,
+    );
+    if (tabBarStyle?.display === 'none') return null;
 
     return (
       <View style={containerStyle} pointerEvents="box-none">

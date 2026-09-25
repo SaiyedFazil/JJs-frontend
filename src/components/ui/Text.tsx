@@ -11,19 +11,33 @@ import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
  * Native cannot synthesize a weight from a static face.
  */
 export type TextVariant =
-  'display' | 'h1' | 'h2' | 'title' | 'item' | 'body' | 'caption' | 'fine';
+  | 'display'
+  | 'h1'
+  | 'h2'
+  | 'title'
+  | 'item'
+  | 'body'
+  | 'caption'
+  | 'fine'
+  | 'micro';
 
 export type TextWeight = '400' | '500' | '600' | '700' | '800';
 
 export type TextTone =
   | 'ink'
+  | 'ink-soft'
   | 'muted'
+  | 'label'
+  | 'footnote'
+  | 'verified'
   | 'ember'
   | 'saffron'
   | 'on-ember'
   | 'on-ember-muted'
   | 'on-hero'
+  | 'hero-chrome'
   | 'hero-muted'
+  | 'hero-muted-strong'
   | 'hero-danger'
   | 'closed-foreground'
   | 'veg'
@@ -41,6 +55,7 @@ const FAMILY: Record<TextVariant, Family> = {
   body: 'jakarta',
   caption: 'jakarta',
   fine: 'jakarta',
+  micro: 'jakarta',
 };
 
 const SIZE: Record<TextVariant, string> = {
@@ -52,6 +67,8 @@ const SIZE: Record<TextVariant, string> = {
   body: 'text-body',
   caption: 'text-caption uppercase',
   fine: 'text-fine',
+  /** Case is left to the caller: a count badge is sentence case, a chip is not. */
+  micro: 'text-micro',
 };
 
 const DEFAULT_WEIGHT: Record<TextVariant, TextWeight> = {
@@ -63,6 +80,7 @@ const DEFAULT_WEIGHT: Record<TextVariant, TextWeight> = {
   body: '500',
   caption: '700',
   fine: '500',
+  micro: '600',
 };
 
 /**
@@ -88,13 +106,19 @@ const WEIGHT_CLASS: Record<Family, Partial<Record<TextWeight, string>>> = {
 
 const TONE: Record<TextTone, string> = {
   ink: 'text-ink',
+  'ink-soft': 'text-ink-soft',
   muted: 'text-muted',
+  label: 'text-label',
+  footnote: 'text-footnote',
+  verified: 'text-verified',
   ember: 'text-ember',
   saffron: 'text-saffron',
   'on-ember': 'text-on-ember',
   'on-ember-muted': 'text-on-ember-muted',
   'on-hero': 'text-hero-foreground',
+  'hero-chrome': 'text-on-hero-chrome',
   'hero-muted': 'text-hero-muted',
+  'hero-muted-strong': 'text-hero-muted-strong',
   'hero-danger': 'text-hero-danger',
   'closed-foreground': 'text-closed-foreground',
   veg: 'text-veg',

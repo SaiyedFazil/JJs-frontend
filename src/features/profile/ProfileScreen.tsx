@@ -1,292 +1,295 @@
-import React, { memo, useMemo } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { View, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+  useNavigation,
+  useRoute,
+  type RouteProp,
+} from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
-  User as UserIcon,
-  ChevronRight,
-  ShoppingBag,
-  MapPin,
+  Bell,
+  ClipboardList,
   CreditCard,
-  Settings,
+  Heart,
   HelpCircle,
   LogOut,
-  Bell,
-  Heart,
+  MapPin,
+  Settings,
+  User as UserIcon,
+  type LucideIcon,
 } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, {
-  FadeInDown,
-  FadeInRight,
-  FadeInUp,
-} from 'react-native-reanimated';
+import { Icon, Text, Toast } from '@/components/ui';
+import { TAB_BAR_HEIGHT } from '@/components/navigation/CustomTabBar';
 import { useAuthStore } from '@/store/auth.store';
-import { Text, Tag, type TextTone } from '@/components/ui';
+import { useProfileStore } from '@/store/profile.store';
+import type { ProfileStackParamList } from '@/navigation/ProfileNavigator';
+import { useProfileCounts } from './profile-mock';
+import { ProfileHeader } from './components/ProfileHeader';
+import { StatsCard } from './components/StatsCard';
+import { SectionCard } from './components/SectionCard';
+import { ProfileRow } from './components/ProfileRow';
+import { AvatarSheet } from './components/AvatarSheet';
+import { LogoutDialog } from './components/LogoutDialog';
+
+const TOAST_MS = 1900;
+/** Room for the toast itself, above the tab bar's footprint. */
+const TOAST_ALLOWANCE = 12;
 
 /**
- * Types for Profile Menu
+ * A row's icon. `Icon` rather than a bare lucide glyph, because a className
+ * never reaches one of those — see src/components/ui/Icon.tsx. The design's
+ * geometry (19px at a 1.9 stroke) is that component's default.
+ *
+ * Each class is spelled out at the call site below rather than built here:
+ * Tailwind emits only the classes it finds in the source text.
  */
-interface ProfileMenuItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  badge?: string;
-  tone?: TextTone;
-}
-
-interface ProfileSection {
-  title: string;
-  items: ProfileMenuItem[];
-}
-
-/**
- * Static Menu Sections Configuration
- * Moved outside component to prevent Hook violation during re-renders
- */
-const MENU_SECTIONS: ProfileSection[] = [
-  {
-    title: 'Activity',
-    items: [
-      {
-        id: '1',
-        title: 'My Orders',
-        subtitle: 'View history & reorder',
-        icon: <ShoppingBag size={20} className="text-ember" />,
-        badge: '5 Items',
-      },
-      {
-        id: '2',
-        title: 'Favorites',
-        subtitle: 'Saved food items',
-        icon: <Heart size={20} className="text-ember" />,
-      },
-      {
-        id: '3',
-        title: 'Notifications',
-        subtitle: 'Alerts & updates',
-        icon: <Bell size={20} className="text-ember" />,
-        badge: 'New',
-      },
-    ],
-  },
-  {
-    title: 'Account Settings',
-    items: [
-      {
-        id: '4',
-        title: 'Personal Info',
-        subtitle: 'Manage profile data',
-        icon: <UserIcon size={20} className="text-ember" />,
-      },
-      {
-        id: '5',
-        title: 'Saved Addresses',
-        subtitle: 'Home, Office & others',
-        icon: <MapPin size={20} className="text-ember" />,
-        badge: '3 Saved',
-      },
-      {
-        id: '6',
-        title: 'Payment Methods',
-        subtitle: 'Cards & UPI',
-        icon: <CreditCard size={20} className="text-ember" />,
-      },
-    ],
-  },
-  {
-    title: 'Preferences',
-    items: [
-      {
-        id: '7',
-        title: 'Settings',
-        subtitle: 'App preferences',
-        icon: <Settings size={20} className="text-ember" />,
-      },
-      {
-        id: '8',
-        title: 'Help & Support',
-        subtitle: 'Get instant assistance',
-        icon: <HelpCircle size={20} className="text-ember" />,
-      },
-      {
-        id: '9',
-        title: 'Logout',
-        subtitle: 'End your session',
-        icon: <LogOut size={20} className="text-chili" />,
-        tone: 'chili',
-      },
-    ],
-  },
-];
-
-interface MenuItemProps {
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string;
-  onPress?: () => void;
-  tone?: TextTone;
-  delay?: number;
-  badge?: string;
-}
-
-const MenuItem = memo(
-  ({
-    icon,
-    title,
-    subtitle,
-    onPress,
-    tone = 'ink',
-    delay = 0,
-    badge,
-  }: MenuItemProps) => (
-    <Animated.View entering={FadeInDown.delay(delay).duration(500).springify()}>
-      <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.6}
-        accessibilityRole="button"
-        className="flex-row items-center py-md px-xl"
-      >
-        <View className="w-11 h-11 rounded-lg items-center justify-center bg-ember-tint">
-          {icon}
-        </View>
-        <View className="flex-1 ml-md">
-          <Text variant="item" tone={tone}>
-            {title}
-          </Text>
-          {subtitle ? (
-            <Text variant="caption" tone="muted" className="mt-xs">
-              {subtitle}
-            </Text>
-          ) : null}
-        </View>
-        {badge ? <Tag label={badge} /> : null}
-        <ChevronRight size={16} className="text-muted ml-sm" strokeWidth={3} />
-      </TouchableOpacity>
-    </Animated.View>
-  ),
+const tileIcon = (glyph: LucideIcon, className: string) => (
+  <Icon icon={glyph} className={className} />
 );
-
-MenuItem.displayName = 'MenuItem';
 
 export const ProfileScreen = () => {
   const insets = useSafeAreaInsets();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const route = useRoute<RouteProp<ProfileStackParamList, 'ProfileMain'>>();
+
   const user = useAuthStore(state => state.user);
   const logout = useAuthStore(state => state.logout);
+  const avatarId = useProfileStore(state => state.avatarId);
+  const setAvatar = useProfileStore(state => state.setAvatar);
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => logout(),
-        },
-      ],
-      { cancelable: true },
-    );
-  };
+  const counts = useProfileCounts();
 
-  const handleItemPress = (item: ProfileMenuItem) => {
-    if (item.title === 'Logout') {
-      handleLogout();
-    }
-  };
+  const [isSheetOpen, setSheetOpen] = useState(false);
+  const [isLogoutOpen, setLogoutOpen] = useState(false);
+  const [isLoggingOut, setLoggingOut] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
-  // Memoize scroll content style to avoid inline style warnings
-  const scrollContentStyle = useMemo(
-    () => [styles.scrollContent, { paddingTop: insets.top + 40 }],
-    [insets.top],
+  // Same arithmetic as HomeScreen: CustomTabBar pins itself to the screen
+  // bottom with its own `insets.bottom` padding on top of TAB_BAR_HEIGHT, so
+  // its true footprint is the sum — and both the scroll content and the
+  // floating toast have to clear all of it.
+  const tabBarFootprint = TAB_BAR_HEIGHT + insets.bottom;
+  const contentContainerStyle = useMemo(
+    () => ({ paddingBottom: tabBarFootprint + TOAST_ALLOWANCE }),
+    [tabBarFootprint],
   );
 
-  // Helper to get initials
-  const getInitials = () => {
-    if (user?.firstName && user?.lastName) {
-      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showToast = useCallback((message: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast(message);
+    toastTimer.current = setTimeout(() => setToast(null), TOAST_MS);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    },
+    [],
+  );
+
+  // Edit Profile navigates back with a message rather than showing it on the
+  // screen it is leaving. Clearing the param immediately is what stops the
+  // same toast firing again when this screen is next focused.
+  const pendingToast = route.params?.toast;
+  useEffect(() => {
+    if (!pendingToast) return;
+    showToast(pendingToast);
+    navigation.setParams({ toast: undefined });
+  }, [navigation, pendingToast, showToast]);
+
+  const name =
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() ||
+    'Your profile';
+  const phone = user
+    ? `${user.countryCode} ${user.phoneNumber}`
+    : 'Not signed in';
+
+  /**
+   * The tabs are siblings of this stack, not children of it, so switching to
+   * one goes through the parent navigator.
+   */
+  const goToTab = useCallback(
+    (tab: string) => navigation.getParent()?.navigate(tab),
+    [navigation],
+  );
+
+  const handleSaveAvatar = useCallback(
+    (id: number) => {
+      setAvatar(id);
+      setSheetOpen(false);
+      showToast('Avatar updated');
+    },
+    [setAvatar, showToast],
+  );
+
+  const handleLogout = useCallback(async () => {
+    setLoggingOut(true);
+    try {
+      // logout() is best-effort on the server and always clears locally, so
+      // there is no failure branch to handle — RootNavigator swaps to the
+      // auth flow the moment isAuthenticated flips.
+      await logout();
+    } finally {
+      setLoggingOut(false);
+      setLogoutOpen(false);
     }
-    if (user?.firstName) return user.firstName.substring(0, 2).toUpperCase();
-    return 'JJ';
-  };
+  }, [logout]);
 
   return (
     <View className="flex-1 bg-canvas">
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={scrollContentStyle}
+        contentContainerStyle={contentContainerStyle}
       >
-        {/* Header */}
-        <Animated.View
-          entering={FadeInUp.duration(800).springify()}
-          className="items-center px-lg mb-xl gap-lg"
-        >
-          <View className="w-24 h-24 rounded-pill bg-ember items-center justify-center shadow-ember-glow">
-            <Text variant="h1" tone="on-ember">
-              {getInitials()}
+        <ProfileHeader
+          name={name}
+          phone={phone}
+          email={user?.email ?? null}
+          avatarId={avatarId}
+          isEmailVerified={Boolean(user?.email)}
+          onEditAvatar={() => setSheetOpen(true)}
+          onEditProfile={() => navigation.navigate('EditProfile')}
+        />
+
+        <StatsCard counts={counts} />
+
+        <View className="px-md pt-lg">
+          <SectionCard label="Activity">
+            <ProfileRow
+              icon={tileIcon(ClipboardList, 'text-ember')}
+              tile="bg-ember-tint"
+              title="My Orders"
+              subtitle="View history & reorder"
+              badge={counts.orders > 0 ? `${counts.orders} orders` : undefined}
+              onPress={() => goToTab('Orders')}
+            />
+            <ProfileRow
+              icon={tileIcon(Heart, 'text-ember')}
+              tile="bg-ember-tint"
+              title="Favourites"
+              subtitle="Your go-to dishes"
+              badge={
+                counts.favourites > 0 ? `${counts.favourites} saved` : undefined
+              }
+              onPress={() => goToTab('Saved')}
+            />
+            <ProfileRow
+              icon={tileIcon(Bell, 'text-ember')}
+              tile="bg-ember-tint"
+              title="Notifications"
+              subtitle="Order updates & offers"
+              badge={
+                counts.unreadNotifications > 0
+                  ? `${counts.unreadNotifications} new`
+                  : undefined
+              }
+              badgeTone="ember"
+              isLast
+              onPress={() => showToast('Notifications are coming soon')}
+            />
+          </SectionCard>
+
+          <SectionCard label="Account Settings" delay={60}>
+            <ProfileRow
+              icon={tileIcon(UserIcon, 'text-tile-gold')}
+              tile="bg-tile-sand"
+              title="Personal Info"
+              subtitle="Name, phone & email"
+              onPress={() => navigation.navigate('EditProfile')}
+            />
+            <ProfileRow
+              icon={tileIcon(MapPin, 'text-tile-gold')}
+              tile="bg-tile-sand"
+              title="Saved Addresses"
+              subtitle="Home, Office & more"
+              badge={
+                counts.addresses > 0 ? `${counts.addresses} saved` : undefined
+              }
+              onPress={() => showToast('Saved addresses are coming soon')}
+            />
+            <ProfileRow
+              icon={tileIcon(CreditCard, 'text-tile-gold')}
+              tile="bg-tile-sand"
+              title="Payment Methods"
+              subtitle="Cards & UPI"
+              badge={
+                counts.cards > 0 ? `${counts.cards} cards · UPI` : undefined
+              }
+              isLast
+              onPress={() => showToast('Payment methods are coming soon')}
+            />
+          </SectionCard>
+
+          <SectionCard label="Preferences" delay={120}>
+            <ProfileRow
+              icon={tileIcon(Settings, 'text-tile-gold')}
+              tile="bg-tile-sand"
+              title="Settings"
+              subtitle="Notifications, language"
+              onPress={() => showToast('Settings are coming soon')}
+            />
+            <ProfileRow
+              icon={tileIcon(HelpCircle, 'text-tile-gold')}
+              tile="bg-tile-sand"
+              title="Help & Support"
+              subtitle="FAQs, chat with us"
+              onPress={() => showToast('Help & support is coming soon')}
+            />
+            <ProfileRow
+              icon={tileIcon(LogOut, 'text-chili')}
+              tile="bg-tile-chili"
+              title="Logout"
+              subtitle="Sign out of this device"
+              tone="chili"
+              isLast
+              onPress={() => setLogoutOpen(true)}
+            />
+          </SectionCard>
+
+          <View className="items-center pt-xs pb-md">
+            <Text variant="fine" weight="600" tone="label">
+              JJ's Kitchen v1.0
+            </Text>
+            <Text variant="micro" weight="500" tone="footnote" className="mt-1">
+              Made with 🔥 in Ahmedabad
             </Text>
           </View>
-
-          <View className="items-center gap-sm">
-            <Text variant="h2">
-              {user?.firstName
-                ? `${user.firstName} ${user.lastName || ''}`
-                : 'User Name'}
-            </Text>
-            <View className="bg-sunken px-md py-sm rounded-pill">
-              <Text variant="caption" tone="muted">
-                {user?.email || 'Email'}
-              </Text>
-            </View>
-          </View>
-        </Animated.View>
-
-        {/* Sectioned menu */}
-        {MENU_SECTIONS.map((section, sIndex) => (
-          <View key={section.title} className="mb-lg">
-            <Animated.View
-              entering={FadeInRight.delay(sIndex * 100).duration(500)}
-            >
-              <Text variant="caption" tone="muted" className="px-xl mb-sm">
-                {section.title}
-              </Text>
-            </Animated.View>
-
-            {section.items.map((item, iIndex) => (
-              <MenuItem
-                key={item.id}
-                title={item.title}
-                subtitle={item.subtitle}
-                icon={item.icon}
-                tone={item.tone}
-                badge={item.badge}
-                delay={(sIndex * 3 + iIndex) * 50}
-                onPress={() => handleItemPress(item)}
-              />
-            ))}
-          </View>
-        ))}
-
-        {/* Branding footer */}
-        <View className="mt-xl items-center px-lg gap-lg">
-          <View className="w-12 h-0.5 bg-hairline rounded-pill" />
-          <Text variant="caption" tone="muted">
-            JJ's Kitchen v1.0
-          </Text>
         </View>
       </ScrollView>
+
+      {/* Floating clear of the tab bar's full footprint, as on Home. */}
+      <View
+        style={{ bottom: tabBarFootprint }}
+        className="absolute left-md right-md"
+        pointerEvents="box-none"
+      >
+        {toast ? <Toast message={toast} accent="ember" /> : null}
+      </View>
+
+      {isSheetOpen ? (
+        <AvatarSheet
+          currentId={avatarId}
+          onClose={() => setSheetOpen(false)}
+          onSave={handleSaveAvatar}
+        />
+      ) : null}
+
+      {isLogoutOpen ? (
+        <LogoutDialog
+          isBusy={isLoggingOut}
+          onCancel={() => setLogoutOpen(false)}
+          onConfirm={handleLogout}
+        />
+      ) : null}
     </View>
   );
 };
-
-/** Layout-only: clears the floating tab bar. */
-const styles = StyleSheet.create({
-  scrollContent: {
-    paddingBottom: 120,
-  },
-});

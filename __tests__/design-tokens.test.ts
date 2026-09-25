@@ -204,6 +204,7 @@ describe('every color utility resolves to a token in global.css', () => {
     'body',
     'caption',
     'fine',
+    'micro',
     // alignment and border-side utilities the pattern also matches
     'center',
     'left',

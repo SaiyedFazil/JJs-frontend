@@ -16,6 +16,7 @@ export const StorageKeys = {
   ACCESS_TOKEN: 'access_token',
   REFRESH_TOKEN: 'refresh_token',
   USER_PROFILE: 'user_profile', // renamed from user_data for clarity
+  AVATAR_ID: 'avatar_id', // index into the preset avatar set — device-local
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -62,6 +63,22 @@ export const getUserProfile = (): StoredUserProfile | null => {
 export const setUserProfile = (profile: StoredUserProfile): void =>
   storage.set(StorageKeys.USER_PROFILE, JSON.stringify(profile));
 
+// ── Avatar ────────────────────────────────────────────────────────────────────
+/**
+ * The chosen preset avatar, as an index into AVATARS (src/features/profile).
+ *
+ * Device-local on purpose: the backend's profile has no avatar field, so this
+ * is a preference rather than account data. It is still cleared on logout —
+ * the next person to sign in on this device should not inherit it.
+ */
+export const getAvatarId = (): number | null => {
+  const raw = storage.getNumber(StorageKeys.AVATAR_ID);
+  return typeof raw === 'number' ? raw : null;
+};
+
+export const setAvatarId = (id: number): void =>
+  storage.set(StorageKeys.AVATAR_ID, id);
+
 // ── Session management ────────────────────────────────────────────────────────
 /**
  * Atomically wipe ALL auth data from persistent storage.
@@ -71,6 +88,7 @@ export const clearAuthData = (): void => {
   storage.remove(StorageKeys.ACCESS_TOKEN);
   storage.remove(StorageKeys.REFRESH_TOKEN);
   storage.remove(StorageKeys.USER_PROFILE);
+  storage.remove(StorageKeys.AVATAR_ID);
 };
 
 /**
