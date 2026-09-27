@@ -60,13 +60,13 @@ src/
 
 Naming: folders kebab-case · components/screens `PascalCase.tsx` · hooks `use-kebab-case.ts` exporting `useCamelCase` · API modules `<domain>-api.ts` exporting `<domain>Api` · types `<domain>.types.ts` · stores `<name>.store.ts`.
 
-Dependency direction (enforced): `store/` never imports UI; `lib/` never imports UI, stores or hooks; `types/` and `constants/` are leaves; `components/ui/` imports only `types/` and `constants/`; only `lib/api/` touches `api-client`; only `src/app/` imports from `@/app`. A component used by one page lives in that page's `components/`; used by several, it moves to `components/custom/` (or `ui/` if it is a token-only primitive).
+Dependency direction (enforced on the resolved path, so `@/…` and `../…` spellings are checked alike): `store/` never imports UI; `lib/` never imports UI, stores or hooks; `types/` and `constants/` are leaves; `components/ui/` imports only `types/` and `constants/`; only `lib/api/` touches `api-client`; only `src/app/` and the root `App.tsx` import navigators. A component used by one page lives in that page's `components/`; used by several, it moves to `components/custom/` (or `ui/` if it is a token-only primitive).
 
 ### Navigation
 
 All param lists live in `src/types/navigation.types.ts`; screens never import a navigator file.
 
-- `src/app/RootNavigator.tsx` — `AuthNavigator` when signed out, `CompleteProfileScreen` until both names are on file, otherwise `MainTabNavigator`
+- `src/app/RootNavigator.tsx` — `AuthNavigator` when signed out, `CompleteProfileScreen` until the profile is complete, otherwise `MainTabNavigator`. "Complete" is decided in `auth.store`: after OTP, the server's `profileCompleted` flag **or** both names on file; after a relaunch, both names only (whitespace counts as missing). `__tests__/auth-store.test.ts` pins this.
 - `AuthNavigator` — native stack: Splash → Login → OtpVerification
 - `MainTabNavigator` — bottom tabs with `CustomTabBar`: Home, Saved, Orders, Profile (Saved and Orders are placeholders)
 - `ProfileNavigator` — the Profile tab's stack: ProfileMain → EditProfile (tab bar hidden on EditProfile)

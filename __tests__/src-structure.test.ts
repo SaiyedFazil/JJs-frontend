@@ -139,34 +139,74 @@ const SINGLE_SOURCE: { what: string; needle: string | RegExp; file: string }[] =
     },
   ];
 
-/** What each layer (a folder prefix relative to src/) must never import. */
+/**
+ * What each layer (a folder prefix relative to src/) must never import.
+ * `forbidden` is matched against the RESOLVED target (a path relative to
+ * src/), so '@/components/ui' and '../components/ui' are the same import.
+ */
 const LAYER_RULES: { layer: string; forbidden: RegExp; why: string }[] = [
   {
     layer: 'store/',
-    forbidden: /from\s+['"]@\/(?:app|components|features)\//,
+    forbidden: /^(?:app|components|features)\//,
     why: 'stores hold state; UI depends on them, never the reverse',
   },
   {
     layer: 'types/',
-    forbidden: /from\s+['"]@\/(?!types\/)/,
+    forbidden: /^(?!types\/)/,
     why: 'types are leaves: they may only import other types',
   },
   {
     layer: 'constants/',
-    forbidden: /from\s+['"]@\//,
+    forbidden: /^(?!constants\/)/,
     why: 'constants are leaves',
   },
   {
     layer: 'components/ui/',
-    forbidden: /from\s+['"]@\/(?!types\/|constants\/)/,
+    forbidden: /^(?!types\/|constants\/|components\/ui\/)/,
     why: 'the design-system kit knows nothing about screens, stores or the API',
   },
   {
     layer: 'lib/',
-    forbidden: /from\s+['"]@\/(?:app|components|features|store|hooks)\//,
+    forbidden: /^(?:app|components|features|store|hooks)\//,
     why: 'lib is infrastructure: it must not reach up into UI or state',
   },
 ];
+
+/** Every module specifier in `import … from`, side-effect `import`, `export … from` and `require()`. */
+function specifiersIn(source: string): { spec: string; line: number }[] {
+  const out: { spec: string; line: number }[] = [];
+  const SPECIFIER = /(?:\bfrom\s+|\bimport\s+|\brequire\(\s*)['"]([^'"]+)['"]/g;
+  for (const m of source.matchAll(SPECIFIER)) {
+    out.push({
+      spec: m[1],
+      line: source.slice(0, m.index).split('\n').length,
+    });
+  }
+  return out;
+}
+
+/**
+ * Where a specifier lands, as a path relative to src/ — or null for a
+ * package or anything outside src/. Aliased and relative spellings of the
+ * same module resolve to the same answer.
+ */
+function resolveInSrc(fromAbs: string, spec: string): string | null {
+  let abs: string;
+  if (spec.startsWith('@/')) abs = path.join(SRC, spec.slice(2));
+  else if (spec.startsWith('.'))
+    abs = path.resolve(path.dirname(fromAbs), spec);
+  else return null;
+  const rel = path.relative(SRC, abs).split(path.sep).join('/');
+  return rel.startsWith('..') || path.isAbsolute(rel) ? null : rel;
+}
+
+/** "line: specifier → target" for each import of `abs` whose target matches. */
+function importsInto(abs: string, target: RegExp): string[] {
+  return specifiersIn(fs.readFileSync(abs, 'utf8'))
+    .map(({ spec, line }) => ({ spec, line, to: resolveInSrc(abs, spec) }))
+    .filter(({ to }) => to !== null && target.test(to))
+    .map(({ spec, line, to }) => `${line}: ${spec} → ${to}`);
+}
 
 /** Identifiers retired by a rename. */
 const RETIRED_IDENTIFIERS: RegExp[] = [
@@ -216,6 +256,32 @@ function hits(abs: string, pattern: RegExp): string[] {
     .map(({ line, n }) => `${n}: ${line.trim()}`);
 }
 
+describe('import resolution (what the layer rules see)', () => {
+  const fromStore = path.join(SRC, 'store', 'x.store.ts');
+
+  it('resolves a relative specifier to its src/ path', () => {
+    expect(resolveInSrc(fromStore, '../components/ui')).toBe('components/ui');
+  });
+
+  it('resolves an @/ specifier to its src/ path', () => {
+    expect(resolveInSrc(fromStore, '@/app/RootNavigator')).toBe(
+      'app/RootNavigator',
+    );
+  });
+
+  it('ignores packages and paths outside src/', () => {
+    expect(resolveInSrc(fromStore, 'react-native')).toBeNull();
+    expect(resolveInSrc(fromStore, '../../App')).toBeNull();
+  });
+
+  it('finds side-effect, type-only and multi-line imports', () => {
+    const specs = specifiersIn(
+      "import './a';\nimport type { B } from '../b';\nimport {\n  C,\n} from '@/c';\n",
+    ).map(s => s.spec);
+    expect(specs).toEqual(['./a', '../b', '@/c']);
+  });
+});
+
 describe('src/ structure', () => {
   it.each(RETIRED_PATHS)('src/%s is retired', rel => {
     expect(fs.existsSync(path.join(SRC, rel))).toBe(false);
@@ -253,7 +319,7 @@ describe('src/ structure', () => {
       const offenders = sourceFiles()
         .filter(({ rel }) => rel.startsWith(layer))
         .flatMap(({ rel, abs }) =>
-          hits(abs, forbidden).map(h => `${rel}:${h}`),
+          importsInto(abs, forbidden).map(h => `${rel}:${h}`),
         );
       expect(offenders).toEqual([]);
     },
@@ -286,11 +352,11 @@ describe('src/ structure', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('only the routing layer (src/app/) imports navigators from @/app', () => {
+  it('only the routing layer (src/app/) and App.tsx import navigators', () => {
     const offenders = sourceFiles()
-      .filter(({ rel }) => !rel.startsWith('app/'))
+      .filter(({ rel }) => !rel.startsWith('app/') && rel !== '../App.tsx')
       .flatMap(({ rel, abs }) =>
-        hits(abs, /from\s+['"]@\/app\//).map(h => `${rel}:${h}`),
+        importsInto(abs, /^app\//).map(h => `${rel}:${h}`),
       );
     expect(offenders).toEqual([]);
   });
