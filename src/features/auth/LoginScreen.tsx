@@ -15,7 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { authApi } from '@/lib/api/auth/auth-api';
 import { clearAuthData } from '@/lib/storage';
-import { useAppToast } from '@/hooks/useAppToast';
+import { useAppToast } from '@/hooks/use-app-toast';
 import { Text, Button, TextField } from '@/components/ui';
 import { BrandMark } from './BrandMark';
 

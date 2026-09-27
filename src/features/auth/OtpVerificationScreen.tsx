@@ -20,7 +20,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import { Spinner } from 'heroui-native';
 import { authApi } from '@/lib/api/auth/auth-api';
 import { useAuthStore } from '@/store/auth.store';
-import { useAppToast } from '@/hooks/useAppToast';
+import { useAppToast } from '@/hooks/use-app-toast';
 import { Text, OtpInput } from '@/components/ui';
 
 // ── Native modules ────────────────────────────────────────────────────────────

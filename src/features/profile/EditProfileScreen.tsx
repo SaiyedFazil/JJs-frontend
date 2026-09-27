@@ -8,7 +8,7 @@ import { FormScreen, Icon, Text, TextField } from '@/components/ui';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfileStore } from '@/store/profile.store';
 import { userApi } from '@/lib/api/user/user-api';
-import { useAppToast } from '@/hooks/useAppToast';
+import { useAppToast } from '@/hooks/use-app-toast';
 import { EMAIL_REGEX } from '@/lib/validation';
 import type { ProfileStackParamList } from '@/types/navigation.types';
 import { Avatar } from './components/Avatar';

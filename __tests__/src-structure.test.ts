@@ -22,6 +22,7 @@ const RETIRED_PATHS: string[] = [
   'api',
   'services',
   'utils',
+  'hooks/useAppToast.tsx',
 ];
 
 /** Locations (relative to src/) the structure promises. */
@@ -37,6 +38,7 @@ const REQUIRED_PATHS: string[] = [
   'lib/api/auth/auth-api.ts',
   'lib/api/user/user-api.ts',
   'lib/storage.ts',
+  'hooks/use-app-toast.ts',
 ];
 
 /** Import specifiers that point at retired locations, however they are spelled. */
@@ -47,6 +49,7 @@ const RETIRED_IMPORTS: RegExp[] = [
   /import type \{ ProfileStackParamList \} from ['"][^'"]*ProfileNavigator['"]/,
   /['"]@\/(?:api|services|utils)\//,
   /['"][^'"]*src\/(?:api|services|utils)\//,
+  /['"]@\/hooks\/useAppToast['"]/,
 ];
 
 /** Values and types that must be defined in exactly one file. */
@@ -230,6 +233,14 @@ describe('src/ structure', () => {
       .flatMap(({ rel, abs }) =>
         hits(abs, /from\s+['"][^'"]*api-client['"]/).map(h => `${rel}:${h}`),
       );
+    expect(offenders).toEqual([]);
+  });
+
+  it('hook files are named use-kebab-case.ts', () => {
+    const offenders = sourceFiles()
+      .filter(({ rel }) => /(^|\/)hooks\//.test(rel))
+      .map(({ rel }) => rel)
+      .filter(rel => !/^use-[a-z0-9-]+\.ts$/.test(path.posix.basename(rel)));
     expect(offenders).toEqual([]);
   });
 
