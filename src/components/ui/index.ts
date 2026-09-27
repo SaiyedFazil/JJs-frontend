@@ -49,6 +49,9 @@ export {
 
 export { Icon } from './Icon';
 
+export { FormScreen } from './FormScreen';
+export type { FormScreenProps } from './FormScreen';
+
 export { ImageTile, CATEGORY_TINT, CATEGORY_EMOJI } from './ImageTile';
 export type { ImageTileProps } from './ImageTile';
 
