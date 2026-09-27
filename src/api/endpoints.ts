@@ -11,7 +11,8 @@ export const ENDPOINTS = {
     // REFRESH_TOKEN: '/auth/refresh-token',
   },
   USER: {
-    UPDATE_PROFILE: '/user/profile',
+    /** One resource, two verbs: GET reads the profile, PATCH updates it. */
+    PROFILE: '/user/profile',
   },
   MENU: {
     // CATEGORIES: '/menu/categories',
