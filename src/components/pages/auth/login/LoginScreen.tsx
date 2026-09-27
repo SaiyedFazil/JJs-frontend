@@ -7,7 +7,6 @@ import {
   StatusBar,
   StyleSheet,
   Keyboard,
-  NativeModules,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -17,20 +16,15 @@ import { authApi } from '@/lib/api/auth/auth-api';
 import { clearAuthData } from '@/lib/storage';
 import { useAppToast } from '@/hooks/use-app-toast';
 import { Text, Button, TextField } from '@/components/ui';
-import { BrandMark } from './BrandMark';
-
-const { PhoneNumberHintModule } = NativeModules;
-
-type RootStackParamList = {
-  Login: { prefillPhone?: string };
-  OtpVerification: { phone: string; authToken: string };
-};
+import type { AuthStackParamList } from '@/types/navigation.types';
+import { BrandMark } from '../components/BrandMark';
+import { usePhoneNumberHint } from './hooks/use-phone-number-hint';
 
 export const LoginScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<RouteProp<RootStackParamList, 'Login'>>();
+    useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+  const route = useRoute<RouteProp<AuthStackParamList, 'Login'>>();
 
   const [phone, setPhone] = useState(route.params?.prefillPhone || '');
   const [error, setError] = useState('');
@@ -43,34 +37,10 @@ export const LoginScreen = () => {
     clearAuthData();
   }, []);
 
-  // ── Auto-detect phone number on mount (Android only) ──────────────────
-  // Shows the Google Phone Number Hint picker automatically when the
-  // login screen loads — same UX as WhatsApp, PhonePe, Cred, etc.
-  // Skipped if user already has a phone (e.g. coming back from OTP screen).
-  useEffect(() => {
-    if (Platform.OS !== 'android' || !PhoneNumberHintModule) return;
-    if (route.params?.prefillPhone) return; // already have a number
-
-    // Small delay so the Activity is fully mounted and idle (no animations)
-    const timer = setTimeout(async () => {
-      try {
-        const phoneNumber: string =
-          await PhoneNumberHintModule.requestPhoneNumberHint();
-        if (phoneNumber) {
-          const cleaned = phoneNumber.replace(/[^0-9]/g, '');
-          if (cleaned.length >= 10) {
-            setPhone(cleaned.slice(-10));
-          }
-        }
-      } catch (err: any) {
-        // User dismissed or no SIM numbers — perfectly fine, they'll type manually
-        console.log('[PhoneHint] auto-detect:', err?.message);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  usePhoneNumberHint({
+    skip: Boolean(route.params?.prefillPhone),
+    onNumber: setPhone,
+  });
 
   const handlePhoneChange = (text: string) => {
     const cleaned = text.replace(/[^0-9]/g, '');

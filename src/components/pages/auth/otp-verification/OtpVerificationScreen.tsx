@@ -9,8 +9,6 @@ import {
   Keyboard,
   TextInput,
   TouchableOpacity,
-  NativeModules,
-  NativeEventEmitter,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -22,21 +20,16 @@ import { authApi } from '@/lib/api/auth/auth-api';
 import { useAuthStore } from '@/store/auth.store';
 import { useAppToast } from '@/hooks/use-app-toast';
 import { Text, OtpInput } from '@/components/ui';
-
-// ── Native modules ────────────────────────────────────────────────────────────
-const { SmsRetrieverModule } = NativeModules;
+import type { AuthStackParamList } from '@/types/navigation.types';
+import { useResendTimer } from './hooks/use-resend-timer';
+import { useSmsOtpAutofill } from './hooks/use-sms-otp-autofill';
 
 const OTP_LENGTH = 6;
 
-type RootStackParamList = {
-  Login: { prefillPhone?: string };
-  OtpVerification: { phone: string; authToken: string };
-};
-
 export const OtpVerificationScreen = () => {
   const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<RouteProp<RootStackParamList, 'OtpVerification'>>();
+    useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+  const route = useRoute<RouteProp<AuthStackParamList, 'OtpVerification'>>();
   const insets = useSafeAreaInsets();
   const { phone } = route.params;
 
@@ -45,40 +38,12 @@ export const OtpVerificationScreen = () => {
   const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState('');
   const [authToken, setAuthToken] = useState(route.params.authToken);
-  const [resendTimer, setResendTimer] = useState(60);
-  const [canResend, setCanResend] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { resendTimer, canResend, startResendTimer } = useResendTimer();
   const inputRef = useRef<TextInput>(null);
   /** The code last sent for verification, so each entry is submitted once. */
   const submittedOtpRef = useRef('');
   const setAuth = useAuthStore(state => state.setAuth);
   const toast = useAppToast();
-
-  /** Resets and starts the 60-second countdown. */
-  const startResendTimer = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    setResendTimer(60);
-    setCanResend(false);
-    timerRef.current = setInterval(() => {
-      setResendTimer(prev => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current!);
-          timerRef.current = null;
-          setCanResend(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, []);
-
-  // Start timer on mount; clean up on unmount.
-  useEffect(() => {
-    startResendTimer();
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [startResendTimer]);
 
   useEffect(() => {
     const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
@@ -89,59 +54,13 @@ export const OtpVerificationScreen = () => {
       inputRef.current?.focus();
     }, 800);
 
-    // ── SMS User Consent API — no hash needed, shows native consent dialog ──
-    let smsEventEmitter: NativeEventEmitter | null = null;
-    let smsReceivedSub: ReturnType<NativeEventEmitter['addListener']> | null =
-      null;
-    let smsTimeoutSub: ReturnType<NativeEventEmitter['addListener']> | null =
-      null;
-
-    const startSmsListener = async () => {
-      try {
-        // Start the User Consent listener (5-minute window)
-        await SmsRetrieverModule.startSmsRetriever();
-        console.log('📡 SMS User Consent listener started');
-
-        smsEventEmitter = new NativeEventEmitter(SmsRetrieverModule);
-
-        // Fired when user taps "Allow" on the native consent dialog
-        smsReceivedSub = smsEventEmitter.addListener(
-          'onSmsReceived',
-          (event: { message?: string }) => {
-            console.log('📲 SMS User Consent received:', event?.message);
-            if (event?.message) {
-              const otpMatch = event.message.match(/\d{6}/);
-              if (otpMatch && otpMatch[0]) {
-                console.log('✅ OTP auto-filled:', otpMatch[0]);
-                setOtp(otpMatch[0]);
-                Keyboard.dismiss();
-              }
-            }
-          },
-        );
-
-        smsTimeoutSub = smsEventEmitter.addListener('onSmsTimeout', () => {
-          console.log('⏰ SMS User Consent timed out');
-        });
-      } catch (err) {
-        console.log('SMS User Consent error:', err);
-      }
-    };
-
-    if (Platform.OS === 'android') {
-      startSmsListener();
-    }
-
     return () => {
       hideSubscription.remove();
       clearTimeout(timer);
-      if (Platform.OS === 'android') {
-        smsReceivedSub?.remove();
-        smsTimeoutSub?.remove();
-        SmsRetrieverModule.stopSmsRetriever?.();
-      }
     };
   }, []);
+
+  useSmsOtpAutofill(setOtp);
 
   const handleVerify = useCallback(async () => {
     if (otp.length === OTP_LENGTH) {

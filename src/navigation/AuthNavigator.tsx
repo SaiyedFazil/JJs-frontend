@@ -1,11 +1,12 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SplashScreen } from '../features/auth/SplashScreen';
-import { LoginScreen } from '../features/auth/LoginScreen';
-import { OtpVerificationScreen } from '../features/auth/OtpVerificationScreen';
+import { SplashScreen } from '@/components/pages/auth/splash/SplashScreen';
+import { LoginScreen } from '@/components/pages/auth/login/LoginScreen';
+import { OtpVerificationScreen } from '@/components/pages/auth/otp-verification/OtpVerificationScreen';
 import { useAuthStore } from '../store/auth.store';
+import type { AuthStackParamList } from '@/types/navigation.types';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export const AuthNavigator = () => {
   const isFirstLaunch = useAuthStore(state => state.isFirstLaunch);

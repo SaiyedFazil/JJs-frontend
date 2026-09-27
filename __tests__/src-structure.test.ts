@@ -25,6 +25,7 @@ const RETIRED_PATHS: string[] = [
   'hooks/useAppToast.tsx',
   'components/navigation',
   'components/common',
+  'features/auth',
 ];
 
 /** Locations (relative to src/) the structure promises. */
@@ -44,6 +45,16 @@ const REQUIRED_PATHS: string[] = [
   'components/layout/CustomTabBar.tsx',
   'components/custom/PlaceholderScreen.tsx',
   'components/providers/AppProviders.tsx',
+  'components/pages/auth/components/BrandMark.tsx',
+  'components/pages/auth/splash/SplashScreen.tsx',
+  'components/pages/auth/login/LoginScreen.tsx',
+  'components/pages/auth/login/hooks/use-phone-number-hint.ts',
+  'components/pages/auth/otp-verification/OtpVerificationScreen.tsx',
+  'components/pages/auth/otp-verification/hooks/use-resend-timer.ts',
+  'components/pages/auth/otp-verification/hooks/use-sms-otp-autofill.ts',
+  'components/pages/auth/complete-profile/CompleteProfileScreen.tsx',
+  'components/pages/auth/complete-profile/components/NameStep.tsx',
+  'components/pages/auth/complete-profile/components/EmailStep.tsx',
 ];
 
 /** Import specifiers that point at retired locations, however they are spelled. */
@@ -56,6 +67,7 @@ const RETIRED_IMPORTS: RegExp[] = [
   /['"][^'"]*src\/(?:api|services|utils)\//,
   /['"]@\/hooks\/useAppToast['"]/,
   /['"][^'"]*components\/(?:navigation|common)\//,
+  /['"][^'"]*features\/auth/,
 ];
 
 /** Values and types that must be defined in exactly one file. */
@@ -138,7 +150,12 @@ const LAYER_RULES: { layer: string; forbidden: RegExp; why: string }[] = [
 ];
 
 /** Identifiers retired by a rename. */
-const RETIRED_IDENTIFIERS: RegExp[] = [/\bAuthService\b/, /\bUserService\b/];
+const RETIRED_IDENTIFIERS: RegExp[] = [
+  /\bAuthService\b/,
+  /\bUserService\b/,
+  /\bRootStackParamList\b/,
+  /NativeStackNavigationProp<any>/,
+];
 
 function collect(dir: string, out: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

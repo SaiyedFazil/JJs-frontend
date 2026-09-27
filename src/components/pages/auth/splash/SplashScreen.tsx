@@ -21,7 +21,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '@/store/auth.store';
 import { Text } from '@/components/ui';
-import { BrandMark } from './BrandMark';
+import type { AuthStackParamList } from '@/types/navigation.types';
+import { BrandMark } from '../components/BrandMark';
 
 const SPLASH_DURATION = 4000;
 const RING_SIZE = 24;
@@ -121,7 +122,8 @@ const SpinnerRing = () => {
  * brand tile, wordmark and a loading ring over a soft ember glow.
  */
 export const SplashScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
   const setFirstLaunch = useAuthStore(state => state.setFirstLaunch);
 

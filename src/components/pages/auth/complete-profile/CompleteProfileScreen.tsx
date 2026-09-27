@@ -17,8 +17,8 @@ import { useAuthStore } from '@/store/auth.store';
 import { userApi } from '@/lib/api/user/user-api';
 import { EMAIL_REGEX } from '@/lib/validation';
 import { Button, Text } from '@/components/ui';
-import { NameStep } from './NameStep';
-import { EmailStep } from './EmailStep';
+import { NameStep } from './components/NameStep';
+import { EmailStep } from './components/EmailStep';
 
 export const CompleteProfileScreen = () => {
   const insets = useSafeAreaInsets();

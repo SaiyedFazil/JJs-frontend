@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
-import { CompleteProfileScreen } from '../features/auth/complete-profile';
+import { CompleteProfileScreen } from '@/components/pages/auth/complete-profile/CompleteProfileScreen';
 import { useAuthStore } from '../store/auth.store';
 
 export const RootNavigator = () => {
