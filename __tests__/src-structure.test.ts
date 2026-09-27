@@ -23,6 +23,8 @@ const RETIRED_PATHS: string[] = [
   'services',
   'utils',
   'hooks/useAppToast.tsx',
+  'components/navigation',
+  'components/common',
 ];
 
 /** Locations (relative to src/) the structure promises. */
@@ -39,6 +41,9 @@ const REQUIRED_PATHS: string[] = [
   'lib/api/user/user-api.ts',
   'lib/storage.ts',
   'hooks/use-app-toast.ts',
+  'components/layout/CustomTabBar.tsx',
+  'components/custom/PlaceholderScreen.tsx',
+  'components/providers/AppProviders.tsx',
 ];
 
 /** Import specifiers that point at retired locations, however they are spelled. */
@@ -50,6 +55,7 @@ const RETIRED_IMPORTS: RegExp[] = [
   /['"]@\/(?:api|services|utils)\//,
   /['"][^'"]*src\/(?:api|services|utils)\//,
   /['"]@\/hooks\/useAppToast['"]/,
+  /['"][^'"]*components\/(?:navigation|common)\//,
 ];
 
 /** Values and types that must be defined in exactly one file. */

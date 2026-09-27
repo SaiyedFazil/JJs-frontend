@@ -6,8 +6,8 @@ import {
 } from '@react-navigation/native';
 import { HomeScreen } from '@/features/home/HomeScreen';
 import { ProfileNavigator } from '@/navigation/ProfileNavigator';
-import { PlaceholderScreen } from '@/components/common/PlaceholderScreen';
-import { CustomTabBar } from '@/components/navigation/CustomTabBar';
+import { PlaceholderScreen } from '@/components/custom/PlaceholderScreen';
+import { CustomTabBar } from '@/components/layout/CustomTabBar';
 
 const Tab = createBottomTabNavigator();
 
