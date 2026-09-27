@@ -215,7 +215,8 @@ export type MainTabParamList = {
 **A3. `constants/layout.ts`**
 
 - Exports `TAB_BAR_HEIGHT = 94`, with its explanatory comment.
-- `CustomTabBar`, `HomeScreen` and `ProfileScreen` import it from here.
+- `HomeScreen` and `ProfileScreen` import it from here. `CustomTabBar` never reads the constant, so it has nothing to import.
+- In place of the moved constant, `CustomTabBar` keeps a one-line pointer comment. The value 94 is the sum of that file's private dock padding, `PILL_HEIGHT` and `DOCK_GAP`, so whoever edits those three numbers must be told where the total lives.
 
 **A4. `constants/avatars.ts`**
 
@@ -251,7 +252,7 @@ In every extraction the hook body is the original code, moved verbatim. The only
 | `useResendTimer()` | Returns `{ resendTimer, canResend, startResendTimer }` | 60s start, 1000ms interval, `timerRef`, the start-on-mount effect, and the clear-on-unmount cleanup |
 | `useSmsOtpAutofill(onCode: (code: string) => void)` | Android only; no return value | `SmsRetrieverModule` start, `onSmsReceived` and `onSmsTimeout` listeners, the `/\d{6}/` match, `Keyboard.dismiss()`, the console logs, and removing subscriptions plus `stopSmsRetriever?.()` on unmount. The screen passes a callback that calls `setOtp`. |
 | `usePhoneNumberHint({ skip, onNumber })` | Android only; no return value | The `PhoneNumberHintModule` guard, skip when prefilled, the 500ms delay, stripping non-digits, the `>= 10` check, `slice(-10)`, the console log, and clearing the timeout on unmount |
-| `useEditProfile()` | Returns every value and handler the JSX currently reads | All state, the `isDirty` and `toastRef` refs, the GET effect with its `isActive` guard, `edit()`, `hasChanges` and `handleSave`, moved as one block. The screen keeps only JSX and navigation. |
+| `useEditProfile()` | Returns the form's values, setters, `errors`, `isLoading`, `isSaving`, `hasChanges`, `edit` and `handleSave` | All form state, the `isDirty` and `toastRef` refs, the GET effect with its `isActive` guard, `edit()`, `hasChanges` and `handleSave` (including its own `useNavigation` for `popTo`), moved as one block. The screen keeps the JSX, `goBack`, and the avatar sheet's UI state (`isSheetOpen`, `avatarId` and `setAvatar`), which are not part of the form. |
 
 Two details keep the OTP split safe:
 
