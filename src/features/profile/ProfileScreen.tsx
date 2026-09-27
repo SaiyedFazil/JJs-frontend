@@ -169,7 +169,6 @@ export const ProfileScreen = () => {
               tile="bg-ember-tint"
               title="My Orders"
               subtitle="View history & reorder"
-              badge={counts.orders > 0 ? `${counts.orders} orders` : undefined}
               onPress={() => goToTab('Orders')}
             />
             <ProfileRow
@@ -177,9 +176,6 @@ export const ProfileScreen = () => {
               tile="bg-ember-tint"
               title="Favourites"
               subtitle="Your go-to dishes"
-              badge={
-                counts.favourites > 0 ? `${counts.favourites} saved` : undefined
-              }
               onPress={() => goToTab('Saved')}
             />
             <ProfileRow
@@ -187,12 +183,15 @@ export const ProfileScreen = () => {
               tile="bg-ember-tint"
               title="Notifications"
               subtitle="Order updates & offers"
+              // The one badge left on this screen. A row badge now means
+              // "there is something new in here", not "here is a count" —
+              // the counts live in the stats strip above, and repeating them
+              // per row said the same thing twice.
               badge={
                 counts.unreadNotifications > 0
                   ? `${counts.unreadNotifications} new`
                   : undefined
               }
-              badgeTone="ember"
               isLast
               onPress={() => showToast('Notifications are coming soon')}
             />
@@ -211,9 +210,6 @@ export const ProfileScreen = () => {
               tile="bg-tile-sand"
               title="Saved Addresses"
               subtitle="Home, Office & more"
-              badge={
-                counts.addresses > 0 ? `${counts.addresses} saved` : undefined
-              }
               onPress={() => showToast('Saved addresses are coming soon')}
             />
             <ProfileRow
@@ -221,9 +217,6 @@ export const ProfileScreen = () => {
               tile="bg-tile-sand"
               title="Payment Methods"
               subtitle="Cards & UPI"
-              badge={
-                counts.cards > 0 ? `${counts.cards} cards · UPI` : undefined
-              }
               isLast
               onPress={() => showToast('Payment methods are coming soon')}
             />

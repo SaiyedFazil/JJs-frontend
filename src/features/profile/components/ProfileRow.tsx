@@ -18,9 +18,13 @@ export interface ProfileRowProps {
   tile: string;
   title: string;
   subtitle: string;
+  /**
+   * Something new in here — "2 new", not "3 saved". Counts belong to the
+   * stats strip at the top of the screen; a row repeating one was saying the
+   * same thing twice, so a badge on a row is always an attention mark and is
+   * always ember.
+   */
   badge?: string;
-  /** `ember` is for something that wants attention — unread, new. */
-  badgeTone?: 'neutral' | 'ember';
   /** `chili` marks the destructive row; it also drops the chevron. */
   tone?: Extract<TextTone, 'ink' | 'chili'>;
   isLast?: boolean;
@@ -34,7 +38,6 @@ export const ProfileRow = memo(
     title,
     subtitle,
     badge,
-    badgeTone = 'neutral',
     tone = 'ink',
     isLast = false,
     onPress,
@@ -65,16 +68,8 @@ export const ProfileRow = memo(
       </View>
 
       {badge ? (
-        <View
-          className={`px-2 py-1 rounded-sm ${
-            badgeTone === 'ember' ? 'bg-ember' : 'bg-badge'
-          }`}
-        >
-          <Text
-            variant="micro"
-            weight="800"
-            tone={badgeTone === 'ember' ? 'on-ember' : 'muted'}
-          >
+        <View className="px-2 py-1 rounded-sm bg-ember">
+          <Text variant="micro" weight="800" tone="on-ember">
             {badge}
           </Text>
         </View>
