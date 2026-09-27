@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Text } from '@/components/ui';
-import type { ProfileCounts } from '../profile-mock';
+import type { ProfileCounts } from '../hooks/use-profile-counts';
 
 interface Stat {
   value: number;

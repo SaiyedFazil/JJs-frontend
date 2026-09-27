@@ -30,7 +30,7 @@ import { TAB_BAR_HEIGHT } from '@/constants/layout';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfileStore } from '@/store/profile.store';
 import type { ProfileStackParamList } from '@/types/navigation.types';
-import { useProfileCounts } from './profile-mock';
+import { useProfileCounts } from './hooks/use-profile-counts';
 import { ProfileHeader } from './components/ProfileHeader';
 import { StatsCard } from './components/StatsCard';
 import { SectionCard } from './components/SectionCard';

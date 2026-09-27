@@ -1,7 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ProfileScreen } from '@/features/profile/ProfileScreen';
-import { EditProfileScreen } from '@/features/profile/EditProfileScreen';
+import { ProfileScreen } from '@/components/pages/profile/ProfileScreen';
+import { EditProfileScreen } from '@/components/pages/profile/edit-profile/EditProfileScreen';
 import type { ProfileStackParamList } from '@/types/navigation.types';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();

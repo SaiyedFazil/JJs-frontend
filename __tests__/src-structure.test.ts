@@ -27,6 +27,7 @@ const RETIRED_PATHS: string[] = [
   'components/common',
   'features/auth',
   'features/home',
+  'features',
 ];
 
 /** Locations (relative to src/) the structure promises. */
@@ -58,6 +59,11 @@ const REQUIRED_PATHS: string[] = [
   'components/pages/auth/complete-profile/components/EmailStep.tsx',
   'components/pages/home/HomeScreen.tsx',
   'components/pages/home/components/SectionHeader.tsx',
+  'components/pages/profile/ProfileScreen.tsx',
+  'components/pages/profile/components/StatsCard.tsx',
+  'components/pages/profile/hooks/use-profile-counts.ts',
+  'components/pages/profile/edit-profile/EditProfileScreen.tsx',
+  'components/pages/profile/edit-profile/hooks/use-edit-profile.ts',
 ];
 
 /** Import specifiers that point at retired locations, however they are spelled. */
@@ -72,6 +78,8 @@ const RETIRED_IMPORTS: RegExp[] = [
   /['"][^'"]*components\/(?:navigation|common)\//,
   /['"][^'"]*features\/auth/,
   /['"][^'"]*features\/home/,
+  /['"][^'"]*features\//,
+  /['"][^'"]*profile-mock['"]/,
 ];
 
 /** Values and types that must be defined in exactly one file. */
