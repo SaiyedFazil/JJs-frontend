@@ -296,7 +296,7 @@ The work happens on branch `refactor/src-structure` as eight commits. Each commi
 
 ## 7. Verification
 
-**Baseline, measured on `dev` at `3ccd692` before any change:**
+**Baseline, measured on `dev` at `ed7488d` before any change:**
 
 - `tsc --noEmit` reports 0 errors.
 - Jest passes 378 of 378 tests across 4 suites.
