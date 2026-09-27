@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text as RNText } from 'react-native';
-import { avatarAt } from '../avatars';
+import { avatarAt } from '@/constants/avatars';
 
 /**
  * A preset avatar: the emoji, centred on its tint.

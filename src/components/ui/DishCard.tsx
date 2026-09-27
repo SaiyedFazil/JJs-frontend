@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { View } from 'react-native';
 import { Star } from 'lucide-react-native';
-import type { MenuItem } from '@/types/menu';
+import type { MenuItem } from '@/types/menu.types';
 import { Text } from './Text';
 import { VegBadge } from './Badges';
 import { ImageTile } from './ImageTile';

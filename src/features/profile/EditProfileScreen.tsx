@@ -9,14 +9,12 @@ import { useAuthStore } from '@/store/auth.store';
 import { useProfileStore } from '@/store/profile.store';
 import { UserService } from '@/services/user.service';
 import { useAppToast } from '@/hooks/useAppToast';
-import type { ProfileStackParamList } from '@/navigation/ProfileNavigator';
+import { EMAIL_REGEX } from '@/lib/validation';
+import type { ProfileStackParamList } from '@/types/navigation.types';
 import { Avatar } from './components/Avatar';
 import { AvatarSheet } from './components/AvatarSheet';
 import { PillButton } from './components/PillButton';
 import { VerifiedChip } from './components/VerifiedChip';
-
-/** Deliberately permissive — the server is the authority on deliverability. */
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface FieldErrors {
   firstName?: string;
@@ -162,7 +160,7 @@ export const EditProfileScreen = () => {
       firstName: trimmedFirst ? undefined : 'Enter your first name',
       lastName: trimmedLast ? undefined : 'Enter your last name',
       email:
-        !trimmedEmail || EMAIL.test(trimmedEmail)
+        !trimmedEmail || EMAIL_REGEX.test(trimmedEmail)
           ? undefined
           : 'Enter a valid email address',
     };

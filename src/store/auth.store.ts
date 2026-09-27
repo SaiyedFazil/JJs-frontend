@@ -7,8 +7,8 @@ import {
   setAccessToken,
   setRefreshToken,
   setUserProfile,
-  StoredUserProfile,
 } from '@/utils/storage';
+import type { StoredUserProfile } from '@/types/user.types';
 import { AuthResponse } from '@/types/api.types';
 import { AuthService } from '@/services/auth.service';
 import { useProfileStore } from '@/store/profile.store';

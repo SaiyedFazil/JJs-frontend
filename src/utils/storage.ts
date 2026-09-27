@@ -1,4 +1,5 @@
 import { createMMKV } from 'react-native-mmkv';
+import type { StoredUserProfile } from '@/types/user.types';
 
 /**
  * Global MMKV storage instance.
@@ -18,20 +19,6 @@ export const StorageKeys = {
   USER_PROFILE: 'user_profile', // renamed from user_data for clarity
   AVATAR_ID: 'avatar_id', // index into the preset avatar set — device-local
 } as const;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// User Profile — matches the fields returned by the OTP verify response
-// ─────────────────────────────────────────────────────────────────────────────
-export interface StoredUserProfile {
-  id: number;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  countryCode: string;
-  phoneNumber: string;
-  role: string;
-  status: string;
-}
 
 // ── Access Token ──────────────────────────────────────────────────────────────
 export const getAccessToken = (): string | undefined =>
@@ -65,7 +52,7 @@ export const setUserProfile = (profile: StoredUserProfile): void =>
 
 // ── Avatar ────────────────────────────────────────────────────────────────────
 /**
- * The chosen preset avatar, as an index into AVATARS (src/features/profile).
+ * The chosen preset avatar, as an index into AVATARS (src/constants/avatars.ts).
  *
  * Device-local on purpose: the backend's profile has no avatar field, so this
  * is a preference rather than account data. It is still cleared on logout —

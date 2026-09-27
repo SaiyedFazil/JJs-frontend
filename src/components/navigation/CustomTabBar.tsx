@@ -316,19 +316,10 @@ const BLUR_DOWNSAMPLE = 4;
 const PILL_HEIGHT = 72;
 
 /**
- * The bar's full on-screen footprint, excluding the safe-area inset the dock
- * adds on top via `paddingBottom: insets.bottom + DOCK_GAP`:
- *
- *   dock paddingTop (styles.dock)            10
- *   pill height (PILL_HEIGHT)                72
- *   DOCK_GAP below the pill                  12
- *                                            ---
- *                                            94
- *
- * HomeScreen adds insets.bottom to this to clear the pill entirely. Check
- * this arithmetic against the JSX above before changing either number.
+ * TAB_BAR_HEIGHT (src/constants/layout.ts) is this bar's footprint:
+ * styles.dock paddingTop + PILL_HEIGHT + DOCK_GAP. Change any of the three
+ * and update it there.
  */
-export const TAB_BAR_HEIGHT = 94;
 
 /**
  * Layout-only: the dock is pinned across the screen's bottom and the pill

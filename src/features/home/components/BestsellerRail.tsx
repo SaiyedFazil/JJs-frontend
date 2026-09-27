@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ScrollView } from 'react-native';
-import type { MenuItem } from '@/types/menu';
+import type { MenuItem } from '@/types/menu.types';
 import { DishCard } from '@/components/ui';
 import { bestsellers } from '@/data/menu';
 import { SectionHeader } from './SectionHeader';

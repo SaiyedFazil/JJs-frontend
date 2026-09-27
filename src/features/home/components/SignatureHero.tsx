@@ -9,7 +9,7 @@ import {
   type NativeSyntheticEvent,
 } from 'react-native';
 import { Star } from 'lucide-react-native';
-import type { MenuItem } from '@/types/menu';
+import type { MenuItem } from '@/types/menu.types';
 import { Text, ImageTile, ScrimFill, VegBadge } from '@/components/ui';
 
 /** The screen's horizontal gutter, `px-md` on the rail. Spec §4 spacing. */

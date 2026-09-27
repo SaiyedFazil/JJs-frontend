@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet, Text as RNText } from 'react-native';
-import type { MenuItem } from '@/types/menu';
+import type { MenuItem } from '@/types/menu.types';
 import { Text, DishCard, RadialGlow } from '@/components/ui';
 import { byCategory } from '@/data/menu';
 

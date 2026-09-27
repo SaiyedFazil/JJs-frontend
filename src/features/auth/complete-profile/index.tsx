@@ -15,11 +15,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChefHat, ChevronLeft, ArrowRight } from 'lucide-react-native';
 import { useAuthStore } from '@/store/auth.store';
 import { UserService } from '@/services/user.service';
+import { EMAIL_REGEX } from '@/lib/validation';
 import { Button, Text } from '@/components/ui';
 import { NameStep } from './NameStep';
 import { EmailStep } from './EmailStep';
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const CompleteProfileScreen = () => {
   const insets = useSafeAreaInsets();

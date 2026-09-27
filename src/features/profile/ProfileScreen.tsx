@@ -26,10 +26,10 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import { Icon, Text, Toast } from '@/components/ui';
-import { TAB_BAR_HEIGHT } from '@/components/navigation/CustomTabBar';
+import { TAB_BAR_HEIGHT } from '@/constants/layout';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfileStore } from '@/store/profile.store';
-import type { ProfileStackParamList } from '@/navigation/ProfileNavigator';
+import type { ProfileStackParamList } from '@/types/navigation.types';
 import { useProfileCounts } from './profile-mock';
 import { ProfileHeader } from './components/ProfileHeader';
 import { StatsCard } from './components/StatsCard';

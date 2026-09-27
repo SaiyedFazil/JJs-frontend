@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Check } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Icon, Text } from '@/components/ui';
-import { AVATARS, avatarAt } from '../avatars';
+import { AVATARS, avatarAt } from '@/constants/avatars';
 import { PillButton } from './PillButton';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);

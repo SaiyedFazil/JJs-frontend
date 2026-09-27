@@ -7,12 +7,12 @@ import React, {
 } from 'react';
 import { View, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { MenuItem } from '@/types/menu';
+import type { MenuItem } from '@/types/menu.types';
 import { CartBar, Toast, SkeletonRail } from '@/components/ui';
 import { useCartStore } from '@/store/cart.store';
 import { byId, signatures } from '@/data/menu';
 import { isOpenAt } from '@/data/restaurant';
-import { TAB_BAR_HEIGHT } from '@/components/navigation/CustomTabBar';
+import { TAB_BAR_HEIGHT } from '@/constants/layout';
 import { HomeHeader } from './components/HomeHeader';
 import { ClosedStrip } from './components/ClosedStrip';
 import { SignatureHero } from './components/SignatureHero';

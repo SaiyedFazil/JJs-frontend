@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { getAvatarId, setAvatarId } from '@/utils/storage';
-import { DEFAULT_AVATAR_ID } from '@/features/profile/avatars';
+import { DEFAULT_AVATAR_ID } from '@/constants/avatars';
 
 /**
  * Profile preferences that belong to the device, not to the account.
@@ -10,7 +10,7 @@ import { DEFAULT_AVATAR_ID } from '@/features/profile/avatars';
  * object we PATCH would invent a column the API does not have.
  */
 interface ProfileState {
-  /** Index into AVATARS (src/features/profile/avatars.ts). */
+  /** Index into AVATARS (src/constants/avatars.ts). */
   avatarId: number;
 
   /** Picks an avatar and writes it through to MMKV in the same call. */

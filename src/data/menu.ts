@@ -4,7 +4,7 @@
  * The exported signatures (byId, bestsellers(), byCategory(), priceOf())
  * are the contract for API integration — preserve them when you swap the body.
  */
-import type { MenuCategory, MenuItem, MenuTag } from '@/types/menu';
+import type { MenuCategory, MenuItem, MenuTag } from '@/types/menu.types';
 import { DISH_IMAGES } from './dish-images';
 
 export const CATEGORIES: MenuCategory[] = [
