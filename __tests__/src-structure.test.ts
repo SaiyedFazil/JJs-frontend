@@ -26,6 +26,7 @@ const RETIRED_PATHS: string[] = [
   'components/navigation',
   'components/common',
   'features/auth',
+  'features/home',
 ];
 
 /** Locations (relative to src/) the structure promises. */
@@ -55,6 +56,8 @@ const REQUIRED_PATHS: string[] = [
   'components/pages/auth/complete-profile/CompleteProfileScreen.tsx',
   'components/pages/auth/complete-profile/components/NameStep.tsx',
   'components/pages/auth/complete-profile/components/EmailStep.tsx',
+  'components/pages/home/HomeScreen.tsx',
+  'components/pages/home/components/SectionHeader.tsx',
 ];
 
 /** Import specifiers that point at retired locations, however they are spelled. */
@@ -68,6 +71,7 @@ const RETIRED_IMPORTS: RegExp[] = [
   /['"]@\/hooks\/useAppToast['"]/,
   /['"][^'"]*components\/(?:navigation|common)\//,
   /['"][^'"]*features\/auth/,
+  /['"][^'"]*features\/home/,
 ];
 
 /** Values and types that must be defined in exactly one file. */

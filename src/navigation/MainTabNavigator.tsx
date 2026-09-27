@@ -4,7 +4,7 @@ import {
   getFocusedRouteNameFromRoute,
   type RouteProp,
 } from '@react-navigation/native';
-import { HomeScreen } from '@/features/home/HomeScreen';
+import { HomeScreen } from '@/components/pages/home/HomeScreen';
 import { ProfileNavigator } from '@/navigation/ProfileNavigator';
 import { PlaceholderScreen } from '@/components/custom/PlaceholderScreen';
 import { CustomTabBar } from '@/components/layout/CustomTabBar';
