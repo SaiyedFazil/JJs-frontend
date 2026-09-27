@@ -2,7 +2,7 @@ import './src/global.css';
 import React from 'react';
 import { StatusBar } from 'react-native';
 import { AppProviders } from './src/components/providers/AppProviders';
-import { RootNavigator } from './src/navigation/RootNavigator';
+import { RootNavigator } from './src/app/RootNavigator';
 
 /**
  * The app renders one palette — JJ's Kitchen Design System v1.0 — in both

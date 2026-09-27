@@ -1,20 +1,26 @@
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {
+  createBottomTabNavigator,
+  type BottomTabBarProps,
+} from '@react-navigation/bottom-tabs';
 import {
   getFocusedRouteNameFromRoute,
   type RouteProp,
 } from '@react-navigation/native';
 import { HomeScreen } from '@/components/pages/home/HomeScreen';
-import { ProfileNavigator } from '@/navigation/ProfileNavigator';
 import { PlaceholderScreen } from '@/components/custom/PlaceholderScreen';
 import { CustomTabBar } from '@/components/layout/CustomTabBar';
+import type { MainTabParamList } from '@/types/navigation.types';
+import { ProfileNavigator } from './ProfileNavigator';
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const SavedScreen = () => <PlaceholderScreen name="Saved Items" />;
 const OrdersScreen = () => <PlaceholderScreen name="Order History" />;
 
-const renderCustomTabBar = (props: any) => <CustomTabBar {...props} />;
+const renderCustomTabBar = (props: BottomTabBarProps) => (
+  <CustomTabBar {...props} />
+);
 
 /**
  * Screens inside a tab's stack that own the whole viewport.
@@ -27,7 +33,11 @@ const FULL_SCREEN_ROUTES = ['EditProfile'];
 
 const HIDDEN = { display: 'none' } as const;
 
-const tabBarVisibility = ({ route }: { route: RouteProp<any> }) => {
+const tabBarVisibility = ({
+  route,
+}: {
+  route: RouteProp<MainTabParamList, 'Profile'>;
+}) => {
   const focused = getFocusedRouteNameFromRoute(route);
   return {
     tabBarStyle:

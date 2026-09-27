@@ -28,6 +28,7 @@ const RETIRED_PATHS: string[] = [
   'features/auth',
   'features/home',
   'features',
+  'navigation',
 ];
 
 /** Locations (relative to src/) the structure promises. */
@@ -64,6 +65,10 @@ const REQUIRED_PATHS: string[] = [
   'components/pages/profile/hooks/use-profile-counts.ts',
   'components/pages/profile/edit-profile/EditProfileScreen.tsx',
   'components/pages/profile/edit-profile/hooks/use-edit-profile.ts',
+  'app/RootNavigator.tsx',
+  'app/AuthNavigator.tsx',
+  'app/MainTabNavigator.tsx',
+  'app/ProfileNavigator.tsx',
 ];
 
 /** Import specifiers that point at retired locations, however they are spelled. */
@@ -80,6 +85,8 @@ const RETIRED_IMPORTS: RegExp[] = [
   /['"][^'"]*features\/home/,
   /['"][^'"]*features\//,
   /['"][^'"]*profile-mock['"]/,
+  /['"]@\/navigation\//,
+  /['"][^'"]*src\/navigation\//,
 ];
 
 /** Values and types that must be defined in exactly one file. */

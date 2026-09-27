@@ -28,23 +28,56 @@ This is a **React Native CLI** app (v0.85, TypeScript strict mode) for a food or
 ### Entry Point Chain
 
 ```
-index.js → App.tsx (providers) → RootNavigator → AuthNavigator | MainTabNavigator
+index.js → App.tsx → AppProviders → RootNavigator → AuthNavigator | CompleteProfileScreen | MainTabNavigator
 ```
 
-`App.tsx` wraps everything in `GestureHandlerRootView`, `SafeAreaProvider`, and `HeroUINativeProvider` (which takes the current theme). The theme is driven by `useThemeStore` from Zustand.
+`App.tsx` (repo root) renders `src/components/providers/AppProviders.tsx` — `GestureHandlerRootView` → `KeyboardProvider` → `SafeAreaProvider` → `HeroUINativeProvider` — around the status bar and `RootNavigator`.
+
+### Folder Structure
+
+Modelled on the t-genius user frontend. Spec: `docs/superpowers/specs/2026-09-27-src-structure-design.md`. `__tests__/src-structure.test.ts` enforces it — if it fails, move the file; never loosen the test.
+
+```
+src/
+├── app/                  # routing layer — navigators only, no UI
+├── components/
+│   ├── ui/               # design-system kit (token-only primitives)
+│   ├── layout/           # app chrome — CustomTabBar
+│   ├── providers/        # AppProviders
+│   ├── custom/           # shared composites — PlaceholderScreen
+│   └── pages/<feature>/  # screens: <Name>Screen.tsx, components/, hooks/, <sub-page>/
+├── lib/
+│   ├── api/              # api-client.ts, endpoints.ts, <domain>/<domain>-api.ts
+│   ├── storage.ts        # MMKV
+│   └── validation.ts
+├── hooks/                # shared hooks — use-*.ts
+├── store/                # Zustand — *.store.ts
+├── types/                # *.types.ts, including every navigator ParamList
+├── constants/            # leaf constants (avatars, layout)
+├── data/                 # mock data + image maps (API seams)
+└── assets/
+```
+
+Naming: folders kebab-case · components/screens `PascalCase.tsx` · hooks `use-kebab-case.ts` exporting `useCamelCase` · API modules `<domain>-api.ts` exporting `<domain>Api` · types `<domain>.types.ts` · stores `<name>.store.ts`.
+
+Dependency direction (enforced): `store/` never imports UI; `lib/` never imports UI, stores or hooks; `types/` and `constants/` are leaves; `components/ui/` imports only `types/` and `constants/`; only `lib/api/` touches `api-client`; only `src/app/` imports from `@/app`. A component used by one page lives in that page's `components/`; used by several, it moves to `components/custom/` (or `ui/` if it is a token-only primitive).
 
 ### Navigation
 
-- `src/navigation/RootNavigator.tsx` — switches between auth and main flows based on `useAuthStore().isAuthenticated`
+All param lists live in `src/types/navigation.types.ts`; screens never import a navigator file.
+
+- `src/app/RootNavigator.tsx` — `AuthNavigator` when signed out, `CompleteProfileScreen` until both names are on file, otherwise `MainTabNavigator`
 - `AuthNavigator` — native stack: Splash → Login → OtpVerification
-- `MainTabNavigator` — bottom tabs: Home, Menu, Orders, Profile
+- `MainTabNavigator` — bottom tabs with `CustomTabBar`: Home, Saved, Orders, Profile (Saved and Orders are placeholders)
+- `ProfileNavigator` — the Profile tab's stack: ProfileMain → EditProfile (tab bar hidden on EditProfile)
 
 ### State Management
 
 Zustand stores in `src/store/`:
 
-- `auth.store.ts` — `isAuthenticated`, `login()`, `logout()`, `skipAuth()`
-- `cart.store.ts` — cart items, `totalItems()`
+- `auth.store.ts` — session: `isAuthenticated`, `user`, tokens, `profileCompleted`; `setAuth()`, `rehydrate()`, `updateUser()`, `logout()`. Persists to MMKV through `src/lib/storage.ts`.
+- `cart.store.ts` — cart items, `totalItems()`, `totalAmount()`, `quantityOf()`
+- `profile.store.ts` — device-local avatar choice (`src/constants/avatars.ts`)
 
 ### Styling
 
@@ -70,25 +103,26 @@ Use the `src/components/ui/` primitives (`Text`, `Button`, `TextField`, `OtpInpu
 
 ### Current State
 
-The app is **UI-only with mock data** — all API calls are simulated with `setTimeout`. Installed: `axios`, `react-native-mmkv`, and `react-native-config`. The planned stack for the backend integration phase: TanStack React Query v5 (data sync), Socket.IO Client (real-time orders).
+Auth and profile talk to the real API: `src/lib/api/auth/auth-api.ts` (send/verify/resend OTP, logout) and `src/lib/api/user/user-api.ts` (GET/PATCH `/user/profile`), through the Axios instance in `src/lib/api/api-client.ts`. The planned stack for the rest of the backend integration: TanStack React Query v5 (data sync), Socket.IO Client (real-time orders).
 
-**The home screen is mock-only by design.** Everything it renders comes from `src/data/menu.ts` (125 dishes) and `src/data/restaurant.ts` (hours, rating, ETA, distance). `HomeScreen`'s loading state is a `setTimeout`, not a request. There are no network calls anywhere in `src/features/home/`.
+**The home screen is mock-only by design.** Everything it renders comes from `src/data/menu.ts` (125 dishes) and `src/data/restaurant.ts` (hours, rating, ETA, distance). `HomeScreen`'s loading state is a `setTimeout`, not a request. There are no network calls anywhere in `src/components/pages/home/`. The profile screen's counts are mock too (`src/components/pages/profile/hooks/use-profile-counts.ts`).
 
 When the API phase starts, these are the seams:
 
-| Swap | Keep |
-| --- | --- |
-| the bodies of `src/data/menu.ts` and `src/data/restaurant.ts` | From `menu`: `CATEGORIES`, `byId`, `bestsellers()`, `byCategory()`. From `restaurant`: `isOpenAt()`, `SERVICE`, `OPENS_AT_LABEL`. |
-| `HomeScreen`'s `isLoading` `setTimeout` | the `SkeletonRail` it already gates |
-| the `require()` values in `src/data/dish-images.ts`, swapped for API URLs | `DISH_IMAGES`' slug keys, and `ImageTile`, which renders either a bundled module or a URL |
+| Swap                                                                      | Keep                                                                                                                              |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| the bodies of `src/data/menu.ts` and `src/data/restaurant.ts`             | From `menu`: `CATEGORIES`, `byId`, `bestsellers()`, `byCategory()`. From `restaurant`: `isOpenAt()`, `SERVICE`, `OPENS_AT_LABEL`. |
+| `HomeScreen`'s `isLoading` `setTimeout`                                   | the `SkeletonRail` it already gates                                                                                               |
+| the `require()` values in `src/data/dish-images.ts`, swapped for API URLs | `DISH_IMAGES`' slug keys, and `ImageTile`, which renders either a bundled module or a URL                                         |
+| the body of `useProfileCounts`                                            | its `ProfileCounts` return shape                                                                                                  |
 
 `priceOf()` exists in `menu.ts` for deferred portion pricing (not yet active in the home screen) — preserve it during the swap even though the home screen does not yet import it.
 
-### Feature Folder Convention
+New endpoints go in `src/lib/api/endpoints.ts` and a `src/lib/api/<domain>/<domain>-api.ts` module; wire types stay in `src/types/api.types.ts` and are mapped to app types inside the API module.
 
-Screens live under `src/features/<feature-name>/`. Components shared across features go in `src/components/`. Types will go in `src/types/`.
+### Shared Data
 
-Shared mock data lives in `src/data/` (`menu.ts`, `restaurant.ts`) and its types in `src/types/`. Home-only composition components live in `src/features/home/components/`; anything reusable belongs in `src/components/ui/`.
+Shared mock data lives in `src/data/` (`menu.ts`, `restaurant.ts`) and its types in `src/types/`. Page-only components live in `src/components/pages/<feature>/components/`; anything reusable belongs in `src/components/custom/` or, if it is a token-only primitive, `src/components/ui/`.
 
 ### Dish Photography
 
@@ -133,7 +167,7 @@ Run `npm run start:reset` (not `npm start`) after anything that rewrites
 via its Babel plugin, and `libworklets.so` evaluates those strings at startup.
 The two sides are version-locked. Metro's transform cache is keyed on file
 contents, not on the installed plugin version, so after an upgrade it will
-happily replay JS built by the *previous* worklets plugin against the *new*
+happily replay JS built by the _previous_ worklets plugin against the _new_
 native library. The mismatch aborts the process on the JS thread before any app
 code runs:
 
