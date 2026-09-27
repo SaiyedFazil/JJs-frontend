@@ -13,8 +13,8 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AuthService } from '@/services/auth.service';
-import { clearAuthData } from '@/utils/storage';
+import { authApi } from '@/lib/api/auth/auth-api';
+import { clearAuthData } from '@/lib/storage';
 import { useAppToast } from '@/hooks/useAppToast';
 import { Text, Button, TextField } from '@/components/ui';
 import { BrandMark } from './BrandMark';
@@ -88,7 +88,7 @@ export const LoginScreen = () => {
       setIsLoading(true);
 
       try {
-        const response = await AuthService.sendOtp('+91', phone);
+        const response = await authApi.sendOtp('+91', phone);
 
         if (response.status) {
           toast.success(

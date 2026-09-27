@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getAvatarId, setAvatarId } from '@/utils/storage';
+import { getAvatarId, setAvatarId } from '@/lib/storage';
 import { DEFAULT_AVATAR_ID } from '@/constants/avatars';
 
 /**

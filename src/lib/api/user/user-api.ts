@@ -1,5 +1,5 @@
-import apiClient from '@/api/apiClient';
-import { ENDPOINTS } from '@/api/endpoints';
+import apiClient from '@/lib/api/api-client';
+import { ENDPOINTS } from '@/lib/api/endpoints';
 import { ProfileApiResponse, UserProfilePayload } from '@/types/api.types';
 import type { UpdateProfilePayload, UserProfile } from '@/types/user.types';
 
@@ -33,10 +33,10 @@ const unwrap = (
 };
 
 /**
- * User Service
+ * User API
  * Encapsulates all user and profile related API calls.
  */
-export const UserService = {
+export const userApi = {
   /** Read the current authenticated user's profile. */
   getProfile: async (): Promise<UserProfile> => {
     const response = await apiClient.get<

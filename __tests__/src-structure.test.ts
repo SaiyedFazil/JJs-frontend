@@ -19,6 +19,9 @@ const SELF = path.basename(__filename);
 const RETIRED_PATHS: string[] = [
   'types/menu.ts',
   'features/profile/avatars.ts',
+  'api',
+  'services',
+  'utils',
 ];
 
 /** Locations (relative to src/) the structure promises. */
@@ -29,6 +32,11 @@ const REQUIRED_PATHS: string[] = [
   'constants/avatars.ts',
   'constants/layout.ts',
   'lib/validation.ts',
+  'lib/api/api-client.ts',
+  'lib/api/endpoints.ts',
+  'lib/api/auth/auth-api.ts',
+  'lib/api/user/user-api.ts',
+  'lib/storage.ts',
 ];
 
 /** Import specifiers that point at retired locations, however they are spelled. */
@@ -37,6 +45,8 @@ const RETIRED_IMPORTS: RegExp[] = [
   /['"][^'"]*features\/profile\/avatars['"]/,
   /['"]\.\.\/avatars['"]/,
   /import type \{ ProfileStackParamList \} from ['"][^'"]*ProfileNavigator['"]/,
+  /['"]@\/(?:api|services|utils)\//,
+  /['"][^'"]*src\/(?:api|services|utils)\//,
 ];
 
 /** Values and types that must be defined in exactly one file. */
@@ -117,6 +127,9 @@ const LAYER_RULES: { layer: string; forbidden: RegExp; why: string }[] = [
     why: 'lib is infrastructure: it must not reach up into UI or state',
   },
 ];
+
+/** Identifiers retired by a rename. */
+const RETIRED_IDENTIFIERS: RegExp[] = [/\bAuthService\b/, /\bUserService\b/];
 
 function collect(dir: string, out: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -200,6 +213,25 @@ describe('src/ structure', () => {
       expect(offenders).toEqual([]);
     },
   );
+
+  it.each(RETIRED_IDENTIFIERS)(
+    'no source uses the retired name %s',
+    pattern => {
+      const offenders = importingFiles().flatMap(({ rel, abs }) =>
+        hits(abs, pattern).map(h => `${rel}:${h}`),
+      );
+      expect(offenders).toEqual([]);
+    },
+  );
+
+  it('only lib/api/ talks to the HTTP client directly', () => {
+    const offenders = sourceFiles()
+      .filter(({ rel }) => !rel.startsWith('lib/api/'))
+      .flatMap(({ rel, abs }) =>
+        hits(abs, /from\s+['"][^'"]*api-client['"]/).map(h => `${rel}:${h}`),
+      );
+    expect(offenders).toEqual([]);
+  });
 
   it('only the routing layer (src/app/) imports navigators from @/app', () => {
     const offenders = sourceFiles()

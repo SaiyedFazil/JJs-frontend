@@ -18,7 +18,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { Spinner } from 'heroui-native';
-import { AuthService } from '@/services/auth.service';
+import { authApi } from '@/lib/api/auth/auth-api';
 import { useAuthStore } from '@/store/auth.store';
 import { useAppToast } from '@/hooks/useAppToast';
 import { Text, OtpInput } from '@/components/ui';
@@ -149,7 +149,7 @@ export const OtpVerificationScreen = () => {
       setError('');
 
       try {
-        const response = await AuthService.verifyOtp(otp, authToken);
+        const response = await authApi.verifyOtp(otp, authToken);
 
         if (response.status) {
           // 1. Hide the loader immediately so the user sees progress
@@ -190,7 +190,7 @@ export const OtpVerificationScreen = () => {
     setOtp('');
 
     try {
-      const response = await AuthService.resendOtp(authToken);
+      const response = await authApi.resendOtp(authToken);
       if (response.status && response.data?.authToken) {
         setAuthToken(response.data.authToken);
         startResendTimer();

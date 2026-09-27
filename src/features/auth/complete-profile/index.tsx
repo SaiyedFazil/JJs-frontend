@@ -14,7 +14,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChefHat, ChevronLeft, ArrowRight } from 'lucide-react-native';
 import { useAuthStore } from '@/store/auth.store';
-import { UserService } from '@/services/user.service';
+import { userApi } from '@/lib/api/user/user-api';
 import { EMAIL_REGEX } from '@/lib/validation';
 import { Button, Text } from '@/components/ui';
 import { NameStep } from './NameStep';
@@ -72,7 +72,7 @@ export const CompleteProfileScreen = () => {
     if (isStep1Valid) {
       setIsLoading(true);
       try {
-        await UserService.updateProfile({
+        await userApi.updateProfile({
           first_name: firstName.trim(),
           last_name: lastName.trim(),
         });

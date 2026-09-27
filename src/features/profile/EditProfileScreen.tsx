@@ -7,7 +7,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import { FormScreen, Icon, Text, TextField } from '@/components/ui';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfileStore } from '@/store/profile.store';
-import { UserService } from '@/services/user.service';
+import { userApi } from '@/lib/api/user/user-api';
 import { useAppToast } from '@/hooks/useAppToast';
 import { EMAIL_REGEX } from '@/lib/validation';
 import type { ProfileStackParamList } from '@/types/navigation.types';
@@ -75,7 +75,7 @@ export const EditProfileScreen = () => {
 
     (async () => {
       try {
-        const profile = await UserService.getProfile();
+        const profile = await userApi.getProfile();
         if (!isActive) return;
 
         // The phone is read-only here, so the server's copy always wins.
@@ -172,7 +172,7 @@ export const EditProfileScreen = () => {
     try {
       // Email is omitted rather than sent empty: the field is optional, and
       // an empty string is a value the server would have to validate.
-      const updated = await UserService.updateProfile({
+      const updated = await userApi.updateProfile({
         first_name: trimmedFirst,
         last_name: trimmedLast,
         ...(trimmedEmail ? { email: trimmedEmail } : {}),

@@ -56,7 +56,7 @@ export interface ProfileApiResponse<T> {
 /**
  * /user/profile's payload, exactly as it comes off the wire: snake_case, and
  * without the `role`/`status` that the auth response carries. Nothing outside
- * user.service should see this shape — it maps to UserProfile there.
+ * user-api should see this shape — it maps to UserProfile there.
  */
 export interface UserProfilePayload {
   id: number;

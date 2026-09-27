@@ -1,12 +1,12 @@
-import apiClient from '@/api/apiClient';
-import { ENDPOINTS } from '@/api/endpoints';
+import apiClient from '@/lib/api/api-client';
+import { ENDPOINTS } from '@/lib/api/endpoints';
 import { ApiResponse, AuthResponse } from '@/types/api.types';
 
 /**
- * Auth Service
+ * Auth API
  * Encapsulates all authentication related API calls.
  */
-export const AuthService = {
+export const authApi = {
   /**
    * Send OTP to the provided phone number (also registers user if new)
    * @param countryCode e.g., '+91'

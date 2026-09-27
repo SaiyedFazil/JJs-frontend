@@ -7,10 +7,10 @@ import {
   setAccessToken,
   setRefreshToken,
   setUserProfile,
-} from '@/utils/storage';
+} from '@/lib/storage';
 import type { StoredUserProfile } from '@/types/user.types';
 import { AuthResponse } from '@/types/api.types';
-import { AuthService } from '@/services/auth.service';
+import { authApi } from '@/lib/api/auth/auth-api';
 import { useProfileStore } from '@/store/profile.store';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -70,6 +70,17 @@ interface AuthState {
   logout: () => Promise<void>;
 }
 
+/**
+ * True when both names are on file. Whitespace-only counts as missing: the
+ * complete-profile flow trims before saving, so a blank-looking name is one
+ * the user never actually gave.
+ */
+const hasFullName = (profile: StoredUserProfile): boolean => {
+  const hasFirstName = profile.firstName && profile.firstName.trim().length > 0;
+  const hasLastName = profile.lastName && profile.lastName.trim().length > 0;
+  return Boolean(hasFirstName) && Boolean(hasLastName);
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Store
 // ─────────────────────────────────────────────────────────────────────────────
@@ -123,12 +134,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const profile: StoredUserProfile = profileFields;
 
-    const hasFirstName =
-      profile.firstName && profile.firstName.trim().length > 0;
-    const hasLastName = profile.lastName && profile.lastName.trim().length > 0;
-    const isProfileComplete =
-      Boolean(profileCompleted) ||
-      (Boolean(hasFirstName) && Boolean(hasLastName));
+    const isProfileComplete = Boolean(profileCompleted) || hasFullName(profile);
 
     // 1. Update in-memory state FIRST for immediate UI reaction
     set({
@@ -155,18 +161,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const profile = getUserProfile();
 
     if (token && profile) {
-      const hasFirstName =
-        profile.firstName && profile.firstName.trim().length > 0;
-      const hasLastName =
-        profile.lastName && profile.lastName.trim().length > 0;
-      const isProfileComplete = Boolean(hasFirstName) && Boolean(hasLastName);
-
       set({
         isAuthenticated: true,
         user: profile,
         accessToken: token,
         refreshToken: refresh ?? null,
-        profileCompleted: isProfileComplete,
+        profileCompleted: hasFullName(profile),
       });
     }
     // If no token found the state stays at the default (guest / unauthenticated)
@@ -177,7 +177,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       // 1. Call API while token is still available in state/storage
       // The interceptor in apiClient will automatically pick up the token
-      await AuthService.logout();
+      await authApi.logout();
     } catch (error) {
       // We log the error but proceed with clearing local state anyway
       // Logout should be "best effort" on the server side

@@ -4,7 +4,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from 'axios';
 import Config from 'react-native-config';
-import { getAccessToken, clearAuthData } from '@/utils/storage';
+import { getAccessToken, clearAuthData } from '@/lib/storage';
 
 /**
  * Professional Axios Instance Configuration

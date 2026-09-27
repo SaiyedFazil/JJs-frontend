@@ -4,7 +4,7 @@
  *
  * MOCK, and the only mock left on this screen: everything else (name, phone,
  * email, avatar) is real. None of these has an endpoint yet — ENDPOINTS.ORDERS
- * is still commented out in src/api/endpoints.ts.
+ * is still commented out in src/lib/api/endpoints.ts.
  *
  * THE SEAM, for when they do: replace the body of `useProfileCounts` with the
  * query, keep its return shape. Every consumer reads the shape, not the
