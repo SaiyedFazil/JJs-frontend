@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react';
 import { View, ScrollView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   useNavigation,
   useRoute,
@@ -26,7 +25,7 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import { Icon, Text, Toast } from '@/components/ui';
-import { TAB_BAR_HEIGHT } from '@/constants/layout';
+import { useTabBarHeight } from '@/hooks/use-tab-bar-height';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfileStore } from '@/store/profile.store';
 import type { ProfileStackParamList } from '@/types/navigation.types';
@@ -39,7 +38,9 @@ import { AvatarSheet } from './components/AvatarSheet';
 import { LogoutDialog } from './components/LogoutDialog';
 
 const TOAST_MS = 1900;
-/** Room for the toast itself, above the tab bar's footprint. */
+/** Vertical gap between the toast and the tab bar's top edge. */
+const TOAST_GAP = 12;
+/** Room for the toast itself, above that gap. */
 const TOAST_ALLOWANCE = 12;
 
 /**
@@ -55,7 +56,7 @@ const tileIcon = (glyph: LucideIcon, className: string) => (
 );
 
 export const ProfileScreen = () => {
-  const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
   const navigation =
     useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
   const route = useRoute<RouteProp<ProfileStackParamList, 'ProfileMain'>>();
@@ -72,14 +73,12 @@ export const ProfileScreen = () => {
   const [isLoggingOut, setLoggingOut] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // Same arithmetic as HomeScreen: CustomTabBar pins itself to the screen
-  // bottom with its own `insets.bottom` padding on top of TAB_BAR_HEIGHT, so
-  // its true footprint is the sum — and both the scroll content and the
-  // floating toast have to clear all of it.
-  const tabBarFootprint = TAB_BAR_HEIGHT + insets.bottom;
+  // As on HomeScreen: the tab bar floats over this screen's bottom, so both
+  // the scroll content and the floating toast have to clear its footprint.
+  const toastBottom = tabBarHeight + TOAST_GAP;
   const contentContainerStyle = useMemo(
-    () => ({ paddingBottom: tabBarFootprint + TOAST_ALLOWANCE }),
-    [tabBarFootprint],
+    () => ({ paddingBottom: toastBottom + TOAST_ALLOWANCE }),
+    [toastBottom],
   );
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -261,7 +260,7 @@ export const ProfileScreen = () => {
 
       {/* Floating clear of the tab bar's full footprint, as on Home. */}
       <View
-        style={{ bottom: tabBarFootprint }}
+        style={{ bottom: toastBottom }}
         className="absolute left-md right-md"
         pointerEvents="box-none"
       >

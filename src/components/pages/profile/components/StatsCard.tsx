@@ -60,8 +60,8 @@ export const StatsCard = ({ counts }: { counts: ProfileCounts }) => {
 /**
  * Layout-only. The overlap is a runtime-free constant but has no utility
  * (Tailwind has no negative margin token on this scale), and Android draws
- * shadows only from `elevation`, which no class emits — the same exception
- * CustomTabBar documents.
+ * shadows only from `elevation`, which no class emits. Safe here because the
+ * card is opaque; a translucent surface would show its own shadow through.
  */
 const styles = StyleSheet.create({
   overlap: { marginTop: -38 },

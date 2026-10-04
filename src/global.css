@@ -130,19 +130,25 @@
   --sky-50: #e5edfb;
   --wheat-25: #f1e8d6;
 
-  /* GLASS · the floating tab bar's liquid-glass pill.
+  /* GLASS · the floating tab bar's see-through pill.
      A real backdrop blur (@react-native-community/blur) does the diffusion;
-     these are the TINT laid over it, so every alpha here is deliberately low.
-     Raise them and the blur stops reading as glass and starts reading as
-     frosted plastic.
+     these are the layers laid over it. The tint is a light wash, so what
+     scrolls beneath shows through as soft colour, the way a pane of glass
+     reads. 0.35 is about the floor: it holds the ink labels near 4.5:1 even
+     over a dark dish photo, where 0.06 let that photo turn the bar muddy.
+     0.55 was legible but too milky to see through.
 
-     --glass-tint is the Android `overlayColor`, where the library's own
-     default is a dark charcoal that would sink the whole pill. */
-  --glass-tint: rgba(255, 255, 255, 0.06); /* the wash over the blur */
-  --glass-sheen-in: rgba(255, 255, 255, 0.22); /* lit top-left of the sheen */
+     --glass-tint is also the Android `overlayColor`, where the library's own
+     default is a dark charcoal that would sink the whole pill.
+
+     The sheen runs top to bottom in three stops: bright along the top edge,
+     a soft body by the middle, nothing by the bottom — so the pill is
+     glossiest at its lit edge and clearest along its base. */
+  --glass-tint: rgba(255, 255, 255, 0.35); /* the light wash over the blur */
+  --glass-sheen-in: rgba(255, 255, 255, 0.4); /* the lit top edge */
+  --glass-sheen-body: rgba(255, 255, 255, 0.1); /* halfway down */
   --glass-sheen-out: rgba(255, 255, 255, 0); /* its falloff, to nothing */
-  --glass-rim: rgba(255, 255, 255, 0.95); /* specular edge, the bright line */
-  --glass-edge: rgba(255, 255, 255, 0.6); /* outer stroke around the pill */
+  --glass-edge: rgba(255, 255, 255, 0.7); /* outer stroke around the pill */
 }
 
 /* ---------------------------------------------------------------------------
@@ -303,9 +309,9 @@
 
   /* — Glass tab bar — */
   --glass: var(--glass-tint); /* wash over the native blur */
-  --glass-sheen: var(--glass-sheen-in); /* the diagonal light sweep */
+  --glass-sheen: var(--glass-sheen-in); /* the gloss along the top edge */
+  --glass-sheen-soft: var(--glass-sheen-body); /* its middle stop */
   --glass-sheen-fade: var(--glass-sheen-out); /* its far end */
-  --glass-highlight: var(--glass-rim); /* the specular top edge */
   --glass-hairline: var(--glass-edge); /* the outer stroke */
 }
 
@@ -420,8 +426,8 @@
 
   --color-glass: var(--glass);
   --color-glass-sheen: var(--glass-sheen);
+  --color-glass-sheen-soft: var(--glass-sheen-soft);
   --color-glass-sheen-fade: var(--glass-sheen-fade);
-  --color-glass-highlight: var(--glass-highlight);
   --color-glass-hairline: var(--glass-hairline);
 
   /* — TYPOGRAPHY (PDF section 02) —
@@ -526,6 +532,11 @@
      sides, so it casts down and out like a physical object lying on the
      canvas. Very wide and very soft, at low opacity: glass barely occludes
      light, so a tight or dark shadow immediately reads as an opaque card
-     sitting on the page rather than a pane floating above it. */
-  --shadow-glass: 0px 16px 44px rgba(20, 16, 13, 0.13);
+     sitting on the page rather than a pane floating above it.
+
+     This is a box-shadow on both platforms. Android must NOT get `elevation`
+     here: an elevation shadow is drawn under the whole outline, so through a
+     translucent pill it greys the glass from inside, whereas a box-shadow is
+     clipped to outside the border box (Android 9+). */
+  --shadow-glass: 0px 8px 48px rgba(20, 16, 13, 0.08);
 }

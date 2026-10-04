@@ -1,5 +1,11 @@
 import React, { useId } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  processColor,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Svg, {
   Defs,
   LinearGradient,
@@ -7,7 +13,7 @@ import Svg, {
   Rect,
   Stop,
 } from 'react-native-svg';
-import { useCSSVariable } from 'uniwind';
+import { useCSSVariable, useResolveClassNames } from 'uniwind';
 
 /**
  * SVG paints with colour values, not class names, so these are the one place
@@ -31,6 +37,23 @@ export const useToken = (name: string): string => {
 };
 
 /**
+ * The colour a literal text utility resolves to: 'text-ember' → its value.
+ *
+ * For a colour that must reach a prop as a STRING (an SVG stop, BlurView's
+ * overlayColor, a Reanimated interpolation) when the token is named nowhere
+ * else in a className. useToken cannot see such a token — it is not in the
+ * runtime variable table — but resolving the class has no such gap; see
+ * Icon.tsx, which hit exactly that.
+ *
+ * Pass a literal ("text-glass-sheen"), never an interpolated name: Tailwind
+ * emits only the classes it finds in the source text.
+ */
+export const useClassColor = (className: string): string | undefined => {
+  const style = useResolveClassNames(className);
+  return typeof style.color === 'string' ? style.color : undefined;
+};
+
+/**
  * SVG ids are document-global in react-native-svg, so two instances sharing a
  * literal id would cross-paint. useId gives a stable unique one; its colons
  * are illegal in an SVG id and must be stripped.
@@ -38,6 +61,21 @@ export const useToken = (name: string): string => {
 const useGradientId = (prefix: string): string => {
   const raw = useId();
   return `${prefix}${raw.replace(/[^a-zA-Z0-9]/g, '')}`;
+};
+
+/**
+ * A colour's alpha, 0–1, for a Stop's stopOpacity. See GlassSheen for why a
+ * translucent stop needs it. An unresolved colour counts as opaque, which is
+ * what react-native-svg would have assumed anyway.
+ */
+const alphaOf = (color: string | undefined): number => {
+  const argb = color ? processColor(color) : null;
+  if (typeof argb !== 'number') return 1;
+  // processColor packs 0xAARRGGBB, which arrives negative on Android once
+  // the alpha byte's top bit is set; normalised to unsigned, the top byte is
+  // the alpha.
+  const unsigned = argb < 0 ? argb + 2 ** 32 : argb;
+  return Math.floor(unsigned / 2 ** 24) / 255;
 };
 
 /** Two-stop linear fill. `diagonal` runs 135°, otherwise left→right. */
@@ -118,26 +156,36 @@ export const ScrimFill = ({ token = 'hero' }: { token?: string }) => {
 };
 
 /**
- * The light sweeping across a pane of glass.
+ * The gloss on a pane of glass, lit from above.
  *
- * Distinct from LinearFill, which runs edge to edge at a constant rate: real
- * glass catches light in a concentrated band near the lit edge and falls off
- * fast, so this front-loads its stops. Without that asymmetry the surface
- * reads as flat translucent plastic rather than something with a curved,
- * polished face.
+ * Three stops rather than LinearFill's two: bright along the top edge, a soft
+ * body by the middle, gone by the bottom. Two stops would ramp at a constant
+ * rate and read as a flat translucent wash; the mid stop is what concentrates
+ * the light near the lit edge, the way a curved, polished face catches it.
+ *
+ * Colours come from useClassColor, not useToken: these tokens appear in no
+ * className, so useToken would get 'transparent' back — which SVG paints as
+ * black.
+ *
+ * Each stop passes its token's alpha again as stopOpacity, because
+ * react-native-svg discards the alpha inside a stopColor and takes opacity
+ * from stopOpacity alone, which defaults to 1. Without it every stop of these
+ * translucent tokens rendered as opaque white, and the sheen covered the
+ * tab bar's glass with a solid white sheet.
  */
 export const GlassSheen = () => {
-  const lit = useToken('--color-glass-sheen');
-  const fade = useToken('--color-glass-sheen-fade');
+  const lit = useClassColor('text-glass-sheen');
+  const soft = useClassColor('text-glass-sheen-soft');
+  const fade = useClassColor('text-glass-sheen-fade');
   const id = useGradientId('gs');
 
   return (
     <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
       <Defs>
-        <LinearGradient id={id} x1="0%" y1="0%" x2="55%" y2="100%">
-          <Stop offset="0" stopColor={lit} />
-          <Stop offset="0.34" stopColor={fade} />
-          <Stop offset="1" stopColor={fade} />
+        <LinearGradient id={id} x1="0%" y1="0%" x2="0%" y2="100%">
+          <Stop offset="0" stopColor={lit} stopOpacity={alphaOf(lit)} />
+          <Stop offset="0.5" stopColor={soft} stopOpacity={alphaOf(soft)} />
+          <Stop offset="1" stopColor={fade} stopOpacity={alphaOf(fade)} />
         </LinearGradient>
       </Defs>
       <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />

@@ -6,13 +6,12 @@ import React, {
   useState,
 } from 'react';
 import { View, ScrollView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MenuItem } from '@/types/menu.types';
 import { CartBar, Toast, SkeletonRail } from '@/components/ui';
 import { useCartStore } from '@/store/cart.store';
 import { byId, signatures } from '@/data/menu';
 import { isOpenAt } from '@/data/restaurant';
-import { TAB_BAR_HEIGHT } from '@/constants/layout';
+import { useTabBarHeight } from '@/hooks/use-tab-bar-height';
 import { HomeHeader } from './components/HomeHeader';
 import { ClosedStrip } from './components/ClosedStrip';
 import { SignatureHero } from './components/SignatureHero';
@@ -44,7 +43,7 @@ export const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
 
-  const insets = useSafeAreaInsets();
+  const tabBarHeight = useTabBarHeight();
 
   const addItem = useCartStore(s => s.addItem);
   const decrementItem = useCartStore(s => s.decrementItem);
@@ -57,16 +56,12 @@ export const HomeScreen = () => {
 
   const isOpen = isOpenAt(new Date());
 
-  // CustomTabBar is pinned to the screen bottom with its own
-  // `paddingBottom: insets.bottom + 10` on top of TAB_BAR_HEIGHT, so its true
-  // on-screen footprint is TAB_BAR_HEIGHT + insets.bottom, not TAB_BAR_HEIGHT
-  // alone. Both the floating layer and the scroll content's bottom padding
-  // must clear that full footprint, so both depend on the runtime inset and
-  // can't be static StyleSheet.create values. Both are derived from the
-  // same tabBarFootprint below, so correcting TAB_BAR_HEIGHT keeps both
-  // right instead of drifting out of sync with each other.
-  const tabBarFootprint = TAB_BAR_HEIGHT + insets.bottom;
-  const floatingBottom = tabBarFootprint + CART_BAR_GAP;
+  // The tab bar floats over the bottom of this screen, so both the floating
+  // layer and the scroll content's bottom padding must clear its full
+  // footprint. That depends on the runtime safe-area inset, so neither can
+  // be a static StyleSheet.create value; both derive from the one
+  // floatingBottom below so they cannot drift out of sync.
+  const floatingBottom = tabBarHeight + CART_BAR_GAP;
   /** Layout-only: scroll content must clear the tab bar's full footprint
    * plus the floating stack (cart bar + toast) sitting above it. */
   const contentContainerStyle = useMemo(
@@ -151,7 +146,7 @@ export const HomeScreen = () => {
       </ScrollView>
 
       {/* Floating above the scroll view, clear of the tab bar's full
-          footprint — TAB_BAR_HEIGHT plus its bottom safe-area inset. */}
+          footprint (useTabBarHeight). */}
       <View
         style={{ bottom: floatingBottom }}
         className="absolute left-md right-md gap-sm"

@@ -45,6 +45,7 @@ export {
   RadialGlow,
   GlassSheen,
   useToken,
+  useClassColor,
 } from './Gradient';
 
 export { Icon } from './Icon';

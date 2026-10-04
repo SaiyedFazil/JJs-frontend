@@ -1,4 +1,4 @@
-import React, { useMemo, memo, useCallback } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Pressable,
@@ -7,204 +7,214 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Home, Bookmark, ClipboardList, User } from 'lucide-react-native';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from '@react-native-community/blur';
+import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
 import Animated, {
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
+  withSequence,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { Text, GlassSheen, LinearFill, useToken } from '@/components/ui';
+import { Text, GlassSheen, useClassColor } from '@/components/ui';
+import {
+  TAB_BAR_HEIGHT,
+  TAB_BAR_SIDE_INSET,
+  tabBarBottomOffset,
+} from '@/constants/layout';
+import type { MainTabParamList } from '@/types/navigation.types';
+import { TAB_GLYPHS, type TabGlyph, type TabGlyphColors } from './TabIcons';
+
+const AnimatedText = Animated.createAnimatedComponent(Text);
+
+const ICON_SIZE = 26;
+const ICON_STROKE = 1.75;
+/** Press feedback, and the settle of a newly selected icon. */
+const SPRING = { damping: 15, stiffness: 300 };
+const PRESSED_SCALE = 0.9;
+/** Where a newly selected icon springs from: 2 low and at 0.9 scale. */
+const POP_LIFT = 2;
+const POP_SCALE = 0.9;
+/** The crossfade between ink-outline and ember-filled as focus moves. */
+const FOCUS_TIMING = { duration: 200 };
 
 /**
- * Tab Icon Component
+ * One tab: icon over label, and nothing behind it.
  *
- * PDF section 04: rounded line icons at 1.9px stroke, with filled variants
- * reserved for the active tab and the rating star.
- */
-interface TabIconProps {
-  name: string;
-  isFocused: boolean;
-}
-
-const TabIcon = memo(({ name, isFocused }: TabIconProps) => {
-  // Active sits on the ember lozenge, so it flips to on-ember. Inactive uses
-  // ink-strong rather than muted: over a live blurred backdrop the warm grey
-  // loses too much contrast against whatever happens to scroll underneath.
-  const className = isFocused ? 'text-on-ember' : 'text-ink-strong';
-  const size = 22;
-  const strokeWidth = isFocused ? 2.4 : 1.9;
-  const fill = isFocused ? 'currentColor' : 'none';
-
-  switch (name) {
-    case 'Home':
-      return (
-        <Home
-          size={size}
-          className={className}
-          strokeWidth={strokeWidth}
-          fill={fill}
-        />
-      );
-    case 'Saved':
-      return (
-        <Bookmark
-          size={size}
-          className={className}
-          strokeWidth={strokeWidth}
-          fill={fill}
-        />
-      );
-    case 'Orders':
-      return (
-        <ClipboardList
-          size={size}
-          className={className}
-          strokeWidth={strokeWidth}
-          fill={fill}
-        />
-      );
-    case 'Profile':
-      return (
-        <User
-          size={size}
-          className={className}
-          strokeWidth={strokeWidth}
-          fill={fill}
-        />
-      );
-    default:
-      return null;
-  }
-});
-
-TabIcon.displayName = 'TabIcon';
-
-/**
- * One tab.
- *
- * The active tab is an ember lozenge carrying icon + label side by side; the
- * inactive ones are icon over label. That asymmetry is the whole point of the
- * design — the selected tab grows sideways into a pill, so `flex` is animated
- * rather than fixed, and only the active tab pays for the gradient fill.
+ * Selection is carried by colour and fill alone — ink outline to ember
+ * silhouette — with no lozenge or indicator. The two forms of the icon are
+ * stacked and crossfaded, which reads as the colour interpolating while the
+ * fill comes in, and keeps every animated value off the layout pass.
  */
 interface TabButtonProps {
-  name: string;
+  Glyph: TabGlyph | undefined;
+  label: string;
+  accessibilityLabel: string;
   isFocused: boolean;
+  colors: TabGlyphColors;
   onPress: () => void;
+  onLongPress: () => void;
 }
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const TabButton = memo(
+  ({
+    Glyph,
+    label,
+    accessibilityLabel,
+    isFocused,
+    colors,
+    onPress,
+    onLongPress,
+  }: TabButtonProps) => {
+    const focus = useSharedValue(isFocused ? 1 : 0);
+    const pop = useSharedValue(1);
+    const press = useSharedValue(1);
+    const isFirstRun = useRef(true);
 
-/** Lozenge expansion — soft enough to read as glass settling, not a snap. */
-const SPRING = { damping: 18, stiffness: 190, mass: 0.7 };
-const PRESS_TIMING = { duration: 110 };
-/** The lozenge's crossfade as focus moves between tabs. */
-const LOZENGE_TIMING = { duration: 180 };
+    useEffect(() => {
+      focus.value = withTiming(isFocused ? 1 : 0, FOCUS_TIMING);
+      // Mounting already selected is not a tab change, so it does not pop.
+      if (isFirstRun.current) {
+        isFirstRun.current = false;
+        return;
+      }
+      if (isFocused) {
+        pop.value = withSequence(
+          withTiming(0, { duration: 0 }),
+          withSpring(1, SPRING),
+        );
+      }
+    }, [isFocused, focus, pop]);
 
-const TabButton = memo(({ name, isFocused, onPress }: TabButtonProps) => {
-  const pressed = useSharedValue(0);
+    const iconStyle = useAnimatedStyle(() => ({
+      transform: [
+        { translateY: (1 - pop.value) * POP_LIFT },
+        { scale: press.value * (POP_SCALE + (1 - POP_SCALE) * pop.value) },
+      ],
+    }));
+    const outlineStyle = useAnimatedStyle(() => ({ opacity: 1 - focus.value }));
+    const filledStyle = useAnimatedStyle(() => ({ opacity: focus.value }));
 
-  // Only opacity and transform are animated here.
-  //
-  // This previously animated flexGrow, which caused the bug where the active
-  // tab's lozenge spilled out past the pill's rounded edge with a square
-  // corner and a clipped label. Two reasons it cannot work: Reanimated drives
-  // styles on the UI thread but Yoga layout runs on the shadow thread, so the
-  // ember background painted at one width while layout settled at another;
-  // and flexShrink: 0 on a tab asking for 1.75x let the four tabs' total
-  // exceed the row, pushing the active one outside its parent's clip.
-  //
-  // Every tab now holds an equal, static share of the row. The lozenge is an
-  // absolutely-positioned child INSIDE that share, so it is bounded by its
-  // own tab and can never overflow the pill however it animates.
-  const pressStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(pressed.value ? 0.94 : 1, PRESS_TIMING) }],
-  }));
+    // If either colour failed to resolve, the label keeps its tone class
+    // rather than interpolating towards nothing.
+    const { ink, ember } = colors;
+    const labelStyle = useAnimatedStyle(() =>
+      ink && ember
+        ? { color: interpolateColor(focus.value, [0, 1], [ink, ember]) }
+        : {},
+    );
 
-  // The lozenge fades and scales in behind the content rather than resizing
-  // the tab, which keeps the whole effect off the layout pass.
-  const lozengeStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(isFocused ? 1 : 0, LOZENGE_TIMING),
-    transform: [{ scale: withSpring(isFocused ? 1 : 0.82, SPRING) }],
-  }));
+    const onPressIn = useCallback(() => {
+      press.value = withSpring(PRESSED_SCALE, SPRING);
+    }, [press]);
+    const onPressOut = useCallback(() => {
+      press.value = withSpring(1, SPRING);
+    }, [press]);
 
-  const onPressIn = useCallback(() => {
-    pressed.value = 1;
-  }, [pressed]);
-  const onPressOut = useCallback(() => {
-    pressed.value = 0;
-  }, [pressed]);
-
-  return (
-    <AnimatedPressable
-      onPress={onPress}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      accessibilityRole="button"
-      accessibilityState={isFocused ? { selected: true } : {}}
-      accessibilityLabel={name}
-      style={[styles.tabButton, pressStyle]}
-      className="items-center justify-center gap-xs"
-    >
-      {/* The lozenge, inset inside the tab's own share of the row. Its
-          overflow-hidden clips the gradient to the rounded ends, and because
-          it is absolutely positioned within this tab it cannot reach the
-          pill's edge — which is exactly what the old animated-flex version
-          did wrong. */}
-      <Animated.View
-        pointerEvents="none"
-        className="rounded-pill overflow-hidden"
-        style={[styles.lozenge, lozengeStyle]}
+    return (
+      <Pressable
+        onPress={onPress}
+        onLongPress={onLongPress}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: isFocused }}
+        accessibilityLabel={accessibilityLabel}
+        className="flex-1 basis-0 min-w-0 items-center justify-center gap-xs"
       >
-        <LinearFill from="ember" to="ember-deep" diagonal />
-      </Animated.View>
-      <TabIcon name={name} isFocused={isFocused} />
-      <Text
-        variant="fine"
-        tone={isFocused ? 'on-ember' : 'ink'}
-        weight={isFocused ? '700' : '600'}
-        numberOfLines={1}
-      >
-        {name}
-      </Text>
-    </AnimatedPressable>
-  );
-});
+        {Glyph ? (
+          <Animated.View style={[styles.glyph, iconStyle]}>
+            <Animated.View className="absolute inset-0" style={outlineStyle}>
+              <Glyph
+                filled={false}
+                colors={colors}
+                size={ICON_SIZE}
+                strokeWidth={ICON_STROKE}
+              />
+            </Animated.View>
+            <Animated.View className="absolute inset-0" style={filledStyle}>
+              <Glyph
+                filled
+                colors={colors}
+                size={ICON_SIZE}
+                strokeWidth={ICON_STROKE}
+              />
+            </Animated.View>
+          </Animated.View>
+        ) : null}
+        <AnimatedText
+          variant="fine"
+          tone={isFocused ? 'ember' : 'ink'}
+          weight={isFocused ? '600' : '500'}
+          numberOfLines={1}
+          style={labelStyle}
+        >
+          {label}
+        </AnimatedText>
+      </Pressable>
+    );
+  },
+);
 
 TabButton.displayName = 'TabButton';
 
 /**
  * Custom Tab Bar Component
  *
- * A floating frosted pill inset from all four edges, rather than a bar welded
- * to the screen's bottom edge. There is no blur library in this project, so
- * the frost is built from tokens instead: a two-stop glass gradient for the
- * bevel, a lit inner rim, and a warm outer hairline. That reads as glass on
- * the cream canvas and survives content scrolling beneath it.
+ * A see-through glass pill floating inset from the screen's sides and
+ * bottom, with content scrolling blurred behind it. Bottom to top:
+ *
+ *   1. shadow-glass, on an outer view with no clip so the shadow survives
+ *   2. a native backdrop blur
+ *   3. the light glass tint (Android paints it as the blur's overlayColor)
+ *   4. GlassSheen, the top-down gloss
+ *   5. a hairline border, owned by the clipping view
+ *
+ * One palette serves both device colour schemes, as everywhere in the design
+ * system, so there is deliberately no dark variant of the glass.
+ *
+ * Screens clear the bar with useTabBarHeight (src/hooks/use-tab-bar-height.ts),
+ * which sums the same constants this positions itself from.
  */
 export const CustomTabBar = memo(
   ({ state, navigation, descriptors, insets }: BottomTabBarProps) => {
     // Insets come from props rather than useSafeAreaInsets to keep this a
     // pure memoized component with no hook-order risk under the navigator.
-    const containerStyle = useMemo(
-      () => [styles.dock, { paddingBottom: insets.bottom + DOCK_GAP }],
-      [insets.bottom],
-    );
+    const bottomOffset = tabBarBottomOffset(insets.bottom);
+    const position = useMemo(() => ({ bottom: bottomOffset }), [bottomOffset]);
 
-    // BlurView takes color STRINGS, not class names, so these resolve the
-    // tokens at runtime the same way Gradient.tsx does — still no literal.
+    // Slide the whole pill below the screen's edge while the keyboard is up,
+    // in step with the keyboard's own animation. A bar floating mid-screen
+    // over a focused field covers exactly what the user is typing into.
+    const { progress } = useReanimatedKeyboardAnimation();
+    const hideDistance = TAB_BAR_HEIGHT + bottomOffset;
+    const keyboardStyle = useAnimatedStyle(() => ({
+      transform: [{ translateY: progress.value * hideDistance }],
+    }));
+
+    // BlurView, SVG and Reanimated all take colour STRINGS, not class names,
+    // so these resolve literal utilities — still no hex in this file.
     //
-    // overlayColor matters on Android specifically: the library's own default
-    // is a dark charcoal wash that would sink the pill on our cream canvas.
-    // On iOS the prop is ignored, so passing it is harmless.
-    const overlayColor = useToken('--color-glass');
-    // Shown instead of the blur when the OS "Reduce Transparency" setting is
-    // on. It must be opaque, or the pill becomes an unreadable ghost for the
-    // users who enabled that setting precisely to avoid one.
-    const fallbackColor = useToken('--color-surface');
+    // The tint matters on Android specifically: as `overlayColor` it replaces
+    // the library's own default, a dark charcoal wash that would sink the
+    // pill on our cream canvas. iOS ignores the prop, so it gets a tint view.
+    const tint = useClassColor('text-glass');
+    // Shown instead of the blur when iOS "Reduce Transparency" is on (the
+    // library checks the setting itself). It must be opaque, or the pill
+    // becomes an unreadable ghost for the users who enabled that setting
+    // precisely to avoid one. Android's blur needs no fallback: it renders on
+    // every API level this app supports.
+    const fallbackColor = useClassColor('text-surface');
+
+    const ink = useClassColor('text-ink');
+    const ember = useClassColor('text-ember');
+    const onEmber = useClassColor('text-on-ember');
+    const colors = useMemo(
+      () => ({ ink, ember, onEmber }),
+      [ink, ember, onEmber],
+    );
 
     // A screen nested inside a tab can ask for the whole viewport by setting
     // `tabBarStyle: { display: 'none' }`, the same contract the default bar
@@ -220,173 +230,139 @@ export const CustomTabBar = memo(
     if (tabBarStyle?.display === 'none') return null;
 
     return (
-      <View style={containerStyle} pointerEvents="box-none">
-        {/* Shadow and clip are deliberately on two different views. The pill
-            needs overflow-hidden to clip the blur to its radius, but on
-            Android that same property clips the elevation shadow away. So the
-            outer view casts, the inner view clips. */}
-        <View className="rounded-pill shadow-glass" style={styles.pillShadow}>
-          {/* BlurView is a native ViewGroup: it honours neither flex layout
-              nor a className borderRadius. Making it the row container
-              collapsed every tab into a stack and squared off the pill. So it
-              stays an absolutely-positioned backdrop, and this clipping View
-              — a plain RN view, which does respect both — owns the radius and
-              the row. overflow-hidden here is what rounds the blur's corners.
+      // Shadow and clip are deliberately on two different views: the clip
+      // that rounds the blur would also cut the shadow away.
+      <Animated.View
+        className="rounded-pill shadow-glass"
+        style={[styles.dock, position, keyboardStyle]}
+      >
+        {/* BlurView is a native ViewGroup: it honours neither flex layout
+            nor a className borderRadius. So it stays an absolutely-positioned
+            backdrop, and this plain RN view — which respects both — owns the
+            radius, the border and the row. Its overflow-hidden is what
+            rounds the blur's corners. */}
+        <View className="flex-1 rounded-pill border border-glass-hairline overflow-hidden">
+          <BlurView
+            style={StyleSheet.absoluteFill}
+            blurType={BLUR_TYPE}
+            blurAmount={BLUR_AMOUNT}
+            blurRadius={BLUR_RADIUS}
+            downsampleFactor={BLUR_DOWNSAMPLE}
+            reducedTransparencyFallbackColor={fallbackColor}
+            overlayColor={tint}
+            pointerEvents="none"
+          />
+          {/* iOS only: on Android overlayColor above already paints this
+              same token, and stacking both would apply the wash twice. */}
+          {Platform.OS === 'ios' ? (
+            <View pointerEvents="none" className="absolute inset-0 bg-glass" />
+          ) : null}
+          <GlassSheen />
+          <View accessibilityRole="tablist" style={styles.row}>
+            {state.routes.map((route, index) => {
+              const isFocused = state.index === index;
+              const { options } = descriptors[route.key];
+              const label =
+                typeof options.tabBarLabel === 'string'
+                  ? options.tabBarLabel
+                  : (options.title ?? route.name);
 
-              No bg-glass layer either: overlayColor already paints that same
-              token over the blur on Android, and stacking both applied the
-              wash twice, which is what turned the pill opaque white. */}
-          <View
-            className="rounded-pill border border-glass-hairline overflow-hidden"
-            style={styles.pill}
-          >
-            <BlurView
-              style={StyleSheet.absoluteFill}
-              blurType="xlight"
-              blurAmount={BLUR_AMOUNT}
-              blurRadius={BLUR_RADIUS}
-              downsampleFactor={BLUR_DOWNSAMPLE}
-              reducedTransparencyFallbackColor={fallbackColor}
-              overlayColor={overlayColor}
-              pointerEvents="none"
-            />
-            <GlassSheen />
-            <View
-              pointerEvents="none"
-              className="bg-glass-highlight"
-              style={styles.rim}
-            />
-            <View className="flex-row items-center" style={styles.row}>
-              {state.routes.map((route, index) => {
-                const isFocused = state.index === index;
+              const onPress = () => {
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
 
-                const onPress = () => {
-                  const event = navigation.emit({
-                    type: 'tabPress',
-                    target: route.key,
-                    canPreventDefault: true,
-                  });
+                if (!isFocused && !event.defaultPrevented) {
+                  navigation.navigate(route.name, route.params);
+                }
+              };
 
-                  if (!isFocused && !event.defaultPrevented) {
-                    navigation.navigate(route.name);
-                  }
-                };
+              const onLongPress = () => {
+                navigation.emit({ type: 'tabLongPress', target: route.key });
+              };
 
-                return (
-                  <TabButton
-                    key={route.key}
-                    name={route.name}
-                    isFocused={isFocused}
-                    onPress={onPress}
-                  />
-                );
-              })}
-            </View>
+              return (
+                <TabButton
+                  key={route.key}
+                  Glyph={TAB_GLYPHS[route.name as keyof MainTabParamList]}
+                  label={label}
+                  accessibilityLabel={options.tabBarAccessibilityLabel ?? label}
+                  isFocused={isFocused}
+                  colors={colors}
+                  onPress={onPress}
+                  onLongPress={onLongPress}
+                />
+              );
+            })}
           </View>
         </View>
-      </View>
+      </Animated.View>
     );
   },
 );
 
 CustomTabBar.displayName = 'CustomTabBar';
 
-/** Clearance between the floating pill and the bottom safe-area edge. */
-const DOCK_GAP = 12;
-
 /**
- * iOS reads blurAmount as UIBlurEffect intensity. Android IGNORES it — its
- * BlurViewManager.setBlurAmount and setBlurType are both empty method bodies,
- * so only blurRadius, overlayColor and downsampleFactor do anything there.
- * Passing the radius explicitly rather than letting the JS shim derive it
- * from blurAmount is what makes the two platforms agree.
+ * iOS reads blurAmount as UIBlurEffect intensity, 0–100. Android IGNORES it —
+ * its BlurViewManager.setBlurAmount and setBlurType are both empty method
+ * bodies, so only blurRadius, overlayColor and downsampleFactor do anything
+ * there. Passing the radius explicitly rather than letting the JS shim derive
+ * it from blurAmount is what makes the two platforms agree.
  */
-const BLUR_AMOUNT = 18;
-/** Android's own cap is 25; anything above it throws from the JS shim. */
-const BLUR_RADIUS = 20;
-/** Lower = sharper and more expensive. 4 keeps the glass readable. */
+const BLUR_AMOUNT = 50;
+/**
+ * Android's own cap is 25; anything above it throws from the JS shim. The
+ * glass is see-through, so it sits at the cap: the more diffuse the content
+ * behind, the cleaner the labels read over it.
+ */
+const BLUR_RADIUS = 25;
+/**
+ * A no-op on both platforms in this library version (Android's setter is an
+ * empty body; iOS has no such prop). Kept so the JS shim does not fall back
+ * to deriving it from blurRadius.
+ */
 const BLUR_DOWNSAMPLE = 4;
 
 /**
- * The pill's own height: icon 22 + gap 4 + fine line-height 18 = 44 of
- * content, in a 72 shell. The 28 of slack is the point — the reference's
- * glass reads as a thick, airy slab, and tightening this to hug the content
- * is what made the first pass look like a toolbar instead.
+ * iOS: the thinnest system material, and the -Light variant so it ignores
+ * the device's dark mode, as the rest of the palette does. The plain 'light'
+ * style bakes in a heavy white wash of its own, which stacked on --glass and
+ * kept the pill milky however low that token went.
+ *
+ * Android: 'light', whatever iOS uses. Its native blurType is a codegen enum
+ * of dark | light | xlight, and an unknown value aborts the app while the
+ * props are parsed. The value itself is ignored there (see BLUR_AMOUNT).
  */
-const PILL_HEIGHT = 72;
+const BLUR_TYPE = Platform.OS === 'ios' ? 'ultraThinMaterialLight' : 'light';
 
 /**
- * TAB_BAR_HEIGHT (src/constants/layout.ts) is this bar's footprint:
- * styles.dock paddingTop + PILL_HEIGHT + DOCK_GAP. Change any of the three
- * and update it there.
- */
-
-/**
- * Layout-only: the dock is pinned across the screen's bottom and the pill
- * floats inside it, inset horizontally. Neither is expressible as a Tailwind
- * utility because both depend on the runtime safe-area inset.
+ * Layout-only: the pill's placement depends on the runtime safe-area inset,
+ * and its padding is off the spacing scale, so neither is a utility.
  */
 const styles = StyleSheet.create({
   dock: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingTop: 10,
-    paddingHorizontal: 16,
+    left: TAB_BAR_SIDE_INSET,
+    right: TAB_BAR_SIDE_INSET,
+    height: TAB_BAR_HEIGHT,
   },
   /**
-   * Android draws shadows only from `elevation`, which no Tailwind class
-   * emits, so shadow-glass alone leaves the pill flat there. This is the
-   * layout-only exception the styling rule allows.
+   * The tab row, above the blur, tint and sheen inside the clipped pill.
+   * Tabs stretch to its full height: 52 of the pill's 72, so every hit
+   * target clears 48 in both directions.
    */
-  pillShadow: {
-    ...Platform.select({ android: { elevation: 12 }, default: {} }),
-  },
-  pill: {
-    height: PILL_HEIGHT,
-  },
-  /** The tab row, above the blur and sheen layers inside the clipped pill. */
   row: {
     flex: 1,
+    flexDirection: 'row',
     paddingHorizontal: 8,
-    gap: 4,
+    paddingVertical: 10,
   },
-  /**
-   * The specular highlight along the pill's top edge, inside its clip.
-   * Inset from both ends and rounded: on a curved face the light catches the
-   * middle of the edge and dies at the corners, so a rim running the full
-   * width would read as a drawn line instead of a reflection.
-   */
-  rim: {
-    position: 'absolute',
-    top: 0,
-    left: '9%',
-    right: '9%',
-    height: 1,
-    borderRadius: 1,
-  },
-  /**
-   * An equal, STATIC share of the row. Nothing here animates: the four tabs
-   * always sum to exactly the row's width, so no tab can push a sibling out
-   * past the pill's clip.
-   */
-  tabButton: {
-    flex: 1,
-    flexBasis: 0,
-    minWidth: 0,
-    height: 56,
-  },
-  /**
-   * The active tab's ember background, inset inside that tab's own share.
-   * The 4px inset is what leaves a sliver of glass between the lozenge and
-   * the pill's rounded edge, so the two radii read as concentric.
-   */
-  lozenge: {
-    position: 'absolute',
-    top: 2,
-    bottom: 2,
-    left: 4,
-    right: 4,
+  /** The box both icon forms are stacked in. */
+  glyph: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
   },
 });
