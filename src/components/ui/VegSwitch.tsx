@@ -3,7 +3,8 @@ import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { Text } from './Text';
 
 /**
- * The Pure Veg pill. Interactive, but does not filter yet — spec decision D6.
+ * The Pure Veg pill. Controlled: the caller decides what it filters. The full
+ * menu filters by it; the home screen's does not filter yet — spec decision D6.
  * The knob's offset is a position Tailwind cannot express, so it comes from
  * StyleSheet — two static positions the toggle picks between, rather than one
  * object rebuilt on every render.

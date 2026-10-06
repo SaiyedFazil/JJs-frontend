@@ -6,7 +6,9 @@ import React, {
   useState,
 } from 'react';
 import { View, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import type { MenuItem } from '@/types/menu.types';
+import type { MainTabNavigationProp } from '@/types/navigation.types';
 import { CartBar, Toast, SkeletonRail } from '@/components/ui';
 import { useCartStore } from '@/store/cart.store';
 import { byId, signatures } from '@/data/menu';
@@ -39,6 +41,7 @@ const CART_BAR_GAP = 12;
 const FLOATING_STACK_ALLOWANCE = 110;
 
 export const HomeScreen = () => {
+  const navigation = useNavigation<MainTabNavigationProp<'Home'>>();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
@@ -97,6 +100,12 @@ export const HomeScreen = () => {
     [decrementItem],
   );
 
+  const handleOpen = useCallback(
+    (item: MenuItem) =>
+      navigation.navigate('ProductDetail', { dishId: item.id }),
+    [navigation],
+  );
+
   const handleReorder = useCallback(() => {
     LAST_ORDER.forEach(line => {
       const item = byId[line.id];
@@ -117,7 +126,11 @@ export const HomeScreen = () => {
 
         {!isOpen ? <ClosedStrip /> : null}
 
-        <SignatureHero items={SIGNATURES} onAdd={handleAdd} />
+        <SignatureHero
+          items={SIGNATURES}
+          onAdd={handleAdd}
+          onOpen={handleOpen}
+        />
         <OffersRail />
 
         {isLoading ? (
@@ -134,11 +147,13 @@ export const HomeScreen = () => {
               quantityOf={quantityOf}
               onAdd={handleAdd}
               onRemove={handleRemove}
+              onOpen={handleOpen}
             />
             <SizzlerSpotlight
               quantityOf={quantityOf}
               onAdd={handleAdd}
               onRemove={handleRemove}
+              onOpen={handleOpen}
             />
             <ReorderRow onReorder={handleReorder} />
           </>

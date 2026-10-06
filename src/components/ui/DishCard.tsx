@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { Star } from 'lucide-react-native';
 import type { MenuItem } from '@/types/menu.types';
 import { Text } from './Text';
@@ -13,6 +13,8 @@ export interface DishCardProps {
   quantity: number;
   onAdd: () => void;
   onRemove: () => void;
+  /** Opens the dish. The photo and name are the target; the stepper is not. */
+  onPress?: () => void;
   /** `canvas` = the bestseller rail. `hero` = inside a spotlight panel. */
   surface?: Surface;
   showRating?: boolean;
@@ -36,6 +38,7 @@ export const DishCard = memo(
     quantity,
     onAdd,
     onRemove,
+    onPress,
     surface = 'canvas',
     showRating = false,
   }: DishCardProps) => {
@@ -43,34 +46,51 @@ export const DishCard = memo(
 
     return (
       <View className={`${CARD[surface]} ${item.soldOut ? 'opacity-50' : ''}`}>
-        <View className={`relative w-full ${IMAGE_HEIGHT[surface]}`}>
-          <ImageTile categoryId={item.cat} source={item.image} emojiSize={30} />
+        <TouchableOpacity
+          onPress={onPress}
+          disabled={!onPress}
+          activeOpacity={0.85}
+          accessible={onPress != null}
+          accessibilityRole={onPress ? 'button' : undefined}
+          accessibilityLabel={
+            onPress ? `${item.name}, view details` : undefined
+          }
+        >
+          <View className={`relative w-full ${IMAGE_HEIGHT[surface]}`}>
+            <ImageTile
+              categoryId={item.cat}
+              source={item.image}
+              emojiSize={30}
+            />
 
-          <View className="absolute top-sm left-sm bg-surface rounded-sm p-0.5 shadow-e1">
-            <VegBadge isVeg={item.veg} size={13} />
+            <View className="absolute top-sm left-sm bg-surface rounded-sm p-0.5 shadow-e1">
+              <VegBadge isVeg={item.veg} size={13} />
+            </View>
+
+            {showRating && item.rating != null ? (
+              <View className="absolute bottom-sm left-sm flex-row items-center gap-xs bg-veg px-xs py-0.5 rounded-sm">
+                <Star size={9} className="text-on-ember" fill="currentColor" />
+                <Text variant="caption" tone="on-ember">
+                  {item.rating.toFixed(1)}
+                </Text>
+              </View>
+            ) : null}
           </View>
 
-          {showRating && item.rating != null ? (
-            <View className="absolute bottom-sm left-sm flex-row items-center gap-xs bg-veg px-xs py-0.5 rounded-sm">
-              <Star size={9} className="text-on-ember" fill="currentColor" />
-              <Text variant="caption" tone="on-ember">
-                {item.rating.toFixed(1)}
-              </Text>
-            </View>
-          ) : null}
-        </View>
+          <View className="px-sm pt-sm">
+            <Text
+              variant="body"
+              tone={onHero ? 'on-hero' : 'ink'}
+              numberOfLines={2}
+              weight="700"
+              className="min-h-10"
+            >
+              {item.name}
+            </Text>
+          </View>
+        </TouchableOpacity>
 
-        <View className="p-sm gap-sm">
-          <Text
-            variant="body"
-            tone={onHero ? 'on-hero' : 'ink'}
-            numberOfLines={2}
-            weight="700"
-            className="min-h-10"
-          >
-            {item.name}
-          </Text>
-
+        <View className="p-sm">
           <View className="flex-row items-center justify-between">
             <Text variant="body" tone={onHero ? 'ember' : 'ink'} weight="800">
               {item.mrp ? `MRP ₹${item.base}` : `₹${item.base}`}

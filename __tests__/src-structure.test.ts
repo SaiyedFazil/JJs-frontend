@@ -62,6 +62,13 @@ const REQUIRED_PATHS: string[] = [
   'components/pages/auth/complete-profile/components/EmailStep.tsx',
   'components/pages/home/HomeScreen.tsx',
   'components/pages/home/components/SectionHeader.tsx',
+  'components/pages/menu/MenuScreen.tsx',
+  'components/pages/menu/hooks/use-menu-catalog.ts',
+  'components/pages/menu/hooks/use-scroll-spy.ts',
+  'components/pages/product-detail/ProductDetailScreen.tsx',
+  'components/pages/product-detail/hooks/use-dish-order.ts',
+  'data/dish-details.ts',
+  'store/favourites.store.ts',
   'components/pages/profile/ProfileScreen.tsx',
   'components/pages/profile/components/StatsCard.tsx',
   'components/pages/profile/hooks/use-profile-counts.ts',
@@ -69,6 +76,7 @@ const REQUIRED_PATHS: string[] = [
   'components/pages/profile/edit-profile/hooks/use-edit-profile.ts',
   'app/RootNavigator.tsx',
   'app/AuthNavigator.tsx',
+  'app/MainNavigator.tsx',
   'app/MainTabNavigator.tsx',
   'app/ProfileNavigator.tsx',
 ];
@@ -137,6 +145,16 @@ const SINGLE_SOURCE: { what: string; needle: string | RegExp; file: string }[] =
     {
       what: 'MainTabParamList',
       needle: /type MainTabParamList\s*=/,
+      file: 'types/navigation.types.ts',
+    },
+    {
+      what: 'MainStackParamList',
+      needle: /type MainStackParamList\s*=/,
+      file: 'types/navigation.types.ts',
+    },
+    {
+      what: 'AppStackParamList',
+      needle: /type AppStackParamList\s*=/,
       file: 'types/navigation.types.ts',
     },
   ];

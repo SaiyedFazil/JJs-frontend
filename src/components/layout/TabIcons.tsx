@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import type { MainTabParamList } from '@/types/navigation.types';
 
 /**
@@ -7,7 +7,7 @@ import type { MainTabParamList } from '@/types/navigation.types';
  *
  * Drawn here rather than taken from lucide-react-native because the filled
  * form is not lucide's `fill` prop: that floods every path in one colour, so
- * the house's door and the clipboard's list lines vanish into the solid
+ * the house's door and the menu's text lines vanish into the solid
  * shape. The filled form paints the silhouette in ember and redraws those
  * inner details as on-ember strokes, which keeps it recognisable at 26px.
  *
@@ -88,35 +88,36 @@ const House: TabGlyph = props => {
   );
 };
 
-const Bookmark: TabGlyph = props => {
-  const { body, fill } = paint(props);
-  return (
-    <Frame size={props.size} strokeWidth={props.strokeWidth} stroke={body}>
-      <Path
-        d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"
-        fill={fill}
-      />
-    </Frame>
-  );
-};
-
 /**
- * The board's path is open where the clip covers it; a fill closes it
- * implicitly across the top, so board and clip merge into one silhouette.
+ * An open menu card: lucide's book-open-text. The covers are drawn first so
+ * that, when filled, the spine and the text lines land on top of them as
+ * on-ember strokes.
  */
-const ClipboardList: TabGlyph = props => {
+const MenuBook: TabGlyph = props => {
   const { body, fill, detail } = paint(props);
   return (
     <Frame size={props.size} strokeWidth={props.strokeWidth} stroke={body}>
       <Path
-        d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+        d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"
         fill={fill}
       />
-      <Rect x="8" y="2" width="8" height="4" rx="1" ry="1" fill={fill} />
-      <Path d="M12 11h4" stroke={detail} />
-      <Path d="M12 16h4" stroke={detail} />
-      <Path d="M8 11h.01" stroke={detail} />
-      <Path d="M8 16h.01" stroke={detail} />
+      <Path d="M12 5v16" stroke={detail} />
+      <Path d="M16 13h2" stroke={detail} />
+      <Path d="M16 9h2" stroke={detail} />
+      <Path d="M6 13h2" stroke={detail} />
+      <Path d="M6 9h2" stroke={detail} />
+    </Frame>
+  );
+};
+
+const Heart: TabGlyph = props => {
+  const { body, fill } = paint(props);
+  return (
+    <Frame size={props.size} strokeWidth={props.strokeWidth} stroke={body}>
+      <Path
+        d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"
+        fill={fill}
+      />
     </Frame>
   );
 };
@@ -134,7 +135,7 @@ const User: TabGlyph = props => {
 /** One glyph per tab, keyed by route name. */
 export const TAB_GLYPHS: Record<keyof MainTabParamList, TabGlyph> = {
   Home: House,
-  Saved: Bookmark,
-  Orders: ClipboardList,
+  Menu: MenuBook,
+  Favourites: Heart,
   Profile: User,
 };

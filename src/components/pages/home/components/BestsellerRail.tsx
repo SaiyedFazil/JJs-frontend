@@ -11,11 +11,13 @@ export const BestsellerRail = ({
   quantityOf,
   onAdd,
   onRemove,
+  onOpen,
   onSeeAll,
 }: {
   quantityOf: (id: string) => number;
   onAdd: (item: MenuItem) => void;
   onRemove: (item: MenuItem) => void;
+  onOpen: (item: MenuItem) => void;
   onSeeAll?: () => void;
 }) => (
   <View className="pt-lg">
@@ -37,6 +39,7 @@ export const BestsellerRail = ({
           quantity={quantityOf(item.id)}
           onAdd={() => onAdd(item)}
           onRemove={() => onRemove(item)}
+          onPress={() => onOpen(item)}
         />
       ))}
     </ScrollView>

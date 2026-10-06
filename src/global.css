@@ -307,6 +307,12 @@
   --avatar-11: var(--mist-50);
   --avatar-12: var(--sand-100);
 
+  /* — Product detail (spec: Product Detail.dc.html) — */
+  --control-off: var(--muted-200); /* an unticked checkbox's outline */
+  --tag-chef: var(--wheat-25); /* the CHEF'S SPECIAL tag's ground */
+  --meter-track: var(--sand-200); /* the empty part of a rating bar */
+  --star-off: var(--sand-300); /* a star the score has not earned */
+
   /* — Glass tab bar — */
   --glass: var(--glass-tint); /* wash over the native blur */
   --glass-sheen: var(--glass-sheen-in); /* the gloss along the top edge */
@@ -423,6 +429,11 @@
   --color-avatar-10: var(--avatar-10);
   --color-avatar-11: var(--avatar-11);
   --color-avatar-12: var(--avatar-12);
+
+  --color-control-off: var(--control-off);
+  --color-tag-chef: var(--tag-chef);
+  --color-meter-track: var(--meter-track);
+  --color-star-off: var(--star-off);
 
   --color-glass: var(--glass);
   --color-glass-sheen: var(--glass-sheen);

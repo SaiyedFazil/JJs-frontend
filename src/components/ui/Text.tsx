@@ -31,7 +31,9 @@ export type TextTone =
   | 'footnote'
   | 'verified'
   | 'ember'
+  | 'ember-pressed'
   | 'saffron'
+  | 'gold'
   | 'on-ember'
   | 'on-ember-muted'
   | 'on-hero'
@@ -112,7 +114,10 @@ const TONE: Record<TextTone, string> = {
   footnote: 'text-footnote',
   verified: 'text-verified',
   ember: 'text-ember',
+  /** Ember type on an ember-tint ground, where plain ember reads too faint. */
+  'ember-pressed': 'text-ember-pressed',
   saffron: 'text-saffron',
+  gold: 'text-tile-gold',
   'on-ember': 'text-on-ember',
   'on-ember-muted': 'text-on-ember-muted',
   'on-hero': 'text-hero-foreground',

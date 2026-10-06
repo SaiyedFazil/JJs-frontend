@@ -20,15 +20,25 @@ const SignatureSlide = ({
   item,
   width,
   onAdd,
+  onOpen,
 }: {
   item: MenuItem;
   width: number;
   onAdd: () => void;
+  onOpen: () => void;
 }) => (
   // Layout-only: a paged slide must be exactly the viewport's usable width,
   // which is a runtime value Tailwind cannot express.
   <View style={{ width }}>
-    <View className="relative h-56 rounded-xl overflow-hidden shadow-e3">
+    {/* The panel opens the dish; its Add button, being the inner touchable,
+        still takes its own presses. */}
+    <TouchableOpacity
+      onPress={onOpen}
+      activeOpacity={0.92}
+      accessibilityRole="button"
+      accessibilityLabel={`${item.name}, view details`}
+      className="relative h-56 rounded-xl overflow-hidden shadow-e3"
+    >
       <ImageTile categoryId={item.cat} source={item.image} emojiSize={64} />
       <ScrimFill />
 
@@ -83,7 +93,7 @@ const SignatureSlide = ({
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   </View>
 );
 
@@ -97,9 +107,11 @@ const SignatureSlide = ({
 export const SignatureHero = ({
   items,
   onAdd,
+  onOpen,
 }: {
   items: MenuItem[];
   onAdd: (item: MenuItem) => void;
+  onOpen: (item: MenuItem) => void;
 }) => {
   const { width: screenWidth } = useWindowDimensions();
   const slideWidth = screenWidth - GUTTER * 2;
@@ -131,6 +143,7 @@ export const SignatureHero = ({
           item={items[0]}
           width={slideWidth}
           onAdd={() => onAdd(items[0])}
+          onOpen={() => onOpen(items[0])}
         />
       </View>
     );
@@ -158,6 +171,7 @@ export const SignatureHero = ({
             item={item}
             width={slideWidth}
             onAdd={() => onAdd(item)}
+            onOpen={() => onOpen(item)}
           />
         ))}
       </ScrollView>

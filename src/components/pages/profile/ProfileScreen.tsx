@@ -28,7 +28,10 @@ import { Icon, Text, Toast } from '@/components/ui';
 import { useTabBarHeight } from '@/hooks/use-tab-bar-height';
 import { useAuthStore } from '@/store/auth.store';
 import { useProfileStore } from '@/store/profile.store';
-import type { ProfileStackParamList } from '@/types/navigation.types';
+import type {
+  MainTabParamList,
+  ProfileStackParamList,
+} from '@/types/navigation.types';
 import { useProfileCounts } from './hooks/use-profile-counts';
 import { ProfileHeader } from './components/ProfileHeader';
 import { StatsCard } from './components/StatsCard';
@@ -117,7 +120,7 @@ export const ProfileScreen = () => {
    * one goes through the parent navigator.
    */
   const goToTab = useCallback(
-    (tab: string) => navigation.getParent()?.navigate(tab),
+    (tab: keyof MainTabParamList) => navigation.getParent()?.navigate(tab),
     [navigation],
   );
 
@@ -168,14 +171,14 @@ export const ProfileScreen = () => {
               tile="bg-ember-tint"
               title="My Orders"
               subtitle="View history & reorder"
-              onPress={() => goToTab('Orders')}
+              onPress={() => showToast('Order history is coming soon')}
             />
             <ProfileRow
               icon={tileIcon(Heart, 'text-ember')}
               tile="bg-ember-tint"
               title="Favourites"
               subtitle="Your go-to dishes"
-              onPress={() => goToTab('Saved')}
+              onPress={() => goToTab('Favourites')}
             />
             <ProfileRow
               icon={tileIcon(Bell, 'text-ember')}

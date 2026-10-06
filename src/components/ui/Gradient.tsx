@@ -133,11 +133,34 @@ export const LinearFill = ({
   );
 };
 
+/** [offset from the bottom edge, opacity] for each stop of a ScrimFill. */
+const SCRIM_STOPS: Record<'strong' | 'soft', [number, number][]> = {
+  strong: [
+    [0.06, 0.92],
+    [0.52, 0.2],
+    [1, 0],
+  ],
+  soft: [
+    [0, 0.45],
+    [0.3, 0],
+  ],
+};
+
 /**
- * Bottom-up photo scrim. Three stops of one colour at falling opacity, so a
- * dish name stays legible over any photograph.
+ * Bottom-up photo scrim. Stops of one colour at falling opacity, so a dish
+ * name stays legible over any photograph.
+ *
+ * `strong` carries type laid over the photo. `soft` only darkens the bottom
+ * third — enough for a pager's dots, without dimming a photo that is the
+ * point of the screen.
  */
-export const ScrimFill = ({ token = 'hero' }: { token?: string }) => {
+export const ScrimFill = ({
+  token = 'hero',
+  strength = 'strong',
+}: {
+  token?: string;
+  strength?: 'strong' | 'soft';
+}) => {
   const color = useToken(`--color-${token}`);
   const id = useGradientId('sf');
 
@@ -145,9 +168,14 @@ export const ScrimFill = ({ token = 'hero' }: { token?: string }) => {
     <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
       <Defs>
         <LinearGradient id={id} x1="0%" y1="100%" x2="0%" y2="0%">
-          <Stop offset="0.06" stopColor={color} stopOpacity={0.92} />
-          <Stop offset="0.52" stopColor={color} stopOpacity={0.2} />
-          <Stop offset="1" stopColor={color} stopOpacity={0} />
+          {SCRIM_STOPS[strength].map(([offset, opacity]) => (
+            <Stop
+              key={offset}
+              offset={offset}
+              stopColor={color}
+              stopOpacity={opacity}
+            />
+          ))}
         </LinearGradient>
       </Defs>
       <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />

@@ -10,10 +10,12 @@ export const SizzlerSpotlight = ({
   quantityOf,
   onAdd,
   onRemove,
+  onOpen,
 }: {
   quantityOf: (id: string) => number;
   onAdd: (item: MenuItem) => void;
   onRemove: (item: MenuItem) => void;
+  onOpen: (item: MenuItem) => void;
 }) => (
   <View className="px-md pt-lg">
     <View className="relative overflow-hidden bg-hero rounded-xl p-md">
@@ -44,6 +46,7 @@ export const SizzlerSpotlight = ({
             quantity={quantityOf(item.id)}
             onAdd={() => onAdd(item)}
             onRemove={() => onRemove(item)}
+            onPress={() => onOpen(item)}
           />
         ))}
       </ScrollView>

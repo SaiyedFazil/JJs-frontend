@@ -8,6 +8,7 @@ import {
   type RouteProp,
 } from '@react-navigation/native';
 import { HomeScreen } from '@/components/pages/home/HomeScreen';
+import { MenuScreen } from '@/components/pages/menu/MenuScreen';
 import { PlaceholderScreen } from '@/components/custom/PlaceholderScreen';
 import { CustomTabBar } from '@/components/layout/CustomTabBar';
 import type { MainTabParamList } from '@/types/navigation.types';
@@ -15,8 +16,7 @@ import { ProfileNavigator } from './ProfileNavigator';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const SavedScreen = () => <PlaceholderScreen name="Saved Items" />;
-const OrdersScreen = () => <PlaceholderScreen name="Order History" />;
+const FavouritesScreen = () => <PlaceholderScreen name="Favourites" />;
 
 const renderCustomTabBar = (props: BottomTabBarProps) => (
   <CustomTabBar {...props} />
@@ -52,8 +52,8 @@ export const MainTabNavigator = () => {
       screenOptions={{ headerShown: false }}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Saved" component={SavedScreen} />
-      <Tab.Screen name="Orders" component={OrdersScreen} />
+      <Tab.Screen name="Menu" component={MenuScreen} />
+      <Tab.Screen name="Favourites" component={FavouritesScreen} />
       <Tab.Screen
         name="Profile"
         component={ProfileNavigator}

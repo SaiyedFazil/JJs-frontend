@@ -28,7 +28,7 @@ This is a **React Native CLI** app (v0.85, TypeScript strict mode) for a food or
 ### Entry Point Chain
 
 ```
-index.js → App.tsx → AppProviders → RootNavigator → AuthNavigator | CompleteProfileScreen | MainTabNavigator
+index.js → App.tsx → AppProviders → RootNavigator (one stack) → AuthNavigator | CompleteProfileScreen | MainNavigator
 ```
 
 `App.tsx` (repo root) renders `src/components/providers/AppProviders.tsx` — `GestureHandlerRootView` → `KeyboardProvider` → `SafeAreaProvider` → `HeroUINativeProvider` — around the status bar and `RootNavigator`.
@@ -66,9 +66,10 @@ Dependency direction (enforced on the resolved path, so `@/…` and `../…` spe
 
 All param lists live in `src/types/navigation.types.ts`; screens never import a navigator file.
 
-- `src/app/RootNavigator.tsx` — `AuthNavigator` when signed out, `CompleteProfileScreen` until the profile is complete, otherwise `MainTabNavigator`. "Complete" is decided in `auth.store`: after OTP, the server's `profileCompleted` flag **or** both names on file; after a relaunch, both names only (whitespace counts as missing). `__tests__/auth-store.test.ts` pins this.
+- `src/app/RootNavigator.tsx` — one native stack (`AppStackParamList`) holding exactly one screen: `Auth` (`AuthNavigator`) when signed out, `CompleteProfile` until the profile is complete, otherwise `Main` (`MainNavigator`). **Never swap whole navigators here instead**: every launch renders Auth first (the session rehydrates in an effect), and replacing one root native stack with another left the incoming one laid out but never drawn on Android — a blank grey window. "Complete" is decided in `auth.store`: after OTP, the server's `profileCompleted` flag **or** both names on file; after a relaunch, both names only (whitespace counts as missing). `__tests__/auth-store.test.ts` pins this.
 - `AuthNavigator` — native stack: Splash → Login → OtpVerification
-- `MainTabNavigator` — bottom tabs with `CustomTabBar`: Home, Saved, Orders, Profile (Saved and Orders are placeholders)
+- `MainNavigator` — the signed-in native stack: `Tabs` (`MainTabNavigator`), then `ProductDetail` (`{ dishId }`) pushed over it, so it covers the tab bar. Tab screens type `useNavigation` with `MainTabNavigationProp<'Home'>` etc. to reach it.
+- `MainTabNavigator` — bottom tabs with `CustomTabBar`: Home, Menu, Favourites, Profile (Favourites is a placeholder)
 - `ProfileNavigator` — the Profile tab's stack: ProfileMain → EditProfile (tab bar hidden on EditProfile)
 
 ### State Management
@@ -76,7 +77,8 @@ All param lists live in `src/types/navigation.types.ts`; screens never import a 
 Zustand stores in `src/store/`:
 
 - `auth.store.ts` — session: `isAuthenticated`, `user`, tokens, `profileCompleted`; `setAuth()`, `rehydrate()`, `updateUser()`, `logout()`. Persists to MMKV through `src/lib/storage.ts`.
-- `cart.store.ts` — cart items, `totalItems()`, `totalAmount()`, `quantityOf()`
+- `cart.store.ts` — cart lines, `addItem(line, quantity?)`, `totalItems()`, `totalAmount()`, `quantityOf()`. A dish added as-is is keyed by its dish id; one customised on the product detail screen gets its own line id (`cartLineId()` in `use-dish-order.ts`) and carries `dishId` + `options` (portion, spice, add-ons, notes).
+- `favourites.store.ts` — hearted dish ids (in memory; the Favourites tab will read it)
 - `profile.store.ts` — device-local avatar choice (`src/constants/avatars.ts`)
 
 ### Styling
@@ -107,6 +109,10 @@ Auth and profile talk to the real API: `src/lib/api/auth/auth-api.ts` (send/veri
 
 **The home screen is mock-only by design.** Everything it renders comes from `src/data/menu.ts` (125 dishes) and `src/data/restaurant.ts` (hours, rating, ETA, distance). `HomeScreen`'s loading state is a `setTimeout`, not a request. There are no network calls anywhere in `src/components/pages/home/`. The profile screen's counts are mock too (`src/components/pages/profile/hooks/use-profile-counts.ts`).
 
+**The Menu tab is mock-only too** (`src/components/pages/menu/`, design: `Menu Screen.dc.html`). It reads `src/data/menu.ts` through `useMenuCatalog` (sections, Pure Veg, sort, search; `__tests__/menu-catalog.test.ts` pins it). The ScrollView's single sticky slot belongs to the category rail, so `MenuScreen` draws the stuck section header as an overlay positioned by `useScrollSpy`'s onLayout measurements. The Rating sort chip and the per-row star only appear once dishes carry `rating`.
+
+**The product detail screen is mock-only too** (`src/components/pages/product-detail/`, design: `Product Detail.dc.html`), opened from Menu rows and the Home hero and rails. Its long-form content — copy, ingredients, rating, reviews, add-ons, pairings — comes from `dishDetailOf()` in `src/data/dish-details.ts`; six dishes are written up in full and the rest fall back to their menu one-liner with no rating. Salad, breads, drinks and desserts take no spice level, add-ons or notes. The gallery pages through `detail.gallery`, which today is just the one dish photo. "In cart · View" has no cart screen to open yet, like `CartBar`.
+
 When the API phase starts, these are the seams:
 
 | Swap                                                                      | Keep                                                                                                                              |
@@ -115,8 +121,9 @@ When the API phase starts, these are the seams:
 | `HomeScreen`'s `isLoading` `setTimeout`                                   | the `SkeletonRail` it already gates                                                                                               |
 | the `require()` values in `src/data/dish-images.ts`, swapped for API URLs | `DISH_IMAGES`' slug keys, and `ImageTile`, which renders either a bundled module or a URL                                         |
 | the body of `useProfileCounts`                                            | its `ProfileCounts` return shape                                                                                                  |
+| the body of `src/data/dish-details.ts`                                    | `dishDetailOf()` and its `DishDetail` shape, `DEFAULT_SPICE`, `PORTION_SERVES`                                                    |
 
-`priceOf()` exists in `menu.ts` for deferred portion pricing (not yet active in the home screen) — preserve it during the swap even though the home screen does not yet import it.
+`priceOf()` in `menu.ts` prices a portion; the product detail screen uses it — preserve it during the swap.
 
 New endpoints go in `src/lib/api/endpoints.ts` and a `src/lib/api/<domain>/<domain>-api.ts` module; wire types stay in `src/types/api.types.ts` and are mapped to app types inside the API module.
 
