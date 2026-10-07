@@ -148,7 +148,6 @@
   --glass-sheen-in: rgba(255, 255, 255, 0.4); /* the lit top edge */
   --glass-sheen-body: rgba(255, 255, 255, 0.1); /* halfway down */
   --glass-sheen-out: rgba(255, 255, 255, 0); /* its falloff, to nothing */
-  --glass-edge: rgba(255, 255, 255, 0.7); /* outer stroke around the pill */
 }
 
 /* ---------------------------------------------------------------------------
@@ -318,7 +317,7 @@
   --glass-sheen: var(--glass-sheen-in); /* the gloss along the top edge */
   --glass-sheen-soft: var(--glass-sheen-body); /* its middle stop */
   --glass-sheen-fade: var(--glass-sheen-out); /* its far end */
-  --glass-hairline: var(--glass-edge); /* the outer stroke */
+  --glass-hairline: var(--ink-700); /* the outer stroke, in the brand's brown */
 }
 
 /* ---------------------------------------------------------------------------
@@ -545,9 +544,15 @@
      light, so a tight or dark shadow immediately reads as an opaque card
      sitting on the page rather than a pane floating above it.
 
+     Two layers: a tight, faint contact shadow that draws the pill's lower
+     edge off the canvas, and the wide ambient one that lifts it. The ambient
+     layer alone, at 48px and 0.08, spread so thin over a busy page that the
+     glass blended into whatever scrolled beneath it.
+
      This is a box-shadow on both platforms. Android must NOT get `elevation`
      here: an elevation shadow is drawn under the whole outline, so through a
      translucent pill it greys the glass from inside, whereas a box-shadow is
      clipped to outside the border box (Android 9+). */
-  --shadow-glass: 0px 8px 48px rgba(20, 16, 13, 0.08);
+  --shadow-glass:
+    0px 2px 6px rgba(20, 16, 13, 0.08), 0px 10px 32px rgba(20, 16, 13, 0.14);
 }
