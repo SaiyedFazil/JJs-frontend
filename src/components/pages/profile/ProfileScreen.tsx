@@ -11,7 +11,6 @@ import {
   useRoute,
   type RouteProp,
 } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   Bell,
   ClipboardList,
@@ -30,6 +29,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useProfileStore } from '@/store/profile.store';
 import type {
   MainTabParamList,
+  ProfileNavigationProp,
   ProfileStackParamList,
 } from '@/types/navigation.types';
 import { useProfileCounts } from './hooks/use-profile-counts';
@@ -60,8 +60,7 @@ const tileIcon = (glyph: LucideIcon, className: string) => (
 
 export const ProfileScreen = () => {
   const tabBarHeight = useTabBarHeight();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const navigation = useNavigation<ProfileNavigationProp<'ProfileMain'>>();
   const route = useRoute<RouteProp<ProfileStackParamList, 'ProfileMain'>>();
 
   const user = useAuthStore(state => state.user);
@@ -171,7 +170,7 @@ export const ProfileScreen = () => {
               tile="bg-ember-tint"
               title="My Orders"
               subtitle="View history & reorder"
-              onPress={() => showToast('Order history is coming soon')}
+              onPress={() => navigation.navigate('MyOrders')}
             />
             <ProfileRow
               icon={tileIcon(Heart, 'text-ember')}

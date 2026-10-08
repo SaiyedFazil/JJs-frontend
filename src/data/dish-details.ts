@@ -33,6 +33,9 @@ const ADD_ONS: AddOn[] = [
   { id: 'green-salad', name: 'Green Salad', price: 120, veg: true },
 ];
 
+/** The design's header gallery: hero, close-up and plated shots. */
+const GALLERY_FRAMES = 3;
+
 /** Served as they come: no spice level, no add-ons, no cooking notes. */
 const PLAIN_CATEGORIES = new Set(['salad', 'bread', 'beverages', 'desserts']);
 
@@ -279,9 +282,11 @@ export const dishDetailOf = (item: MenuItem): DishDetail => {
     ingredients: featured?.ingredients ?? [],
     prepMinutes: service.prepMinutes,
     serves: service.serves,
-    // One photo per dish today. The API can send several; the gallery pages
-    // through however many arrive.
-    gallery: item.image ? [item.image] : [],
+    // The design pages through three shots — hero, close-up, plated. Only the
+    // hero is shot today, so it fills every frame until the API sends the
+    // rest; the gallery pages through however many arrive. An unshot dish
+    // stays a single cuisine tile, with nothing to page through.
+    gallery: item.image ? Array(GALLERY_FRAMES).fill(item.image) : [],
     rating: featured?.rating,
     reviews: featured?.reviews ?? [],
     hasSpiceLevel: !isPlain,

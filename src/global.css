@@ -148,6 +148,36 @@
   --glass-sheen-in: rgba(255, 255, 255, 0.4); /* the lit top edge */
   --glass-sheen-body: rgba(255, 255, 255, 0.1); /* halfway down */
   --glass-sheen-out: rgba(255, 255, 255, 0); /* its falloff, to nothing */
+
+  /* ORDER DETAIL · the terminal-order receipt (spec: Order Detail.dc.html).
+
+     The status header is a full-bleed band with its own immersive ground — a
+     deep green for a settled (delivered / picked-up) order, a desaturated
+     brown for a cancelled one. These are NOT the charcoal hero: a receipt's
+     verdict reads at a glance from the band's hue, so green = went well,
+     brown = did not, before a word is read. Each band carries a brighter
+     icon-tile ground, a title tint and a softer subtitle tint lifted for
+     legibility on that specific ground. */
+  --forest-900: #14392a; /* settled-order band ground */
+  --forest-700: #0f7a45; /* …its icon tile */
+  --forest-100: #eaf7ef; /* …its title text */
+  --forest-200: #a9cdb8; /* …its subtitle text */
+  --bark-900: #2b211c; /* cancelled-order band ground */
+  --bark-700: #4a2723; /* …its icon tile */
+  --bark-100: #f4eadd; /* …its title text */
+  --bark-200: #c4a79f; /* …its subtitle text */
+  --coral-300: #f09080; /* the cancelled band's ✕ mark */
+
+  /* Receipt text greys — a touch deeper than the Profile ramp. A printed bill
+     wants its figures to sit a shade heavier than ordinary body copy. */
+  --ink-950: #1c1712; /* receipt headings & figures — below ink-900 in warmth */
+  --clay-600: #4a4038; /* bill-row labels */
+  --clay-500: #6b5e4e; /* an address block's body */
+
+  /* Receipt chips & tiles. */
+  --veg-100: #bfe0cb; /* the PAID chip's hairline on its veg tint */
+  --azure-50: #e7f0fb; /* a card-payment tile's cool ground */
+  --dash-warm: #e7ddcc; /* the grand-total dashed rule — = border-warm */
 }
 
 /* ---------------------------------------------------------------------------
@@ -312,6 +342,27 @@
   --meter-track: var(--sand-200); /* the empty part of a rating bar */
   --star-off: var(--sand-300); /* a star the score has not earned */
 
+  /* — Order detail (spec: Order Detail.dc.html) —
+     Named by ROLE: `--status-settled` is the band of any order that ended
+     well (delivered OR picked up), not "the delivered header's green". */
+  --status-settled: var(--forest-900); /* delivered / picked-up band */
+  --status-settled-tile: var(--forest-700); /* its icon tile */
+  --status-settled-title: var(--forest-100); /* its headline */
+  --status-settled-sub: var(--forest-200); /* its subline */
+  --status-void: var(--bark-900); /* cancelled band */
+  --status-void-tile: var(--bark-700); /* its icon tile */
+  --status-void-title: var(--bark-100); /* its headline */
+  --status-void-sub: var(--bark-200); /* its subline */
+  --status-void-mark: var(--coral-300); /* the ✕ glyph on the cancelled tile */
+
+  --receipt-ink: var(--ink-950); /* a receipt's headings and money figures */
+  --receipt-row: var(--clay-600); /* a bill row's label */
+  --receipt-body: var(--clay-500); /* an address block's body copy */
+  --paid-tint: var(--veg-50); /* the PAID chip's ground — = veg-tint */
+  --paid-hairline: var(--veg-100); /* …its hairline */
+  --pay-card-tile: var(--azure-50); /* a card/UPI payment tile's ground */
+  --receipt-dash: var(--dash-warm); /* the grand-total dashed divider */
+
   /* — Glass tab bar — */
   --glass: var(--glass-tint); /* wash over the native blur */
   --glass-sheen: var(--glass-sheen-in); /* the gloss along the top edge */
@@ -433,6 +484,23 @@
   --color-tag-chef: var(--tag-chef);
   --color-meter-track: var(--meter-track);
   --color-star-off: var(--star-off);
+
+  --color-status-settled: var(--status-settled);
+  --color-status-settled-tile: var(--status-settled-tile);
+  --color-status-settled-title: var(--status-settled-title);
+  --color-status-settled-sub: var(--status-settled-sub);
+  --color-status-void: var(--status-void);
+  --color-status-void-tile: var(--status-void-tile);
+  --color-status-void-title: var(--status-void-title);
+  --color-status-void-sub: var(--status-void-sub);
+  --color-status-void-mark: var(--status-void-mark);
+  --color-receipt-ink: var(--receipt-ink);
+  --color-receipt-row: var(--receipt-row);
+  --color-receipt-body: var(--receipt-body);
+  --color-paid-tint: var(--paid-tint);
+  --color-paid-hairline: var(--paid-hairline);
+  --color-pay-card-tile: var(--pay-card-tile);
+  --color-receipt-dash: var(--receipt-dash);
 
   --color-glass: var(--glass);
   --color-glass-sheen: var(--glass-sheen);

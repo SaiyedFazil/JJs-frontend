@@ -9,14 +9,12 @@ import {
 } from '@react-navigation/native';
 import { HomeScreen } from '@/components/pages/home/HomeScreen';
 import { MenuScreen } from '@/components/pages/menu/MenuScreen';
-import { PlaceholderScreen } from '@/components/custom/PlaceholderScreen';
+import { FavouritesScreen } from '@/components/pages/favourites/FavouritesScreen';
 import { CustomTabBar } from '@/components/layout/CustomTabBar';
 import type { MainTabParamList } from '@/types/navigation.types';
 import { ProfileNavigator } from './ProfileNavigator';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
-
-const FavouritesScreen = () => <PlaceholderScreen name="Favourites" />;
 
 const renderCustomTabBar = (props: BottomTabBarProps) => (
   <CustomTabBar {...props} />

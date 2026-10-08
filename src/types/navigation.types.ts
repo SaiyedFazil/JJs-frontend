@@ -58,6 +58,10 @@ export type MainStackParamList = {
   Tabs: NavigatorScreenParams<MainTabParamList> | undefined;
   /** A dish's full page, opened from any list that shows dishes. */
   ProductDetail: { dishId: string };
+  /** Order history & reorder, opened from the Profile tab's "My Orders" row. */
+  MyOrders: undefined;
+  /** One order's receipt, opened from a card in My Orders. */
+  OrderDetail: { orderId: string };
 };
 
 /**
@@ -67,5 +71,16 @@ export type MainStackParamList = {
 export type MainTabNavigationProp<T extends keyof MainTabParamList> =
   CompositeNavigationProp<
     BottomTabNavigationProp<MainTabParamList, T>,
+    NativeStackNavigationProp<MainStackParamList>
+  >;
+
+/**
+ * What a screen inside the Profile tab's stack gets: its own stack's routes,
+ * plus the Main stack's (MyOrders, ProductDetail), reached by bubbling up —
+ * so the Profile rows can push a Main-stack screen over the whole tab bar.
+ */
+export type ProfileNavigationProp<T extends keyof ProfileStackParamList> =
+  CompositeNavigationProp<
+    NativeStackNavigationProp<ProfileStackParamList, T>,
     NativeStackNavigationProp<MainStackParamList>
   >;

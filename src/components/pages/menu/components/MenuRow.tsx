@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { Plus, Star } from 'lucide-react-native';
+import { Heart, Plus, Star } from 'lucide-react-native';
 import type { MenuItem } from '@/types/menu.types';
 import {
   Icon,
@@ -16,8 +16,11 @@ import { isBestseller } from '../hooks/use-menu-catalog';
  * stepper overlapping its lower edge (the FoodCard list layout). The copy and
  * the photo open the dish's page; the stepper stays a target of its own.
  *
- * Memoised, with the item passed back through the callbacks, so a cart change
- * re-renders only the row whose quantity moved — not all 125.
+ * `onUnfavourite` adds a filled-heart button to the photo's top-right — the
+ * Favourites tab reuses this same card and removes a dish with it (the Menu
+ * tab leaves it off). Memoised, with the item passed back through the
+ * callbacks, so a cart change re-renders only the row whose quantity moved —
+ * not all 125.
  */
 export const MenuRow = memo(
   ({
@@ -26,12 +29,14 @@ export const MenuRow = memo(
     onAdd,
     onRemove,
     onOpen,
+    onUnfavourite,
   }: {
     item: MenuItem;
     quantity: number;
     onAdd: (item: MenuItem) => void;
     onRemove: (item: MenuItem) => void;
     onOpen: (item: MenuItem) => void;
+    onUnfavourite?: (item: MenuItem) => void;
   }) => {
     const soldOut = !!item.soldOut;
 
@@ -125,6 +130,26 @@ export const MenuRow = memo(
               </View>
             ) : null}
           </TouchableOpacity>
+
+          {/* Favourites-only: a filled heart on the photo removes the dish. */}
+          {onUnfavourite ? (
+            <TouchableOpacity
+              onPress={() => onUnfavourite(item)}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={`Remove ${item.name} from favourites`}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              className="absolute top-1.5 right-1.5 w-8 h-8 rounded-pill bg-surface items-center justify-center shadow-e2"
+            >
+              <Icon
+                icon={Heart}
+                className="text-ember"
+                size={16}
+                fill="currentColor"
+                strokeWidth={2}
+              />
+            </TouchableOpacity>
+          ) : null}
 
           {/* Overlaps the photo's lower edge, as in FoodCard's list layout. */}
           {soldOut ? null : (

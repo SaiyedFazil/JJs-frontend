@@ -65,8 +65,12 @@ describe('dishDetailOf', () => {
     expect(drink.takesNotes).toBe(false);
   });
 
-  it('uses the dish photo as the gallery, or nothing', () => {
-    expect(dishDetailOf(byId['tandoori-chicken']).gallery).toHaveLength(1);
+  it('fills the three gallery frames with the dish photo, or nothing', () => {
+    const { gallery } = dishDetailOf(byId['tandoori-chicken']);
+    expect(gallery).toHaveLength(3);
+    expect(
+      gallery.every(photo => photo === byId['tandoori-chicken'].image),
+    ).toBe(true);
     expect(dishDetailOf(byId['paneer-butter-masala']).gallery).toEqual([]);
   });
 
