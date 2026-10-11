@@ -38,6 +38,18 @@ interface CartState {
   decrementItem: (id: string) => void;
   /** Removes the whole line regardless of quantity. */
   removeItem: (id: string) => void;
+  /**
+   * Puts back a line removed a moment ago, at the position it held — the
+   * cart's Undo. Merges instead if the same line has been added since.
+   */
+  restoreItem: (item: CartItem, index: number) => void;
+  /**
+   * Swaps line `id` for `line` × `quantity`, in its place — how a dish opened
+   * from a cart line's Edit replaces the configuration it was opened from.
+   * Merges into the other line when the new configuration is already in the
+   * cart, so one plate never shows as two lines.
+   */
+  replaceItem: (id: string, line: CartLine, quantity: number) => void;
   clearCart: () => void;
   totalItems: () => number;
   totalAmount: () => number;
@@ -68,6 +80,40 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   removeItem: id =>
     set(state => ({ items: state.items.filter(i => i.id !== id) })),
+
+  restoreItem: (item, index) =>
+    set(state => {
+      if (state.items.some(i => i.id === item.id)) {
+        return {
+          items: state.items.map(i =>
+            i.id === item.id
+              ? { ...i, quantity: i.quantity + item.quantity }
+              : i,
+          ),
+        };
+      }
+      const items = [...state.items];
+      items.splice(Math.min(index, items.length), 0, item);
+      return { items };
+    }),
+
+  replaceItem: (id, line, quantity) =>
+    set(state => {
+      const index = state.items.findIndex(i => i.id === id);
+      const rest = state.items.filter(i => i.id !== id);
+      if (line.id !== id && rest.some(i => i.id === line.id)) {
+        return {
+          items: rest.map(i =>
+            i.id === line.id ? { ...i, quantity: i.quantity + quantity } : i,
+          ),
+        };
+      }
+      rest.splice(index === -1 ? rest.length : index, 0, {
+        ...line,
+        quantity,
+      });
+      return { items: rest };
+    }),
 
   clearCart: () => set({ items: [] }),
 

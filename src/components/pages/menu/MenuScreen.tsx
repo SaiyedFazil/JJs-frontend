@@ -314,7 +314,13 @@ export const MenuScreen = () => {
         {isSearching || isSheetOpen ? null : (
           <MenuPill dishCount={dishCount} onPress={() => setSheetOpen(true)} />
         )}
-        {count > 0 ? <CartBar count={count} total={total} /> : null}
+        {count > 0 ? (
+          <CartBar
+            count={count}
+            total={total}
+            onPress={() => navigation.navigate('Cart')}
+          />
+        ) : null}
       </View>
 
       {isSheetOpen ? (

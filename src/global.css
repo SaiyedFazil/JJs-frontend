@@ -178,6 +178,11 @@
   --veg-100: #bfe0cb; /* the PAID chip's hairline on its veg tint */
   --azure-50: #e7f0fb; /* a card-payment tile's cool ground */
   --dash-warm: #e7ddcc; /* the grand-total dashed rule — = border-warm */
+
+  /* CART · the review-and-pay screen (spec: Cart.dc.html). A desaturated green
+     for the secondary line inside a veg-tint panel, where full --veg on both
+     lines flattens the panel's hierarchy. */
+  --sage-600: #3f7a55;
 }
 
 /* ---------------------------------------------------------------------------
@@ -363,6 +368,10 @@
   --pay-card-tile: var(--azure-50); /* a card/UPI payment tile's ground */
   --receipt-dash: var(--dash-warm); /* the grand-total dashed divider */
 
+  /* — Cart (spec: Cart.dc.html) — */
+  --savings-muted: var(--sage-600); /* the softer line under a veg-tint saving — "You saved ₹100" */
+  --empty-glyph: var(--muted-200); /* the large outline glyph in an empty state */
+
   /* — Glass tab bar — */
   --glass: var(--glass-tint); /* wash over the native blur */
   --glass-sheen: var(--glass-sheen-in); /* the gloss along the top edge */
@@ -501,6 +510,9 @@
   --color-paid-hairline: var(--paid-hairline);
   --color-pay-card-tile: var(--pay-card-tile);
   --color-receipt-dash: var(--receipt-dash);
+
+  --color-savings-muted: var(--savings-muted);
+  --color-empty-glyph: var(--empty-glyph);
 
   --color-glass: var(--glass);
   --color-glass-sheen: var(--glass-sheen);

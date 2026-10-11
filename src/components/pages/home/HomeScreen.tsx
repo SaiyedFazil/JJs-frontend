@@ -168,7 +168,13 @@ export const HomeScreen = () => {
         pointerEvents="box-none"
       >
         {toast ? <Toast message={toast} /> : null}
-        {count > 0 ? <CartBar count={count} total={total} /> : null}
+        {count > 0 ? (
+          <CartBar
+            count={count}
+            total={total}
+            onPress={() => navigation.navigate('Cart')}
+          />
+        ) : null}
       </View>
     </View>
   );

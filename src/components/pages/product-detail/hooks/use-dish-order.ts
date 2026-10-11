@@ -47,16 +47,36 @@ export const cartLineId = (dishId: string, choice: DishChoice): string => {
  * quantity, so the two cannot disagree. Change any choice after adding and
  * the configuration no longer matches the line — the screen offers to add it
  * again rather than silently editing what is already in the cart.
+ *
+ * Opened from a cart line's Edit (`editLineId`), the page starts on that
+ * line's choices, so its stepper edits the line as above. Change a choice
+ * then and the order is `isUpdating`: the bar offers to update that line,
+ * carrying its quantity across, instead of adding a second one beside it.
  */
-export const useDishOrder = (item: MenuItem, detail: DishDetail) => {
-  const [portion, setPortion] = useState<PortionSize>('full');
-  const [spice, setSpice] = useState<SpiceLevel>(DEFAULT_SPICE);
-  const [addOnIds, setAddOnIds] = useState<string[]>([]);
-  const [notes, setNotes] = useState('');
+export const useDishOrder = (
+  item: MenuItem,
+  detail: DishDetail,
+  editLineId?: string,
+) => {
+  const editLine = useCartStore(s =>
+    editLineId ? s.items.find(i => i.id === editLineId) : undefined,
+  );
+  // The line's choices seed the page once; after that they are the page's.
+  const [seed] = useState(() => editLine?.options);
+
+  const [portion, setPortion] = useState<PortionSize>(seed?.portion ?? 'full');
+  const [spice, setSpice] = useState<SpiceLevel>(seed?.spice ?? DEFAULT_SPICE);
+  const [addOnIds, setAddOnIds] = useState<string[]>(
+    () => seed?.addOns.map(a => a.id) ?? [],
+  );
+  const [notes, setNotes] = useState(seed?.notes ?? '');
   const [draftQuantity, setDraftQuantity] = useState(1);
+  /** Unset until stepped while updating; the line's own quantity until then. */
+  const [updateQuantity, setUpdateQuantity] = useState<number | null>(null);
 
   const addItem = useCartStore(s => s.addItem);
   const decrementItem = useCartStore(s => s.decrementItem);
+  const replaceItem = useCartStore(s => s.replaceItem);
 
   const choice: DishChoice = {
     portion: item.portion ? portion : undefined,
@@ -67,12 +87,18 @@ export const useDishOrder = (item: MenuItem, detail: DishDetail) => {
   const lineId = cartLineId(item.id, choice);
   const inCart = useCartStore(s => s.quantityOf(lineId));
   const isInCart = inCart > 0;
+  /** The line being edited is still in the cart, and its choices have changed. */
+  const isUpdating = editLine != null && editLine.id !== lineId;
 
   const addOns = detail.addOns.filter(a => addOnIds.includes(a.id));
   /** One plate, add-ons included. */
   const unitPrice =
     priceOf(item, portion) + addOns.reduce((n, a) => n + a.price, 0);
-  const quantity = isInCart ? inCart : draftQuantity;
+  const quantity = isUpdating
+    ? (updateQuantity ?? editLine.quantity)
+    : isInCart
+      ? inCart
+      : draftQuantity;
 
   const line: CartLine = {
     id: lineId,
@@ -92,19 +118,31 @@ export const useDishOrder = (item: MenuItem, detail: DishDetail) => {
       ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id],
     );
 
-  const increment = () =>
-    isInCart ? addItem(line) : setDraftQuantity(q => q + 1);
+  const increment = () => {
+    if (isUpdating) setUpdateQuantity(quantity + 1);
+    else if (isInCart) addItem(line);
+    else setDraftQuantity(q => q + 1);
+  };
 
-  /** A draft stops at one; a cart line at one is removed, as on every list. */
-  const decrement = () =>
-    isInCart
-      ? decrementItem(lineId)
-      : setDraftQuantity(q => Math.max(1, q - 1));
+  /**
+   * A draft (or an update) stops at one; a cart line at one is removed, as on
+   * every list.
+   */
+  const decrement = () => {
+    if (isUpdating) setUpdateQuantity(Math.max(1, quantity - 1));
+    else if (isInCart) decrementItem(lineId);
+    else setDraftQuantity(q => Math.max(1, q - 1));
+  };
 
   const addToCart = () => {
     addItem(line, draftQuantity);
     // So a line later stepped back out of the cart returns to a fresh draft.
     setDraftQuantity(1);
+  };
+
+  /** Swaps the edited line for this configuration, in its place in the cart. */
+  const updateLine = () => {
+    if (editLine) replaceItem(editLine.id, line, quantity);
   };
 
   return {
@@ -120,9 +158,11 @@ export const useDishOrder = (item: MenuItem, detail: DishDetail) => {
     quantity,
     total: unitPrice * quantity,
     isInCart,
-    canDecrement: isInCart || quantity > 1,
+    isUpdating,
+    canDecrement: isUpdating ? quantity > 1 : isInCart || quantity > 1,
     increment,
     decrement,
     addToCart,
+    updateLine,
   };
 };

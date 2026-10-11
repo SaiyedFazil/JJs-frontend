@@ -61,13 +61,20 @@ const TOAST_GAP = 12;
  * Mock-only, like the home and menu screens: content comes from
  * src/data/dish-details.ts, the seam when the API phase starts.
  */
-const ProductDetail = ({ item }: { item: MenuItem }) => {
+const ProductDetail = ({
+  item,
+  editLineId,
+}: {
+  item: MenuItem;
+  /** The cart line this page was opened to edit, if any. */
+  editLineId?: string;
+}) => {
   const navigation = useNavigation<Navigation>();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
 
   const detail = useMemo(() => dishDetailOf(item), [item]);
-  const order = useDishOrder(item, detail);
+  const order = useDishOrder(item, detail, editLineId);
 
   const isFavourite = useFavouritesStore(s => s.ids.includes(item.id));
   const toggleFavourite = useFavouritesStore(s => s.toggle);
@@ -123,6 +130,18 @@ const ProductDetail = ({ item }: { item: MenuItem }) => {
     order.addToCart();
     showToast(`${item.name} added to cart`);
   };
+
+  // Edit is only ever opened from the cart, so the updated line is waiting
+  // right where the customer left it.
+  const handleUpdate = () => {
+    order.updateLine();
+    navigation.goBack();
+  };
+
+  // Back to the cart already beneath this page when there is one (the page
+  // was opened from a cart line), otherwise a fresh one on top.
+  const handleViewCart = () =>
+    navigation.navigate('Cart', undefined, { pop: true });
 
   const handleAddPairing = (pairing: MenuItem) => {
     addItem({ id: pairing.id, name: pairing.name, price: pairing.base });
@@ -228,6 +247,7 @@ const ProductDetail = ({ item }: { item: MenuItem }) => {
 
       <OrderBar
         isSoldOut={isSoldOut}
+        isUpdating={order.isUpdating}
         isInCart={order.isInCart}
         quantity={order.quantity}
         canDecrement={order.canDecrement}
@@ -236,6 +256,8 @@ const ProductDetail = ({ item }: { item: MenuItem }) => {
         onIncrement={order.increment}
         onDecrement={order.decrement}
         onAdd={handleAdd}
+        onUpdate={handleUpdate}
+        onViewCart={handleViewCart}
         onLayout={e => setBarHeight(e.nativeEvent.layout.height)}
       />
     </View>
@@ -261,7 +283,7 @@ export const ProductDetailScreen = () => {
   }
 
   // Keyed by dish so a different dish never inherits this one's choices.
-  return <ProductDetail key={item.id} item={item} />;
+  return <ProductDetail key={item.id} item={item} editLineId={params.lineId} />;
 };
 
 /** Layout-only: room under the last review before the bar. */

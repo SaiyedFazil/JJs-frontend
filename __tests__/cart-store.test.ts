@@ -94,3 +94,73 @@ describe('quantityOf', () => {
     expect(useCartStore.getState().quantityOf('not-here')).toBe(0);
   });
 });
+
+const naan = { id: 'butter-naan', name: 'Butter Naan', price: 80 };
+const jamun = { id: 'gulab-jamun', name: 'Gulab Jamun', price: 99 };
+const ids = () => useCartStore.getState().items.map(i => i.id);
+
+describe('restoreItem', () => {
+  it('puts an undone line back where it was', () => {
+    useCartStore.getState().addItem(line);
+    useCartStore.getState().addItem(naan, 2);
+    useCartStore.getState().addItem(jamun);
+    const removed = useCartStore.getState().items[1];
+
+    useCartStore.getState().removeItem(naan.id);
+    useCartStore.getState().restoreItem(removed, 1);
+
+    expect(ids()).toEqual([line.id, naan.id, jamun.id]);
+    expect(useCartStore.getState().quantityOf(naan.id)).toBe(2);
+  });
+
+  it('appends when the cart has since shrunk below that position', () => {
+    useCartStore.getState().addItem(line);
+    useCartStore.getState().restoreItem({ ...naan, quantity: 1 }, 5);
+    expect(ids()).toEqual([line.id, naan.id]);
+  });
+
+  it('merges into the line when it was re-added in the meantime', () => {
+    useCartStore.getState().addItem(naan);
+    useCartStore.getState().restoreItem({ ...naan, quantity: 2 }, 0);
+    expect(useCartStore.getState().items).toHaveLength(1);
+    expect(useCartStore.getState().quantityOf(naan.id)).toBe(3);
+  });
+});
+
+describe('replaceItem', () => {
+  const half = {
+    id: 'tandoori-chicken|half',
+    name: 'Tandoori Chicken',
+    price: 279,
+    dishId: 'tandoori-chicken',
+    options: { portion: 'half' as const, addOns: [] },
+  };
+
+  it('swaps an edited line for its new configuration, in place', () => {
+    useCartStore.getState().addItem(naan);
+    useCartStore.getState().addItem(half, 2);
+    useCartStore.getState().addItem(jamun);
+
+    useCartStore.getState().replaceItem(half.id, line, 3);
+
+    expect(ids()).toEqual([naan.id, line.id, jamun.id]);
+    expect(useCartStore.getState().items[1]).toEqual({ ...line, quantity: 3 });
+  });
+
+  it('merges into a line that already holds the new configuration', () => {
+    useCartStore.getState().addItem(line);
+    useCartStore.getState().addItem(half, 2);
+
+    useCartStore.getState().replaceItem(half.id, line, 2);
+
+    expect(ids()).toEqual([line.id]);
+    expect(useCartStore.getState().quantityOf(line.id)).toBe(3);
+  });
+
+  it('sets the quantity when the configuration is unchanged', () => {
+    useCartStore.getState().addItem(half, 2);
+    useCartStore.getState().replaceItem(half.id, half, 4);
+    expect(ids()).toEqual([half.id]);
+    expect(useCartStore.getState().quantityOf(half.id)).toBe(4);
+  });
+});

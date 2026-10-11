@@ -44,7 +44,7 @@ src/
 │   ├── ui/               # design-system kit (token-only primitives)
 │   ├── layout/           # app chrome — CustomTabBar
 │   ├── providers/        # AppProviders
-│   ├── custom/           # shared composites — PlaceholderScreen
+│   ├── custom/           # shared composites — PlaceholderScreen, QuantityControl, UndoBanner
 │   └── pages/<feature>/  # screens: <Name>Screen.tsx, components/, hooks/, <sub-page>/
 ├── lib/
 │   ├── api/              # api-client.ts, endpoints.ts, <domain>/<domain>-api.ts
@@ -68,7 +68,7 @@ All param lists live in `src/types/navigation.types.ts`; screens never import a 
 
 - `src/app/RootNavigator.tsx` — one native stack (`AppStackParamList`) holding exactly one screen: `Auth` (`AuthNavigator`) when signed out, `CompleteProfile` until the profile is complete, otherwise `Main` (`MainNavigator`). **Never swap whole navigators here instead**: every launch renders Auth first (the session rehydrates in an effect), and replacing one root native stack with another left the incoming one laid out but never drawn on Android — a blank grey window. "Complete" is decided in `auth.store`: after OTP, the server's `profileCompleted` flag **or** both names on file; after a relaunch, both names only (whitespace counts as missing). `__tests__/auth-store.test.ts` pins this.
 - `AuthNavigator` — native stack: Splash → Login → OtpVerification
-- `MainNavigator` — the signed-in native stack: `Tabs` (`MainTabNavigator`), then `ProductDetail` (`{ dishId }`) pushed over it, so it covers the tab bar. Tab screens type `useNavigation` with `MainTabNavigationProp<'Home'>` etc. to reach it.
+- `MainNavigator` — the signed-in native stack: `Tabs` (`MainTabNavigator`), then `ProductDetail` (`{ dishId, lineId? }`) and `Cart` pushed over it, so they cover the tab bar. Every `CartBar` and the dish page's "In cart · View" open `Cart` (the latter with `{ pop: true }`, so it returns to a cart already beneath it). A cart line's Edit opens `ProductDetail` with its `lineId`: the page starts on that line's choices, and changing one turns the bar into "Update item", which replaces the line in place (`replaceItem`). Tab screens type `useNavigation` with `MainTabNavigationProp<'Home'>` etc. to reach it.
 - `MainTabNavigator` — bottom tabs with `CustomTabBar`: Home, Menu, Favourites, Profile (Favourites is a placeholder)
 - `ProfileNavigator` — the Profile tab's stack: ProfileMain → EditProfile (tab bar hidden on EditProfile)
 
@@ -77,7 +77,8 @@ All param lists live in `src/types/navigation.types.ts`; screens never import a 
 Zustand stores in `src/store/`:
 
 - `auth.store.ts` — session: `isAuthenticated`, `user`, tokens, `profileCompleted`; `setAuth()`, `rehydrate()`, `updateUser()`, `logout()`. Persists to MMKV through `src/lib/storage.ts`.
-- `cart.store.ts` — cart lines, `addItem(line, quantity?)`, `totalItems()`, `totalAmount()`, `quantityOf()`. A dish added as-is is keyed by its dish id; one customised on the product detail screen gets its own line id (`cartLineId()` in `use-dish-order.ts`) and carries `dishId` + `options` (portion, spice, add-ons, notes).
+- `cart.store.ts` — cart lines, `addItem(line, quantity?)`, `restoreItem()` (the cart's Undo), `replaceItem()` (Edit), `totalItems()`, `totalAmount()`, `quantityOf()`. A dish added as-is is keyed by its dish id; one customised on the product detail screen gets its own line id (`cartLineId()` in `use-dish-order.ts`) and carries `dishId` + `options` (portion, spice, add-ons, notes).
+- `checkout.store.ts` — the Cart's choices around its lines: `mode` (delivery / takeaway / dine-in), `coupon`, tip, kitchen `instructions`. Kept out of the screen so a trip back to the menu doesn't reset them; in memory, like the cart.
 - `favourites.store.ts` — hearted dish ids (in memory; the Favourites tab will read it)
 - `profile.store.ts` — device-local avatar choice (`src/constants/avatars.ts`)
 
@@ -111,17 +112,20 @@ Auth and profile talk to the real API: `src/lib/api/auth/auth-api.ts` (send/veri
 
 **The Menu tab is mock-only too** (`src/components/pages/menu/`, design: `Menu Screen.dc.html`). It reads `src/data/menu.ts` through `useMenuCatalog` (sections, Pure Veg, sort, search; `__tests__/menu-catalog.test.ts` pins it). The ScrollView's single sticky slot belongs to the category rail, so `MenuScreen` draws the stuck section header as an overlay positioned by `useScrollSpy`'s onLayout measurements. The Rating sort chip and the per-row star only appear once dishes carry `rating`.
 
-**The product detail screen is mock-only too** (`src/components/pages/product-detail/`, design: `Product Detail.dc.html`), opened from Menu rows and the Home hero and rails. Its long-form content — copy, ingredients, rating, reviews, add-ons, pairings — comes from `dishDetailOf()` in `src/data/dish-details.ts`; six dishes are written up in full and the rest fall back to their menu one-liner with no rating. Salad, breads, drinks and desserts take no spice level, add-ons or notes. The gallery pages through `detail.gallery`: the design's three frames (hero, close-up, plated), each filled with the one dish photo until more are shot; an unphotographed dish shows a single cuisine tile with no pager. "In cart · View" has no cart screen to open yet, like `CartBar`.
+**The product detail screen is mock-only too** (`src/components/pages/product-detail/`, design: `Product Detail.dc.html`), opened from Menu rows and the Home hero and rails. Its long-form content — copy, ingredients, rating, reviews, add-ons, pairings — comes from `dishDetailOf()` in `src/data/dish-details.ts`; six dishes are written up in full and the rest fall back to their menu one-liner with no rating. Salad, breads, drinks and desserts take no spice level, add-ons or notes. The gallery pages through `detail.gallery`: the design's three frames (hero, close-up, plated), each filled with the one dish photo until more are shot; an unphotographed dish shows a single cuisine tile with no pager.
+
+**The Cart is mock-only too** (`src/components/pages/cart/`, design: `Cart.dc.html`). Its lines are the real cart store, but fees, the ₹199 delivery minimum, offers (JJ100 / WELCOME15 / FREEDEL), tip presets, upsells and the per-mode ETA and address copy come from `src/data/checkout.ts`. `priceCart()` in `use-cart-bill.ts` does the arithmetic (`__tests__/cart-bill.test.ts` pins it): GST on the pre-discount item total; delivery fee, tip and minimum for delivery only; no packaging for dine-in. A chosen coupon the cart doesn't qualify for stays chosen but unpriced. A fresh cart starts on JJ100 and a ₹20 tip, as the design does. Proceed to Pay and the address Change only toast: there is no payment or address screen yet.
 
 When the API phase starts, these are the seams:
 
-| Swap                                                                      | Keep                                                                                                                              |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| the bodies of `src/data/menu.ts` and `src/data/restaurant.ts`             | From `menu`: `CATEGORIES`, `byId`, `bestsellers()`, `byCategory()`. From `restaurant`: `isOpenAt()`, `SERVICE`, `OPENS_AT_LABEL`. |
-| `HomeScreen`'s `isLoading` `setTimeout`                                   | the `SkeletonRail` it already gates                                                                                               |
-| the `require()` values in `src/data/dish-images.ts`, swapped for API URLs | `DISH_IMAGES`' slug keys, and `ImageTile`, which renders either a bundled module or a URL                                         |
-| the body of `useProfileCounts`                                            | its `ProfileCounts` return shape                                                                                                  |
-| the body of `src/data/dish-details.ts`                                    | `dishDetailOf()` and its `DishDetail` shape, `DEFAULT_SPICE`, `PORTION_SERVES`                                                    |
+| Swap                                                                                      | Keep                                                                                                                              |
+| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| the bodies of `src/data/menu.ts` and `src/data/restaurant.ts`                             | From `menu`: `CATEGORIES`, `byId`, `bestsellers()`, `byCategory()`. From `restaurant`: `isOpenAt()`, `SERVICE`, `OPENS_AT_LABEL`. |
+| `HomeScreen`'s `isLoading` `setTimeout`                                                   | the `SkeletonRail` it already gates                                                                                               |
+| the `require()` values in `src/data/dish-images.ts`, swapped for API URLs                 | `DISH_IMAGES`' slug keys, and `ImageTile`, which renders either a bundled module or a URL                                         |
+| the body of `useProfileCounts`                                                            | its `ProfileCounts` return shape                                                                                                  |
+| the body of `src/data/dish-details.ts`                                                    | `dishDetailOf()` and its `DishDetail` shape, `DEFAULT_SPICE`, `PORTION_SERVES`                                                    |
+| the body of `src/data/checkout.ts`; `priceCart()` becomes a display of the server's quote | `CHARGES`, `MIN_DELIVERY_ORDER`, `OFFERS`, `TIP_PRESETS`, `MODE_DETAILS`, `upsells()`, and the `CartBill` shape                   |
 
 `priceOf()` in `menu.ts` prices a portion; the product detail screen uses it — preserve it during the swap.
 

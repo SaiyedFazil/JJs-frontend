@@ -2,11 +2,13 @@ import React from 'react';
 import { TouchableOpacity, View, type LayoutChangeEvent } from 'react-native';
 import { ArrowRight } from 'lucide-react-native';
 import { Icon, Text } from '@/components/ui';
-import { QuantityControl } from './QuantityControl';
+import { QuantityControl } from '@/components/custom/QuantityControl';
 
 /**
- * The sticky bar under the page, in one of three states:
+ * The sticky bar under the page, in one of four states:
  *  - sold out: a dead button and nothing else;
+ *  - opened from a cart line's Edit, with its choices since changed: the
+ *    stepper sets the new quantity, and the ember button updates that line;
  *  - this configuration is in the cart: its stepper edits the cart line, and
  *    the dark button heads to the cart;
  *  - otherwise: the stepper sets how many to add, and the total rides on the
@@ -14,6 +16,7 @@ import { QuantityControl } from './QuantityControl';
  */
 export const OrderBar = ({
   isSoldOut,
+  isUpdating,
   isInCart,
   quantity,
   canDecrement,
@@ -22,10 +25,12 @@ export const OrderBar = ({
   onIncrement,
   onDecrement,
   onAdd,
+  onUpdate,
   onViewCart,
   onLayout,
 }: {
   isSoldOut: boolean;
+  isUpdating: boolean;
   isInCart: boolean;
   quantity: number;
   canDecrement: boolean;
@@ -34,8 +39,8 @@ export const OrderBar = ({
   onIncrement: () => void;
   onDecrement: () => void;
   onAdd: () => void;
-  /** Unset until there is a cart screen to go to; the button then does nothing. */
-  onViewCart?: () => void;
+  onUpdate: () => void;
+  onViewCart: () => void;
   onLayout: (e: LayoutChangeEvent) => void;
 }) => (
   <View
@@ -64,11 +69,26 @@ export const OrderBar = ({
           onDecrement={onDecrement}
         />
 
-        {isInCart ? (
+        {isUpdating ? (
+          <TouchableOpacity
+            onPress={onUpdate}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel={`Update item to ${quantity} for ₹${total}`}
+            className="flex-1 h-13 rounded-lg bg-ember shadow-ember-glow flex-row items-center justify-between px-4.5"
+          >
+            <Text variant="body" weight="800" tone="on-ember">
+              Update item
+            </Text>
+            <Text variant="body" weight="800" tone="on-ember">
+              {`₹${total}`}
+            </Text>
+          </TouchableOpacity>
+        ) : isInCart ? (
           <TouchableOpacity
             onPress={onViewCart}
             activeOpacity={0.9}
-            accessibilityRole={onViewCart ? 'button' : undefined}
+            accessibilityRole="button"
             accessibilityLabel={`In cart, ${quantity} for ₹${total}. View cart`}
             className="flex-1 h-13 rounded-lg bg-hero flex-row items-center justify-between px-4.5"
           >

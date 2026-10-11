@@ -43,6 +43,7 @@ export type TextTone =
   | 'hero-danger'
   | 'closed-foreground'
   | 'veg'
+  | 'savings-muted'
   | 'non-veg'
   | 'chili';
 
@@ -127,6 +128,8 @@ const TONE: Record<TextTone, string> = {
   'hero-danger': 'text-hero-danger',
   'closed-foreground': 'text-closed-foreground',
   veg: 'text-veg',
+  /** The quieter line under a veg-tint saving, where a second veg line shouts. */
+  'savings-muted': 'text-savings-muted',
   'non-veg': 'text-non-veg',
   chili: 'text-chili',
 };

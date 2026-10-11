@@ -25,7 +25,7 @@ import { useFavouritesStore } from '@/store/favourites.store';
 import { MenuRow } from '@/components/pages/menu/components/MenuRow';
 import { useFavourites } from './hooks/use-favourites';
 import { FavouritesSectionHeader } from './components/FavouritesSectionHeader';
-import { UndoBanner } from './components/UndoBanner';
+import { UndoBanner } from '@/components/custom/UndoBanner';
 
 const TOAST_MS = 1900;
 /** How long the "Removed … · UNDO" banner lingers before it gives up. */
@@ -223,9 +223,20 @@ export const FavouritesScreen = () => {
       >
         {toast ? <Toast message={toast} /> : null}
         {pendingUndo ? (
-          <UndoBanner name={pendingUndo.name} onUndo={handleUndo} />
+          <UndoBanner
+            floating
+            message={`Removed ${pendingUndo.name} from favourites`}
+            undoLabel={`Undo removing ${pendingUndo.name}`}
+            onUndo={handleUndo}
+          />
         ) : null}
-        {count > 0 ? <CartBar count={count} total={total} /> : null}
+        {count > 0 ? (
+          <CartBar
+            count={count}
+            total={total}
+            onPress={() => navigation.navigate('Cart')}
+          />
+        ) : null}
       </View>
     </View>
   );

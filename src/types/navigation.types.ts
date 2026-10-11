@@ -56,8 +56,14 @@ export type AppStackParamList = {
  */
 export type MainStackParamList = {
   Tabs: NavigatorScreenParams<MainTabParamList> | undefined;
-  /** A dish's full page, opened from any list that shows dishes. */
-  ProductDetail: { dishId: string };
+  /**
+   * A dish's full page, opened from any list that shows dishes. `lineId` is
+   * set when it is opened from a cart line's Edit: the page starts on that
+   * line's choices, and changing them offers to update the line.
+   */
+  ProductDetail: { dishId: string; lineId?: string };
+  /** Review & pay, opened from every cart bar and the dish page's "In cart". */
+  Cart: undefined;
   /** Order history & reorder, opened from the Profile tab's "My Orders" row. */
   MyOrders: undefined;
   /** One order's receipt, opened from a card in My Orders. */

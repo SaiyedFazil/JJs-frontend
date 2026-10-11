@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Text } from '@/components/ui';
-import { QuantityControl } from './QuantityControl';
+import { QuantityControl } from '@/components/custom/QuantityControl';
 
 export const QuantityCard = ({
   unitPrice,
