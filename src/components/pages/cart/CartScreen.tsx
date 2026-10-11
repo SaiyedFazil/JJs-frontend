@@ -1,34 +1,23 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ShoppingBag } from 'lucide-react-native';
-import type { MenuItem } from '@/types/menu.types';
 import type { Offer } from '@/types/checkout.types';
 import type { MainStackParamList } from '@/types/navigation.types';
 import { EmptyState, FormScreen, Icon, Toast } from '@/components/ui';
 import { UndoBanner } from '@/components/custom/UndoBanner';
-import { MODE_DETAILS, OFFERS, upsells } from '@/data/checkout';
+import { DELIVERY, OFFERS } from '@/data/checkout';
 import { useCartStore, type CartItem } from '@/store/cart.store';
 import { useCheckoutStore } from '@/store/checkout.store';
 import { offerBlocker, useCartBill } from './hooks/use-cart-bill';
 import { CartTopBar } from './components/CartTopBar';
-import { ModeToggle } from './components/ModeToggle';
-import { EtaStrip } from './components/EtaStrip';
+import { DeliveryCard } from './components/DeliveryCard';
 import { CartItemsCard } from './components/CartItemsCard';
-import { UpsellRail } from './components/UpsellRail';
-import { InstructionsCard } from './components/InstructionsCard';
 import { CouponCard } from './components/CouponCard';
 import { TipCard } from './components/TipCard';
 import { BillCard } from './components/BillCard';
-import { PlaceCard } from './components/PlaceCard';
 import { CheckoutBar } from './components/CheckoutBar';
 import { OffersSheet } from './components/OffersSheet';
 
@@ -40,8 +29,6 @@ const UNDO_MS = 4000;
 /** Clearance between the floating toast and the sticky bar it floats over. */
 const TOAST_GAP = 12;
 
-const UPSELLS = upsells();
-
 /** A line stepped out of the cart, and where it stood — what Undo puts back. */
 interface Removed {
   item: CartItem;
@@ -49,16 +36,12 @@ interface Removed {
 }
 
 /**
- * Review & pay: the lines with live quantities, a one-tap upsell rail, a
- * note for the kitchen, the coupon and the rider tip, then a bill that
- * reprices as anything above it changes — with Proceed to Pay pinned below.
- *
- * Delivery / Takeaway / Dine-in sits on top because it reshapes everything
- * else: delivery adds its fee, the tip and a ₹199 minimum; dine-in drops
- * packaging; the ETA strip and the details card follow suit.
+ * Review & pay: where the order is going and when, the lines with live
+ * quantities, the coupon and the rider tip, then a bill that reprices as
+ * anything above it changes — with Proceed to Pay pinned below.
  *
  * Mock-only in the same sense as the menu: the lines are the real cart store,
- * but fees, offers and fulfilment copy come from src/data/checkout.ts, and
+ * but fees, offers and the delivery copy come from src/data/checkout.ts, and
  * there is no payment or address screen yet — those two actions say so.
  */
 export const CartScreen = () => {
@@ -72,15 +55,11 @@ export const CartScreen = () => {
   const removeItem = useCartStore(s => s.removeItem);
   const restoreItem = useCartStore(s => s.restoreItem);
 
-  const mode = useCheckoutStore(s => s.mode);
-  const setMode = useCheckoutStore(s => s.setMode);
   const setCoupon = useCheckoutStore(s => s.setCoupon);
   const tipChoice = useCheckoutStore(s => s.tipChoice);
   const setTipChoice = useCheckoutStore(s => s.setTipChoice);
   const customTip = useCheckoutStore(s => s.customTip);
   const setCustomTip = useCheckoutStore(s => s.setCustomTip);
-  const instructions = useCheckoutStore(s => s.instructions);
-  const setInstructions = useCheckoutStore(s => s.setInstructions);
 
   const bill = useCartBill();
 
@@ -113,23 +92,33 @@ export const CartScreen = () => {
     [],
   );
 
-  const inCart = useMemo(() => new Set(items.map(i => i.id)), [items]);
-
   const goToMenu = () =>
     navigation.navigate('Tabs', { screen: 'Menu' }, { pop: true });
 
+  // The line handlers are stable, so a change to one line re-renders that
+  // row alone.
+  const handleIncrement = useCallback(
+    (item: CartItem) => addItem(item),
+    [addItem],
+  );
+
   /** At one, the minus removes the line — with a few seconds to take it back. */
-  const handleDecrement = (item: CartItem) => {
-    if (item.quantity > 1) {
-      decrementItem(item.id);
-      return;
-    }
-    const index = items.findIndex(i => i.id === item.id);
-    removeItem(item.id);
-    setRemoved({ item, index });
-    if (undoTimer.current) clearTimeout(undoTimer.current);
-    undoTimer.current = setTimeout(() => setRemoved(null), UNDO_MS);
-  };
+  const handleDecrement = useCallback(
+    (item: CartItem) => {
+      if (item.quantity > 1) {
+        decrementItem(item.id);
+        return;
+      }
+      const index = useCartStore
+        .getState()
+        .items.findIndex(i => i.id === item.id);
+      removeItem(item.id);
+      setRemoved({ item, index });
+      if (undoTimer.current) clearTimeout(undoTimer.current);
+      undoTimer.current = setTimeout(() => setRemoved(null), UNDO_MS);
+    },
+    [decrementItem, removeItem],
+  );
 
   const handleUndo = () => {
     if (!removed) return;
@@ -138,18 +127,16 @@ export const CartScreen = () => {
     setRemoved(null);
   };
 
-  const handleEdit = (item: CartItem) =>
-    navigation.navigate('ProductDetail', {
-      dishId: item.dishId ?? item.id,
-      lineId: item.id,
-    });
+  const handleEdit = useCallback(
+    (item: CartItem) =>
+      navigation.navigate('ProductDetail', {
+        dishId: item.dishId ?? item.id,
+        lineId: item.id,
+      }),
+    [navigation],
+  );
 
-  const handleAddUpsell = (dish: MenuItem) => {
-    addItem({ id: dish.id, name: dish.name, price: dish.base });
-    showToast(`${dish.name} added`);
-  };
-
-  const blockerOf = (offer: Offer) => offerBlocker(offer, bill.itemTotal, mode);
+  const blockerOf = (offer: Offer) => offerBlocker(offer, bill.itemTotal);
 
   const handleApplyOffer = (offer: Offer) => {
     setCoupon(offer.code);
@@ -213,25 +200,19 @@ export const CartScreen = () => {
       />
 
       <FormScreen contentContainerStyle={styles.content}>
-        <ModeToggle value={mode} onChange={setMode} />
-        <EtaStrip details={MODE_DETAILS[mode]} />
+        <DeliveryCard
+          details={DELIVERY}
+          onChange={() => showToast('Saved addresses are coming soon')}
+        />
 
         <CartItemsCard
           items={items}
-          onIncrement={item => addItem(item)}
+          onIncrement={handleIncrement}
           onDecrement={handleDecrement}
           onEdit={handleEdit}
           onAddMore={goToMenu}
         />
         {undoBanner ? <View className="px-4 pt-3">{undoBanner}</View> : null}
-
-        <UpsellRail
-          dishes={UPSELLS}
-          isInCart={id => inCart.has(id)}
-          onAdd={handleAddUpsell}
-        />
-
-        <InstructionsCard value={instructions} onChange={setInstructions} />
 
         <CouponCard
           applied={bill.appliedCoupon}
@@ -242,21 +223,14 @@ export const CartScreen = () => {
           onRemove={handleRemoveCoupon}
         />
 
-        {mode === 'delivery' ? (
-          <TipCard
-            choice={tipChoice}
-            customTip={customTip}
-            onChoose={setTipChoice}
-            onCustomChange={setCustomTip}
-          />
-        ) : null}
-
-        <BillCard bill={bill} mode={mode} />
-
-        <PlaceCard
-          details={MODE_DETAILS[mode]}
-          onChange={() => showToast('Saved addresses are coming soon')}
+        <TipCard
+          choice={tipChoice}
+          customTip={customTip}
+          onChoose={setTipChoice}
+          onCustomChange={setCustomTip}
         />
+
+        <BillCard bill={bill} />
       </FormScreen>
 
       {toast ? (

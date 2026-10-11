@@ -3,13 +3,11 @@
  * (spec: Cart.dc.html).
  *
  * The cart prices itself from these: CHARGES, MIN_DELIVERY_ORDER, OFFERS,
- * TIP_PRESETS, MODE_DETAILS and upsells(). Preserve those signatures when you
- * swap the body. Once the server quotes the bill, the Cart's priceCart() turns
- * into a display of that quote rather than the arithmetic itself.
+ * TIP_PRESETS and DELIVERY. Preserve those signatures when you swap the body.
+ * Once the server quotes the bill, the Cart's priceCart() turns into a
+ * display of that quote rather than the arithmetic itself.
  */
-import type { MenuItem } from '@/types/menu.types';
-import type { ModeDetails, Offer, OrderMode } from '@/types/checkout.types';
-import { byId } from './menu';
+import type { DeliveryDetails, Offer } from '@/types/checkout.types';
 import { SERVICE } from './restaurant';
 
 /** Taxes and fees on top of the items. */
@@ -17,11 +15,10 @@ export const CHARGES = {
   /** GST on the item total, before any discount. */
   gstRate: 0.05,
   deliveryFee: 40,
-  /** Delivery and takeaway boxes; dine-in has none. */
   packaging: 20,
 } as const;
 
-/** A delivery order below this item total cannot be placed. */
+/** An order below this item total cannot be placed. */
 export const MIN_DELIVERY_ORDER = 199;
 
 /** The rider-tip chips, in rupees. The fourth chip is "Custom". */
@@ -58,39 +55,10 @@ export const OFFERS: Offer[] = [
 /** The coupon a fresh cart starts on, applied for the customer. */
 export const DEFAULT_COUPON = OFFERS[0].code;
 
-/** The ETA strip and details card, per mode. */
-export const MODE_DETAILS: Record<OrderMode, ModeDetails> = {
-  delivery: {
-    etaIcon: '\u{1F6F5}',
-    etaTitle: `Delivery in ~${SERVICE.etaMinutes} min`,
-    etaNote: `To Navrangpura · ${SERVICE.distanceKm} km away`,
-    placeIcon: '\u{1F4CD}',
-    placeTitle: 'Delivering to Home',
-    placeNote: '351 Maison Street, Navrangpura, Ahmedabad 380001',
-    canChangePlace: true,
-  },
-  takeaway: {
-    etaIcon: '\u{1F961}',
-    etaTitle: 'Ready for pickup in ~20 min',
-    etaNote: 'We’ll notify you when it’s packed',
-    placeIcon: '\u{1F961}',
-    placeTitle: 'Pickup from JJ’s Kitchen',
-    placeNote: 'Shop 4, Linking Road · ready in ~20 min',
-    canChangePlace: false,
-  },
-  dinein: {
-    etaIcon: '\u{1F37D}\u{FE0F}',
-    etaTitle: 'Table booked for 8:30 PM',
-    etaNote: 'Arrive 10 min early to be seated',
-    placeIcon: '\u{1F37D}\u{FE0F}',
-    placeTitle: 'Dine-in · Table for 2',
-    placeNote: 'Today 8:30 PM · JJ’s Kitchen, Linking Road',
-    canChangePlace: false,
-  },
+/** The delivery card at the top of the cart: the saved address, and the ETA. */
+export const DELIVERY: DeliveryDetails = {
+  label: 'Home',
+  address: '351 Maison Street, Navrangpura, Ahmedabad 380001',
+  eta: `Arrives in ~${SERVICE.etaMinutes} min`,
+  distance: `${SERVICE.distanceKm} km away`,
 };
-
-/** The "Complete your meal" rail: a drink, a bread and a salad. */
-const UPSELL_IDS = ['sosyo', 'butter-garlic-naan', 'green-salad'];
-
-export const upsells = (): MenuItem[] =>
-  UPSELL_IDS.map(id => byId[id]).filter((d): d is MenuItem => d != null);

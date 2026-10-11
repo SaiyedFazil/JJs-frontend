@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { Icon, Text } from '@/components/ui';
 import { inr } from '@/data/orders';
-import type { CartBill, OrderMode } from '@/types/checkout.types';
+import type { CartBill } from '@/types/checkout.types';
 
 /** One label/amount row. A saving reads in veg green. */
 const BillRow = ({
@@ -34,20 +34,11 @@ const BillRow = ({
 );
 
 /**
- * The live bill. Rows come and go with the mode — delivery and the tip for
- * delivery only, packaging for everything but dine-in — and the coupon's
- * discount shows in green. Under the grand total, a green line totals what
- * the customer saved.
+ * The live bill. The coupon's discount shows in green, the tip only once
+ * there is one, and under the grand total a green line totals what the
+ * customer saved.
  */
-export const BillCard = ({
-  bill,
-  mode,
-}: {
-  bill: CartBill;
-  mode: OrderMode;
-}) => {
-  const isDelivery = mode === 'delivery';
-
+export const BillCard = ({ bill }: { bill: CartBill }) => {
   return (
     <View className="px-4 pt-3.5">
       <View className="rounded-lg border border-card-hairline bg-surface p-4">
@@ -57,12 +48,10 @@ export const BillCard = ({
 
         <BillRow label="Item total" amount={inr(bill.itemTotal)} />
         <BillRow label="GST & taxes" amount={inr(bill.gst)} />
-        {isDelivery ? (
-          <BillRow
-            label="Delivery fee"
-            amount={bill.deliveryWaived ? 'FREE' : inr(bill.deliveryFee)}
-          />
-        ) : null}
+        <BillRow
+          label="Delivery fee"
+          amount={bill.deliveryWaived ? 'FREE' : inr(bill.deliveryFee)}
+        />
         {bill.packaging > 0 ? (
           <BillRow label="Packaging" amount={inr(bill.packaging)} />
         ) : null}

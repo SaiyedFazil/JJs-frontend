@@ -79,7 +79,7 @@ Zustand stores in `src/store/`:
 
 - `auth.store.ts` — session: `isAuthenticated`, `user`, tokens, `profileCompleted`; `setAuth()`, `rehydrate()`, `updateUser()`, `logout()`. Persists to MMKV through `src/lib/storage.ts`.
 - `cart.store.ts` — cart lines, `addItem(line, quantity?)`, `restoreItem()` (the cart's Undo), `replaceItem()` (Edit), `totalItems()`, `totalAmount()`, `quantityOf()`. A dish added as-is is keyed by its dish id; one customised on the product detail screen gets its own line id (`cartLineId()` in `use-dish-order.ts`) and carries `dishId` + `options` (portion, spice, add-ons, notes).
-- `checkout.store.ts` — the Cart's choices around its lines: `mode` (delivery / takeaway / dine-in), `coupon`, tip, kitchen `instructions`. Kept out of the screen so a trip back to the menu doesn't reset them; in memory, like the cart.
+- `checkout.store.ts` — the Cart's choices around its lines: `coupon` and the rider tip. Kept out of the screen so a trip back to the menu doesn't reset them; in memory, like the cart.
 - `favourites.store.ts` — hearted dish ids (in memory; the Favourites tab will read it)
 - `profile.store.ts` — device-local avatar choice (`src/constants/avatars.ts`)
 - `notification-settings.store.ts` — which notification topics are on; device-local in MMKV until there is a preferences endpoint, and reset on logout like the avatar. `LOCKED_TOPICS` (order updates) cannot be turned off. `__tests__/notification-settings-store.test.ts` pins it.
@@ -116,7 +116,7 @@ Auth and profile talk to the real API: `src/lib/api/auth/auth-api.ts` (send/veri
 
 **The product detail screen is mock-only too** (`src/components/pages/product-detail/`, design: `Product Detail.dc.html`), opened from Menu rows and the Home hero and rails. Its long-form content — copy, ingredients, rating, reviews, add-ons, pairings — comes from `dishDetailOf()` in `src/data/dish-details.ts`; six dishes are written up in full and the rest fall back to their menu one-liner with no rating. Salad, breads, drinks and desserts take no spice level, add-ons or notes. The gallery pages through `detail.gallery`: the design's three frames (hero, close-up, plated), each filled with the one dish photo until more are shot; an unphotographed dish shows a single cuisine tile with no pager.
 
-**The Cart is mock-only too** (`src/components/pages/cart/`, design: `Cart.dc.html`). Its lines are the real cart store, but fees, the ₹199 delivery minimum, offers (JJ100 / WELCOME15 / FREEDEL), tip presets, upsells and the per-mode ETA and address copy come from `src/data/checkout.ts`. `priceCart()` in `use-cart-bill.ts` does the arithmetic (`__tests__/cart-bill.test.ts` pins it): GST on the pre-discount item total; delivery fee, tip and minimum for delivery only; no packaging for dine-in. A chosen coupon the cart doesn't qualify for stays chosen but unpriced. A fresh cart starts on JJ100 and a ₹20 tip, as the design does. Proceed to Pay and the address Change only toast: there is no payment or address screen yet.
+**The Cart is mock-only too** (`src/components/pages/cart/`, design: `Cart.dc.html`). Its lines are the real cart store, but fees, the ₹199 delivery minimum, offers (JJ100 / WELCOME15 / FREEDEL), tip presets and the delivery address and ETA (`DELIVERY`) come from `src/data/checkout.ts`. Every order is delivered: there is no takeaway or dine-in. Top to bottom: the delivery card, the lines (their own `LineStepper`, not the shared `QuantityControl`), coupon, tip, bill. `priceCart()` in `use-cart-bill.ts` does the arithmetic (`__tests__/cart-bill.test.ts` pins it): GST on the pre-discount item total, then delivery fee, packaging and tip. A chosen coupon the cart doesn't qualify for stays chosen but unpriced. A fresh cart starts on JJ100 and a ₹20 tip, as the design does. Proceed to Pay and the address Change only toast: there is no payment or address screen yet.
 
 When the API phase starts, these are the seams:
 
@@ -126,7 +126,7 @@ When the API phase starts, these are the seams:
 | `HomeScreen`'s `isLoading` `setTimeout`                                                   | the `SkeletonRail` it already gates                                                                                               |
 | the `require()` values in `src/data/dish-images.ts`, swapped for API URLs                 | `DISH_IMAGES`' slug keys, and `ImageTile`, which renders either a bundled module or a URL                                         |
 | the body of `src/data/dish-details.ts`                                                    | `dishDetailOf()` and its `DishDetail` shape, `DEFAULT_SPICE`, `PORTION_SERVES`                                                    |
-| the body of `src/data/checkout.ts`; `priceCart()` becomes a display of the server's quote | `CHARGES`, `MIN_DELIVERY_ORDER`, `OFFERS`, `TIP_PRESETS`, `MODE_DETAILS`, `upsells()`, and the `CartBill` shape                   |
+| the body of `src/data/checkout.ts`; `priceCart()` becomes a display of the server's quote | `CHARGES`, `MIN_DELIVERY_ORDER`, `OFFERS`, `TIP_PRESETS`, `DELIVERY`, and the `CartBill` shape                                    |
 
 `priceOf()` in `menu.ts` prices a portion; the product detail screen uses it — preserve it during the swap.
 

@@ -37,7 +37,7 @@ const Chip = ({
 );
 
 /**
- * The rider tip, on delivery orders only. A preset chip tapped again clears
+ * The rider tip. A preset chip tapped again clears
  * the tip, so the default one is never forced on anyone; Custom opens a
  * rupee field under the chips.
  */

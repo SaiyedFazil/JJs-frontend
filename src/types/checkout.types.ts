@@ -2,12 +2,9 @@
  * Checkout types — the Cart screen (spec: Cart.dc.html).
  *
  * The cart's lines live in cart.store; these describe everything priced or
- * chosen around them: how the food reaches the customer, the offers on the
- * table, and the bill those add up to.
+ * chosen around them: where the food is going, the offers on the table, and
+ * the bill those add up to. Every order is delivered.
  */
-
-/** How the order reaches the customer. Only delivery has a rider to tip. */
-export type OrderMode = 'delivery' | 'takeaway' | 'dinein';
 
 /** What an offer takes off, and on what condition. */
 export type OfferRule =
@@ -15,7 +12,7 @@ export type OfferRule =
   | { kind: 'flat'; amount: number; minItemTotal: number }
   /** A share of the items, never more than `cap`. */
   | { kind: 'percent'; percent: number; cap: number }
-  /** Waives the delivery fee — so it means nothing for takeaway or dine-in. */
+  /** Waives the delivery fee. */
   | { kind: 'free-delivery' };
 
 export interface Offer {
@@ -29,33 +26,31 @@ export interface Offer {
 }
 
 /**
- * Where and when, for one mode: the ETA strip at the top of the cart and the
- * details card at the bottom. Display-ready copy.
+ * Where the order is going and when it should arrive: the delivery card at
+ * the top of the cart. Display-ready copy.
  */
-export interface ModeDetails {
-  etaIcon: string;
-  etaTitle: string;
-  etaNote: string;
-  placeIcon: string;
-  placeTitle: string;
-  placeNote: string;
-  /** A delivery address can be changed; a pickup counter or a booked table cannot. */
-  canChangePlace: boolean;
+export interface DeliveryDetails {
+  /** The saved address's name — "Home". */
+  label: string;
+  address: string;
+  /** "Arrives in ~30 min". */
+  eta: string;
+  /** "2.1 km away". */
+  distance: string;
 }
 
 /** The bill the cart quotes. Every figure is in rupees. */
 export interface CartBill {
   itemTotal: number;
   gst: number;
-  /** Delivery orders only; 0 otherwise, and 0 when an offer waived it. */
+  /** 0 when an offer waived it. */
   deliveryFee: number;
   /** The fee was waived by an offer — the row reads FREE rather than vanishing. */
   deliveryWaived: boolean;
-  /** Delivery and takeaway; dine-in is served on plates. */
   packaging: number;
   /** What the coupon in effect took off the items. */
   discount: number;
-  /** The rider tip actually charged — delivery orders only. */
+  /** The rider tip. */
   tip: number;
   grandTotal: number;
   /** The discount plus any waived delivery fee: the "You saved" figure. */
@@ -66,6 +61,6 @@ export interface CartBill {
    * and comes back into effect once the cart qualifies again.
    */
   appliedCoupon: string | null;
-  /** How far a delivery order is below the minimum; 0 when it can be placed. */
+  /** How far the order is below the delivery minimum; 0 when it can be placed. */
   shortfall: number;
 }
