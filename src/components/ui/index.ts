@@ -63,5 +63,4 @@ export { CategoryTile } from './CategoryTile';
 export { VegSwitch } from './VegSwitch';
 export { SearchButton } from './SearchButton';
 
-export { CartBar } from './CartBar';
 export { Toast } from './Toast';

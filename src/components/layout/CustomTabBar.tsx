@@ -11,21 +11,26 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from '@react-native-community/blur';
 import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
 import Animated, {
+  Extrapolation,
+  interpolate,
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
   withSpring,
   withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
 import { Text, GlassSheen, useClassColor } from '@/components/ui';
 import {
+  CART_FAB_OVERHANG,
   TAB_BAR_HEIGHT,
   TAB_BAR_SIDE_INSET,
   tabBarBottomOffset,
 } from '@/constants/layout';
 import type { MainTabParamList } from '@/types/navigation.types';
 import { TAB_GLYPHS, type TabGlyph, type TabGlyphColors } from './TabIcons';
+import { CartFab, useCartPresence } from './CartTabButton';
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
@@ -39,6 +44,12 @@ const POP_LIFT = 2;
 const POP_SCALE = 0.9;
 /** The crossfade between ink-outline and ember-filled as focus moves. */
 const FOCUS_TIMING = { duration: 200 };
+/**
+ * Tabs are drawn either side of the cart, which sits after this many. Its
+ * slot is narrower than a tab, so the four labels keep their room.
+ */
+const TABS_BEFORE_CART = 2;
+const CART_SLOT_WIDTH = 56;
 
 /**
  * One tab: icon over label, and nothing behind it.
@@ -149,6 +160,8 @@ const TabButton = memo(
           tone={isFocused ? 'ember' : 'ink'}
           weight={isFocused ? '600' : '500'}
           numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.85}
           style={labelStyle}
         >
           {label}
@@ -161,6 +174,55 @@ const TabButton = memo(
 TabButton.displayName = 'TabButton';
 
 /**
+ * The cart's place in the tab row: an empty icon box under the floating
+ * button, and a label lined up with the tabs'. Tapping it opens the cart too,
+ * but it is hidden from screen readers — the button above is the one control.
+ *
+ * Its width follows `open`, so the tabs either side slide apart as the cart
+ * arrives and back together as it empties. The content keeps its full width
+ * inside and is clipped, so the label never re-wraps or ellipsizes mid-way;
+ * it fades in only once the gap is nearly open.
+ */
+const CartSlot = memo(
+  ({ onPress, open }: { onPress: () => void; open: SharedValue<number> }) => {
+    const slotStyle = useAnimatedStyle(() => ({
+      width: CART_SLOT_WIDTH * open.value,
+    }));
+    const labelStyle = useAnimatedStyle(() => ({
+      opacity: interpolate(open.value, [0.6, 1], [0, 1], Extrapolation.CLAMP),
+    }));
+
+    return (
+      <Animated.View
+        className="items-center justify-center overflow-hidden"
+        style={slotStyle}
+      >
+        <Pressable
+          onPress={onPress}
+          accessible={false}
+          importantForAccessibility="no-hide-descendants"
+          className="h-full items-center justify-center gap-xs"
+          style={styles.cartSlot}
+        >
+          <View style={styles.glyph} />
+          <AnimatedText
+            variant="fine"
+            tone="ink"
+            weight="500"
+            numberOfLines={1}
+            style={labelStyle}
+          >
+            Cart
+          </AnimatedText>
+        </Pressable>
+      </Animated.View>
+    );
+  },
+);
+
+CartSlot.displayName = 'CartSlot';
+
+/**
  * Custom Tab Bar Component
  *
  * A see-through glass pill floating inset from the screen's sides and
@@ -171,6 +233,13 @@ TabButton.displayName = 'TabButton';
  *   3. the light glass tint (Android paints it as the blur's overlayColor)
  *   4. GlassSheen, the top-down gloss
  *   5. a hairline border, owned by the clipping view
+ *
+ * While the cart holds anything, a cart button (CartFab) sits in the middle
+ * of the row and rises CART_FAB_OVERHANG above the pill's top edge; with an
+ * empty cart the row closes up to four tabs. The dock is that much taller
+ * than the pill so the overhang stays inside its bounds — Android delivers no
+ * touch to a child drawn outside its parent — and it passes touches through
+ * everywhere but the pill and the button.
  *
  * One palette serves both device colour schemes, as everywhere in the design
  * system, so there is deliberately no dark variant of the glass.
@@ -189,7 +258,7 @@ export const CustomTabBar = memo(
     // in step with the keyboard's own animation. A bar floating mid-screen
     // over a focused field covers exactly what the user is typing into.
     const { progress } = useReanimatedKeyboardAnimation();
-    const hideDistance = TAB_BAR_HEIGHT + bottomOffset;
+    const hideDistance = TAB_BAR_HEIGHT + CART_FAB_OVERHANG + bottomOffset;
     const keyboardStyle = useAnimatedStyle(() => ({
       transform: [{ translateY: progress.value * hideDistance }],
     }));
@@ -216,6 +285,16 @@ export const CustomTabBar = memo(
       [ink, ember, onEmber],
     );
 
+    // Cart belongs to the stack above the tabs; navigate bubbles up to it,
+    // so it opens over the bar the way ProductDetail does.
+    const openCart = useCallback(
+      () => navigation.navigate('Cart'),
+      [navigation],
+    );
+    // The cart shows only while it holds something; this re-renders the bar
+    // only as it goes empty ↔ non-empty.
+    const cart = useCartPresence();
+
     // A screen nested inside a tab can ask for the whole viewport by setting
     // `tabBarStyle: { display: 'none' }`, the same contract the default bar
     // honours. Flattened rather than read directly, because the option is a
@@ -230,73 +309,95 @@ export const CustomTabBar = memo(
     if (tabBarStyle?.display === 'none') return null;
 
     return (
-      // Shadow and clip are deliberately on two different views: the clip
-      // that rounds the blur would also cut the shadow away.
       <Animated.View
-        className="rounded-pill shadow-glass"
+        pointerEvents="box-none"
         style={[styles.dock, position, keyboardStyle]}
       >
-        {/* BlurView is a native ViewGroup: it honours neither flex layout
+        {/* Shadow and clip are deliberately on two different views: the clip
+            that rounds the blur would also cut the shadow away. */}
+        <View className="rounded-pill shadow-glass" style={styles.pill}>
+          {/* BlurView is a native ViewGroup: it honours neither flex layout
             nor a className borderRadius. So it stays an absolutely-positioned
             backdrop, and this plain RN view — which respects both — owns the
             radius, the border and the row. Its overflow-hidden is what
             rounds the blur's corners. */}
-        <View className="flex-1 rounded-pill border border-glass-hairline overflow-hidden">
-          <BlurView
-            style={StyleSheet.absoluteFill}
-            blurType={BLUR_TYPE}
-            blurAmount={BLUR_AMOUNT}
-            blurRadius={BLUR_RADIUS}
-            downsampleFactor={BLUR_DOWNSAMPLE}
-            reducedTransparencyFallbackColor={fallbackColor}
-            overlayColor={tint}
-            pointerEvents="none"
-          />
-          {/* iOS only: on Android overlayColor above already paints this
+          <View className="flex-1 rounded-pill border border-glass-hairline overflow-hidden">
+            <BlurView
+              style={StyleSheet.absoluteFill}
+              blurType={BLUR_TYPE}
+              blurAmount={BLUR_AMOUNT}
+              blurRadius={BLUR_RADIUS}
+              downsampleFactor={BLUR_DOWNSAMPLE}
+              reducedTransparencyFallbackColor={fallbackColor}
+              overlayColor={tint}
+              pointerEvents="none"
+            />
+            {/* iOS only: on Android overlayColor above already paints this
               same token, and stacking both would apply the wash twice. */}
-          {Platform.OS === 'ios' ? (
-            <View pointerEvents="none" className="absolute inset-0 bg-glass" />
-          ) : null}
-          <GlassSheen />
-          <View accessibilityRole="tablist" style={styles.row}>
-            {state.routes.map((route, index) => {
-              const isFocused = state.index === index;
-              const { options } = descriptors[route.key];
-              const label =
-                typeof options.tabBarLabel === 'string'
-                  ? options.tabBarLabel
-                  : (options.title ?? route.name);
+            {Platform.OS === 'ios' ? (
+              <View
+                pointerEvents="none"
+                className="absolute inset-0 bg-glass"
+              />
+            ) : null}
+            <GlassSheen />
+            <View accessibilityRole="tablist" style={styles.row}>
+              {state.routes.map((route, index) => {
+                const isFocused = state.index === index;
+                const { options } = descriptors[route.key];
+                const label =
+                  typeof options.tabBarLabel === 'string'
+                    ? options.tabBarLabel
+                    : (options.title ?? route.name);
 
-              const onPress = () => {
-                const event = navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
+                const onPress = () => {
+                  const event = navigation.emit({
+                    type: 'tabPress',
+                    target: route.key,
+                    canPreventDefault: true,
+                  });
 
-                if (!isFocused && !event.defaultPrevented) {
-                  navigation.navigate(route.name, route.params);
-                }
-              };
+                  if (!isFocused && !event.defaultPrevented) {
+                    navigation.navigate(route.name, route.params);
+                  }
+                };
 
-              const onLongPress = () => {
-                navigation.emit({ type: 'tabLongPress', target: route.key });
-              };
+                const onLongPress = () => {
+                  navigation.emit({ type: 'tabLongPress', target: route.key });
+                };
 
-              return (
-                <TabButton
-                  key={route.key}
-                  Glyph={TAB_GLYPHS[route.name as keyof MainTabParamList]}
-                  label={label}
-                  accessibilityLabel={options.tabBarAccessibilityLabel ?? label}
-                  isFocused={isFocused}
-                  colors={colors}
-                  onPress={onPress}
-                  onLongPress={onLongPress}
-                />
-              );
-            })}
+                const tab = (
+                  <TabButton
+                    key={route.key}
+                    Glyph={TAB_GLYPHS[route.name as keyof MainTabParamList]}
+                    label={label}
+                    accessibilityLabel={
+                      options.tabBarAccessibilityLabel ?? label
+                    }
+                    isFocused={isFocused}
+                    colors={colors}
+                    onPress={onPress}
+                    onLongPress={onLongPress}
+                  />
+                );
+                return index === TABS_BEFORE_CART ? (
+                  <React.Fragment key={route.key}>
+                    <CartSlot onPress={openCart} open={cart.slot} />
+                    {tab}
+                  </React.Fragment>
+                ) : (
+                  tab
+                );
+              })}
+            </View>
           </View>
+        </View>
+        <View pointerEvents="box-none" style={styles.fabRow}>
+          <CartFab
+            onPress={openCart}
+            visible={cart.hasItems}
+            shown={cart.fab}
+          />
         </View>
       </Animated.View>
     );
@@ -347,7 +448,27 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: TAB_BAR_SIDE_INSET,
     right: TAB_BAR_SIDE_INSET,
+    height: TAB_BAR_HEIGHT + CART_FAB_OVERHANG,
+  },
+  /** The glass pill, along the bottom of the dock. */
+  pill: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     height: TAB_BAR_HEIGHT,
+  },
+  /** Centres the cart button over its slot, at the top of the dock. */
+  fabRow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  /** The cart's column in the tab row, under the floating button. */
+  cartSlot: {
+    width: CART_SLOT_WIDTH,
   },
   /**
    * The tab row, above the blur, tint and sheen inside the clipped pill.
@@ -357,7 +478,7 @@ const styles = StyleSheet.create({
   row: {
     flex: 1,
     flexDirection: 'row',
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     paddingVertical: 10,
   },
   /** The box both icon forms are stacked in. */

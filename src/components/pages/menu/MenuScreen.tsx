@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search } from 'lucide-react-native';
 import type { MenuItem } from '@/types/menu.types';
 import type { MainTabNavigationProp } from '@/types/navigation.types';
-import { CartBar, EmptyState, Icon, Text, Toast } from '@/components/ui';
+import { EmptyState, Icon, Text, Toast } from '@/components/ui';
 import { useCartStore } from '@/store/cart.store';
 import { useTabBarHeight } from '@/hooks/use-tab-bar-height';
 import {
@@ -31,14 +31,13 @@ import { CategorySheet } from './components/CategorySheet';
 const ADDRESS = '351 Maison Street';
 const TOAST_MS = 1900;
 
-/** Vertical gap between the cart bar and the tab bar's real top edge. */
-const CART_BAR_GAP = 12;
+/** Vertical gap between the floating stack and the tab bar's real top edge. */
+const FLOATING_GAP = 12;
 /**
  * Room for the floating stack above `floatingBottom`: the Menu pill (py-3 +
- * a 17px icon row, ~42) + gap-sm (8) + CartBar (~56) ≈ 106, rounded up so
- * the last row clears it with some air.
+ * a 17px icon row, ~42), rounded up so the last row clears it with some air.
  */
-const FLOATING_STACK_ALLOWANCE = 120;
+const FLOATING_STACK_ALLOWANCE = 64;
 
 /**
  * The rail is the ScrollView's third child — top bar, filter bar, rail — and
@@ -88,8 +87,6 @@ export const MenuScreen = () => {
   const cartItems = useCartStore(s => s.items);
   const addItem = useCartStore(s => s.addItem);
   const decrementItem = useCartStore(s => s.decrementItem);
-  const count = useCartStore(s => s.totalItems());
-  const total = useCartStore(s => s.totalAmount());
   const quantities = useMemo(
     () =>
       Object.fromEntries(cartItems.map(i => [i.id, i.quantity])) as Record<
@@ -109,7 +106,7 @@ export const MenuScreen = () => {
     }, []),
   );
 
-  const floatingBottom = tabBarHeight + CART_BAR_GAP;
+  const floatingBottom = tabBarHeight + FLOATING_GAP;
   /** Layout-only: the last row must scroll clear of the tab bar and the
    * floating stack above it, both of which depend on the safe-area inset. */
   const contentContainerStyle = useMemo(
@@ -314,13 +311,6 @@ export const MenuScreen = () => {
         {isSearching || isSheetOpen ? null : (
           <MenuPill dishCount={dishCount} onPress={() => setSheetOpen(true)} />
         )}
-        {count > 0 ? (
-          <CartBar
-            count={count}
-            total={total}
-            onPress={() => navigation.navigate('Cart')}
-          />
-        ) : null}
       </View>
 
       {isSheetOpen ? (

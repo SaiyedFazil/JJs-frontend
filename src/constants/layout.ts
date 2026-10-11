@@ -19,3 +19,12 @@ export const TAB_BAR_SIDE_INSET = 16;
  */
 export const tabBarBottomOffset = (safeAreaBottom: number): number =>
   safeAreaBottom > 0 ? safeAreaBottom + 8 : 16;
+
+/** Diameter of the floating cart button docked in the middle of the pill. */
+export const CART_FAB_SIZE = 60;
+
+/**
+ * How far that button rises above the pill's top edge. It belongs to the
+ * bar's footprint: anything floated above the bar must clear it too.
+ */
+export const CART_FAB_OVERHANG = 22;

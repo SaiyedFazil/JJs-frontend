@@ -9,7 +9,7 @@ import { View, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { MenuItem } from '@/types/menu.types';
 import type { MainTabNavigationProp } from '@/types/navigation.types';
-import { CartBar, Toast, SkeletonRail } from '@/components/ui';
+import { Toast, SkeletonRail } from '@/components/ui';
 import { useCartStore } from '@/store/cart.store';
 import { byId, signatures } from '@/data/menu';
 import { isOpenAt } from '@/data/restaurant';
@@ -30,15 +30,14 @@ const TOAST_MS = 1900;
 /** Mock latency, matching the app's existing setTimeout convention. */
 const LOAD_MS = 900;
 
-/** Vertical gap between the cart bar and the tab bar's real top edge. */
-const CART_BAR_GAP = 12;
+/** Vertical gap between the toast and the tab bar's real top edge. */
+const TOAST_GAP = 12;
 /**
- * Room for the floating stack itself, above `floatingBottom`: Toast
- * (px-md/py-sm + a 24px icon row, ~40) + the container's gap-sm (8) +
- * CartBar (px-md/py-sm + its content row, ~56) ≈ 104, rounded up for
- * breathing room.
+ * Breathing room below the last section, above `floatingBottom`. The cart
+ * lives in the tab bar, so the only thing floated here is the transient
+ * toast, which may briefly overlap the content.
  */
-const FLOATING_STACK_ALLOWANCE = 110;
+const FLOATING_STACK_ALLOWANCE = 24;
 
 export const HomeScreen = () => {
   const navigation = useNavigation<MainTabNavigationProp<'Home'>>();
@@ -51,11 +50,10 @@ export const HomeScreen = () => {
   const addItem = useCartStore(s => s.addItem);
   const decrementItem = useCartStore(s => s.decrementItem);
   const quantityOf = useCartStore(s => s.quantityOf);
-  // Subscribing to the derived values is what re-renders this screen on every
-  // cart change; quantityOf above is a stable reference that reads current
-  // state, so the rails recompute during that same render pass.
-  const count = useCartStore(s => s.totalItems());
-  const total = useCartStore(s => s.totalAmount());
+  // Subscribing to the lines is what re-renders this screen on every cart
+  // change; quantityOf above is a stable reference that reads current state,
+  // so the rails recompute during that same render pass.
+  useCartStore(s => s.items);
 
   const isOpen = isOpenAt(new Date());
 
@@ -64,9 +62,9 @@ export const HomeScreen = () => {
   // footprint. That depends on the runtime safe-area inset, so neither can
   // be a static StyleSheet.create value; both derive from the one
   // floatingBottom below so they cannot drift out of sync.
-  const floatingBottom = tabBarHeight + CART_BAR_GAP;
-  /** Layout-only: scroll content must clear the tab bar's full footprint
-   * plus the floating stack (cart bar + toast) sitting above it. */
+  const floatingBottom = tabBarHeight + TOAST_GAP;
+  /** Layout-only: scroll content must clear the tab bar's full footprint,
+   * cart button included, plus some air. */
   const contentContainerStyle = useMemo(
     () => ({ paddingBottom: floatingBottom + FLOATING_STACK_ALLOWANCE }),
     [floatingBottom],
@@ -168,13 +166,6 @@ export const HomeScreen = () => {
         pointerEvents="box-none"
       >
         {toast ? <Toast message={toast} /> : null}
-        {count > 0 ? (
-          <CartBar
-            count={count}
-            total={total}
-            onPress={() => navigation.navigate('Cart')}
-          />
-        ) : null}
       </View>
     </View>
   );

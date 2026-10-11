@@ -11,14 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Heart } from 'lucide-react-native';
 import type { MenuItem } from '@/types/menu.types';
 import type { MainTabNavigationProp } from '@/types/navigation.types';
-import {
-  CartBar,
-  EmptyState,
-  Icon,
-  Text,
-  Toast,
-  VegSwitch,
-} from '@/components/ui';
+import { EmptyState, Icon, Text, Toast, VegSwitch } from '@/components/ui';
 import { useTabBarHeight } from '@/hooks/use-tab-bar-height';
 import { useCartStore } from '@/store/cart.store';
 import { useFavouritesStore } from '@/store/favourites.store';
@@ -34,8 +27,8 @@ const UNDO_MS = 4000;
 /** Vertical gap between the floating stack and the tab bar's real top edge. */
 const FLOATING_GAP = 12;
 /**
- * Room for the floating stack above `floatingBottom`: the undo banner or cart
- * bar (~56) plus air. The last row scrolls clear of it.
+ * Room for the floating stack above `floatingBottom`: the undo banner (~56)
+ * plus air. The last row scrolls clear of it.
  */
 const FLOATING_ALLOWANCE = 84;
 
@@ -65,8 +58,6 @@ export const FavouritesScreen = () => {
   const cartItems = useCartStore(s => s.items);
   const addItem = useCartStore(s => s.addItem);
   const decrementItem = useCartStore(s => s.decrementItem);
-  const count = useCartStore(s => s.totalItems());
-  const total = useCartStore(s => s.totalAmount());
   const quantities = useMemo(
     () =>
       Object.fromEntries(cartItems.map(i => [i.id, i.quantity])) as Record<
@@ -215,7 +206,7 @@ export const FavouritesScreen = () => {
       )}
 
       {/* Floating above the scroll view, clear of the tab bar's full
-          footprint. Toast on top, then the undo banner or the cart bar. */}
+          footprint. Toast on top, then the undo banner. */}
       <View
         style={{ bottom: floatingBottom }}
         className="absolute left-md right-md gap-sm"
@@ -228,13 +219,6 @@ export const FavouritesScreen = () => {
             message={`Removed ${pendingUndo.name} from favourites`}
             undoLabel={`Undo removing ${pendingUndo.name}`}
             onUndo={handleUndo}
-          />
-        ) : null}
-        {count > 0 ? (
-          <CartBar
-            count={count}
-            total={total}
-            onPress={() => navigation.navigate('Cart')}
           />
         ) : null}
       </View>
