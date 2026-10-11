@@ -83,8 +83,6 @@ const REQUIRED_PATHS: string[] = [
   'store/favourites.store.ts',
   'store/checkout.store.ts',
   'components/pages/profile/ProfileScreen.tsx',
-  'components/pages/profile/components/StatsCard.tsx',
-  'components/pages/profile/hooks/use-profile-counts.ts',
   'components/pages/profile/edit-profile/EditProfileScreen.tsx',
   'components/pages/profile/edit-profile/hooks/use-edit-profile.ts',
   'app/RootNavigator.tsx',

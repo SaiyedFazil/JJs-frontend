@@ -10,11 +10,9 @@ import { PillButton } from './PillButton';
 
 /**
  * The charcoal header: identity on a warm gradient, with the ember bloom
- * bleeding off the top-right corner.
- *
- * Its bottom padding is deliberately deep — the stats card is pulled up 38px
- * into it, and that padding is what keeps the "Edit profile" button clear of
- * the overlap.
+ * bleeding off the top-right corner. Its bottom padding matches its sides,
+ * so the "Edit profile" button sits as far from the header's edge below as
+ * from the edges either side.
  */
 export const ProfileHeader = ({
   name,
@@ -53,7 +51,7 @@ export const ProfileHeader = ({
   return (
     <View
       style={{ paddingTop: insets.top + 24 }}
-      className="relative overflow-hidden bg-hero px-lg pb-15"
+      className="relative overflow-hidden bg-hero px-lg pb-lg"
     >
       {/* Charcoal for the first 40% of the diagonal, then warming toward the
           ember end — the flat run is what stops it reading as a two-tone

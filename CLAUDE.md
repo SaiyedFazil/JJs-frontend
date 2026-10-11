@@ -108,7 +108,7 @@ Use the `src/components/ui/` primitives (`Text`, `Button`, `TextField`, `OtpInpu
 
 Auth and profile talk to the real API: `src/lib/api/auth/auth-api.ts` (send/verify/resend OTP, logout) and `src/lib/api/user/user-api.ts` (GET/PATCH `/user/profile`), through the Axios instance in `src/lib/api/api-client.ts`. The planned stack for the rest of the backend integration: TanStack React Query v5 (data sync), Socket.IO Client (real-time orders).
 
-**The home screen is mock-only by design.** Everything it renders comes from `src/data/menu.ts` (125 dishes) and `src/data/restaurant.ts` (hours, rating, ETA, distance). `HomeScreen`'s loading state is a `setTimeout`, not a request. There are no network calls anywhere in `src/components/pages/home/`. The profile screen's counts are mock too (`src/components/pages/profile/hooks/use-profile-counts.ts`).
+**The home screen is mock-only by design.** Everything it renders comes from `src/data/menu.ts` (125 dishes) and `src/data/restaurant.ts` (hours, rating, ETA, distance). `HomeScreen`'s loading state is a `setTimeout`, not a request. There are no network calls anywhere in `src/components/pages/home/`.
 
 **The Menu tab is mock-only too** (`src/components/pages/menu/`, design: `Menu Screen.dc.html`). It reads `src/data/menu.ts` through `useMenuCatalog` (sections, Pure Veg, sort, search; `__tests__/menu-catalog.test.ts` pins it). The ScrollView's single sticky slot belongs to the category rail, so `MenuScreen` draws the stuck section header as an overlay positioned by `useScrollSpy`'s onLayout measurements. The Rating sort chip and the per-row star only appear once dishes carry `rating`.
 
@@ -123,7 +123,6 @@ When the API phase starts, these are the seams:
 | the bodies of `src/data/menu.ts` and `src/data/restaurant.ts`                             | From `menu`: `CATEGORIES`, `byId`, `bestsellers()`, `byCategory()`. From `restaurant`: `isOpenAt()`, `SERVICE`, `OPENS_AT_LABEL`. |
 | `HomeScreen`'s `isLoading` `setTimeout`                                                   | the `SkeletonRail` it already gates                                                                                               |
 | the `require()` values in `src/data/dish-images.ts`, swapped for API URLs                 | `DISH_IMAGES`' slug keys, and `ImageTile`, which renders either a bundled module or a URL                                         |
-| the body of `useProfileCounts`                                                            | its `ProfileCounts` return shape                                                                                                  |
 | the body of `src/data/dish-details.ts`                                                    | `dishDetailOf()` and its `DishDetail` shape, `DEFAULT_SPICE`, `PORTION_SERVES`                                                    |
 | the body of `src/data/checkout.ts`; `priceCart()` becomes a display of the server's quote | `CHARGES`, `MIN_DELIVERY_ORDER`, `OFFERS`, `TIP_PRESETS`, `MODE_DETAILS`, `upsells()`, and the `CartBill` shape                   |
 

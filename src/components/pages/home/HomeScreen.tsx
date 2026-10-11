@@ -43,7 +43,10 @@ export const HomeScreen = () => {
   const navigation = useNavigation<MainTabNavigationProp<'Home'>>();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    accent: 'veg' | 'ember';
+  } | null>(null);
 
   const tabBarHeight = useTabBarHeight();
 
@@ -71,11 +74,15 @@ export const HomeScreen = () => {
   );
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const showToast = useCallback((message: string) => {
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    setToast(message);
-    toastTimer.current = setTimeout(() => setToast(null), TOAST_MS);
-  }, []);
+  /** Veg green confirms something about food; ember is about the app. */
+  const showToast = useCallback(
+    (message: string, accent: 'veg' | 'ember' = 'veg') => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      setToast({ message, accent });
+      toastTimer.current = setTimeout(() => setToast(null), TOAST_MS);
+    },
+    [],
+  );
 
   useEffect(() => {
     const load = setTimeout(() => setIsLoading(false), LOAD_MS);
@@ -114,13 +121,19 @@ export const HomeScreen = () => {
     showToast('Your last order is back in the cart');
   }, [addItem, showToast]);
 
+  // A placeholder until notifications exist, worded as the Profile row's is.
+  const handleNotifications = useCallback(
+    () => showToast('Notifications are coming soon', 'ember'),
+    [showToast],
+  );
+
   return (
     <View className="flex-1 bg-canvas">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={contentContainerStyle}
       >
-        <HomeHeader address={ADDRESS} />
+        <HomeHeader address={ADDRESS} onNotifications={handleNotifications} />
 
         {!isOpen ? <ClosedStrip /> : null}
 
@@ -165,7 +178,7 @@ export const HomeScreen = () => {
         className="absolute left-md right-md gap-sm"
         pointerEvents="box-none"
       >
-        {toast ? <Toast message={toast} /> : null}
+        {toast ? <Toast message={toast.message} accent={toast.accent} /> : null}
       </View>
     </View>
   );

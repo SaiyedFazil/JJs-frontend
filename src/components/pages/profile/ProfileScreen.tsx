@@ -32,9 +32,7 @@ import type {
   ProfileNavigationProp,
   ProfileStackParamList,
 } from '@/types/navigation.types';
-import { useProfileCounts } from './hooks/use-profile-counts';
 import { ProfileHeader } from './components/ProfileHeader';
-import { StatsCard } from './components/StatsCard';
 import { SectionCard } from './components/SectionCard';
 import { ProfileRow } from './components/ProfileRow';
 import { AvatarSheet } from './components/AvatarSheet';
@@ -67,8 +65,6 @@ export const ProfileScreen = () => {
   const logout = useAuthStore(state => state.logout);
   const avatarId = useProfileStore(state => state.avatarId);
   const setAvatar = useProfileStore(state => state.setAvatar);
-
-  const counts = useProfileCounts();
 
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [isLogoutOpen, setLogoutOpen] = useState(false);
@@ -161,8 +157,6 @@ export const ProfileScreen = () => {
           onEditProfile={() => navigation.navigate('EditProfile')}
         />
 
-        <StatsCard counts={counts} />
-
         <View className="px-md pt-lg">
           <SectionCard label="Activity">
             <ProfileRow
@@ -184,15 +178,6 @@ export const ProfileScreen = () => {
               tile="bg-ember-tint"
               title="Notifications"
               subtitle="Order updates & offers"
-              // The one badge left on this screen. A row badge now means
-              // "there is something new in here", not "here is a count" —
-              // the counts live in the stats strip above, and repeating them
-              // per row said the same thing twice.
-              badge={
-                counts.unreadNotifications > 0
-                  ? `${counts.unreadNotifications} new`
-                  : undefined
-              }
               isLast
               onPress={() => showToast('Notifications are coming soon')}
             />

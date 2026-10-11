@@ -19,10 +19,8 @@ export interface ProfileRowProps {
   title: string;
   subtitle: string;
   /**
-   * Something new in here — "2 new", not "3 saved". Counts belong to the
-   * stats strip at the top of the screen; a row repeating one was saying the
-   * same thing twice, so a badge on a row is always an attention mark and is
-   * always ember.
+   * Something new in here — "2 new", not "3 saved". A badge on a row is
+   * always an attention mark, never a count, and is always ember.
    */
   badge?: string;
   /** `chili` marks the destructive row; it also drops the chevron. */

@@ -2,15 +2,18 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, ChevronDown } from 'lucide-react-native';
-import { Text, SearchButton, RadialGlow, LinearFill } from '@/components/ui';
+import { Text, SearchButton, RadialGlow, Icon } from '@/components/ui';
 
 export const HomeHeader = ({
   address,
   onSearch,
+  onNotifications,
   hasUnread = true,
 }: {
   address: string;
   onSearch?: () => void;
+  /** A placeholder until notifications exist: the screen says so. */
+  onNotifications?: () => void;
   hasUnread?: boolean;
 }) => {
   const insets = useSafeAreaInsets();
@@ -45,36 +48,25 @@ export const HomeHeader = ({
           </View>
         </View>
 
-        <View className="flex-row gap-sm">
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel={
-              hasUnread ? 'Notifications, unread' : 'Notifications'
-            }
-            className="w-10 h-10 rounded-md bg-hero-surface items-center justify-center"
-            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
-          >
-            <Bell
-              size={19}
-              className="text-hero-foreground"
-              strokeWidth={1.9}
-            />
-            {hasUnread ? (
-              <View className="absolute top-2 right-2 w-2 h-2 rounded-pill bg-ember border border-hero-surface" />
-            ) : null}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            accessibilityLabel="Your profile"
-            className="relative overflow-hidden w-10 h-10 rounded-md items-center justify-center"
-            hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
-          >
-            <LinearFill from="ember" to="saffron" diagonal />
-            <Text variant="item" tone="on-ember">
-              A
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={onNotifications}
+          accessibilityRole="button"
+          accessibilityLabel={
+            hasUnread ? 'Notifications, unread' : 'Notifications'
+          }
+          className="w-10 h-10 rounded-md bg-hero-surface items-center justify-center"
+          hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+        >
+          <Icon
+            icon={Bell}
+            className="text-hero-foreground"
+            size={19}
+            strokeWidth={1.9}
+          />
+          {hasUnread ? (
+            <View className="absolute top-2 right-2 w-2 h-2 rounded-pill bg-ember border border-hero-surface" />
+          ) : null}
+        </TouchableOpacity>
       </View>
 
       <SearchButton onPress={onSearch} />
