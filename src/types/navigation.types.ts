@@ -68,6 +68,10 @@ export type MainStackParamList = {
   MyOrders: undefined;
   /** One order's receipt, opened from a card in My Orders. */
   OrderDetail: { orderId: string };
+  /** Notification preferences and account deletion, from the Profile tab. */
+  Settings: undefined;
+  /** Which notifications the customer wants, opened from Settings. */
+  NotificationSettings: undefined;
 };
 
 /**

@@ -213,8 +213,8 @@ export const ProfileScreen = () => {
               icon={tileIcon(Settings, 'text-tile-gold')}
               tile="bg-tile-sand"
               title="Settings"
-              subtitle="Notifications, language"
-              onPress={() => showToast('Settings are coming soon')}
+              subtitle="Notifications & account"
+              onPress={() => navigation.navigate('Settings')}
             />
             <ProfileRow
               icon={tileIcon(HelpCircle, 'text-tile-gold')}

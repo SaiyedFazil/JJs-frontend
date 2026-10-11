@@ -4,6 +4,8 @@ import { ProductDetailScreen } from '@/components/pages/product-detail/ProductDe
 import { MyOrdersScreen } from '@/components/pages/my-orders/MyOrdersScreen';
 import { OrderDetailScreen } from '@/components/pages/order-detail/OrderDetailScreen';
 import { CartScreen } from '@/components/pages/cart/CartScreen';
+import { SettingsScreen } from '@/components/pages/profile/settings/SettingsScreen';
+import { NotificationSettingsScreen } from '@/components/pages/profile/settings/notification-settings/NotificationSettingsScreen';
 import type { MainStackParamList } from '@/types/navigation.types';
 import { MainTabNavigator } from './MainTabNavigator';
 
@@ -21,5 +23,10 @@ export const MainNavigator = () => (
     <Stack.Screen name="Cart" component={CartScreen} />
     <Stack.Screen name="MyOrders" component={MyOrdersScreen} />
     <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+    <Stack.Screen name="Settings" component={SettingsScreen} />
+    <Stack.Screen
+      name="NotificationSettings"
+      component={NotificationSettingsScreen}
+    />
   </Stack.Navigator>
 );

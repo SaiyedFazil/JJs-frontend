@@ -71,6 +71,7 @@ All param lists live in `src/types/navigation.types.ts`; screens never import a 
 - `MainNavigator` — the signed-in native stack: `Tabs` (`MainTabNavigator`), then `ProductDetail` (`{ dishId, lineId? }`) and `Cart` pushed over it, so they cover the tab bar. The tab bar's cart button and the dish page's "In cart · View" open `Cart` (the latter with `{ pop: true }`, so it returns to a cart already beneath it). A cart line's Edit opens `ProductDetail` with its `lineId`: the page starts on that line's choices, and changing one turns the bar into "Update item", which replaces the line in place (`replaceItem`). Tab screens type `useNavigation` with `MainTabNavigationProp<'Home'>` etc. to reach it.
 - `MainTabNavigator` — bottom tabs with `CustomTabBar`: Home, Menu, Favourites, Profile (Favourites is a placeholder). Between Menu and Favourites, `CustomTabBar` docks `CartFab` (`src/components/layout/CartTabButton.tsx`): it is not a route, and it is shown only while the cart holds something (`useCartPresence` animates it and its slot in and out). It rises `CART_FAB_OVERHANG` above the pill and opens `Cart`, and it is the only cart summary on the tab screens: there is no sticky cart bar. `useTabBarHeight` includes the overhang, so anything floated above the bar clears the button.
 - `ProfileNavigator` — the Profile tab's stack: ProfileMain → EditProfile (tab bar hidden on EditProfile)
+- Settings (`src/components/pages/profile/settings/`) and its NotificationSettings sub-page (`profile/settings/notification-settings/`) are `MainNavigator` screens, like MyOrders, so they cover the tab bar. Account deletion confirms with `ConfirmDialog`, then only toasts: there is no endpoint yet.
 
 ### State Management
 
@@ -81,6 +82,7 @@ Zustand stores in `src/store/`:
 - `checkout.store.ts` — the Cart's choices around its lines: `mode` (delivery / takeaway / dine-in), `coupon`, tip, kitchen `instructions`. Kept out of the screen so a trip back to the menu doesn't reset them; in memory, like the cart.
 - `favourites.store.ts` — hearted dish ids (in memory; the Favourites tab will read it)
 - `profile.store.ts` — device-local avatar choice (`src/constants/avatars.ts`)
+- `notification-settings.store.ts` — which notification topics are on; device-local in MMKV until there is a preferences endpoint, and reset on logout like the avatar. `LOCKED_TOPICS` (order updates) cannot be turned off. `__tests__/notification-settings-store.test.ts` pins it.
 
 ### Styling
 

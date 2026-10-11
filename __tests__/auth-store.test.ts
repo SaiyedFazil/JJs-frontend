@@ -11,6 +11,8 @@ jest.mock('../src/lib/storage', () => ({
   setUserProfile: jest.fn(),
   getAvatarId: jest.fn(() => null),
   setAvatarId: jest.fn(),
+  getNotificationPrefs: jest.fn(() => null),
+  setNotificationPrefs: jest.fn(),
 }));
 
 const mockLogout = jest.fn();
@@ -22,6 +24,10 @@ import * as storage from '../src/lib/storage';
 import { useAuthStore } from '../src/store/auth.store';
 import { useProfileStore } from '../src/store/profile.store';
 import { DEFAULT_AVATAR_ID } from '../src/constants/avatars';
+import {
+  DEFAULT_NOTIFICATION_PREFS,
+  useNotificationSettingsStore,
+} from '../src/store/notification-settings.store';
 
 const profile: StoredUserProfile = {
   id: 1,
@@ -122,17 +128,21 @@ describe('rehydrate — profile completion after relaunch', () => {
 });
 
 describe('logout', () => {
-  it('wipes the session and the avatar even when the server call fails', async () => {
+  it('wipes the session, avatar and notification choices even when the server call fails', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
     mockLogout.mockRejectedValue(new Error('offline'));
     useAuthStore.getState().setAuth(verified());
     useProfileStore.getState().setAvatar(5);
+    useNotificationSettingsStore.getState().setTopic('offers', false);
 
     await useAuthStore.getState().logout();
 
     expect(mockLogout).toHaveBeenCalledTimes(1);
     expect(storage.clearAuthData).toHaveBeenCalledTimes(1);
     expect(useProfileStore.getState().avatarId).toBe(DEFAULT_AVATAR_ID);
+    expect(useNotificationSettingsStore.getState().prefs).toEqual(
+      DEFAULT_NOTIFICATION_PREFS,
+    );
     expect(useAuthStore.getState()).toMatchObject({
       isAuthenticated: false,
       user: null,

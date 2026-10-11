@@ -12,6 +12,7 @@ import type { StoredUserProfile } from '@/types/user.types';
 import { AuthResponse } from '@/types/api.types';
 import { authApi } from '@/lib/api/auth/auth-api';
 import { useProfileStore } from '@/store/profile.store';
+import { useNotificationSettingsStore } from '@/store/notification-settings.store';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // State Shape
@@ -187,9 +188,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       clearAuthData();
 
       // 3. Device-local preferences are personal too. clearAuthData() drops
-      //    the stored avatar; this drops the copy already in memory, so the
-      //    next sign-in on this device starts from the default.
+      //    the stored avatar and notification choices; this drops the copies
+      //    already in memory, so the next sign-in starts from the defaults.
       useProfileStore.getState().reset();
+      useNotificationSettingsStore.getState().reset();
 
       // 4. Reset in-memory state — nothing personal remains in RAM either
       set({

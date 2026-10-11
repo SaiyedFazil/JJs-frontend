@@ -1,5 +1,6 @@
 import { createMMKV } from 'react-native-mmkv';
 import type { StoredUserProfile } from '@/types/user.types';
+import type { NotificationPreferences } from '@/types/notification.types';
 
 /**
  * Global MMKV storage instance.
@@ -18,6 +19,7 @@ export const StorageKeys = {
   REFRESH_TOKEN: 'refresh_token',
   USER_PROFILE: 'user_profile', // renamed from user_data for clarity
   AVATAR_ID: 'avatar_id', // index into the preset avatar set — device-local
+  NOTIFICATION_PREFS: 'notification_prefs', // which topics are on — device-local
 } as const;
 
 // ── Access Token ──────────────────────────────────────────────────────────────
@@ -66,6 +68,30 @@ export const getAvatarId = (): number | null => {
 export const setAvatarId = (id: number): void =>
   storage.set(StorageKeys.AVATAR_ID, id);
 
+// ── Notification preferences ──────────────────────────────────────────────────
+/**
+ * Which notification topics are on. Device-local until the backend has a
+ * preferences endpoint, and cleared on logout like the avatar.
+ *
+ * Returned as stored, possibly partial: a topic added after this was written
+ * is absent, and the store fills it in from its defaults.
+ */
+export const getNotificationPrefs =
+  (): Partial<NotificationPreferences> | null => {
+    const raw = storage.getString(StorageKeys.NOTIFICATION_PREFS);
+    if (!raw) {
+      return null;
+    }
+    try {
+      return JSON.parse(raw) as Partial<NotificationPreferences>;
+    } catch {
+      return null;
+    }
+  };
+
+export const setNotificationPrefs = (prefs: NotificationPreferences): void =>
+  storage.set(StorageKeys.NOTIFICATION_PREFS, JSON.stringify(prefs));
+
 // ── Session management ────────────────────────────────────────────────────────
 /**
  * Atomically wipe ALL auth data from persistent storage.
@@ -76,6 +102,7 @@ export const clearAuthData = (): void => {
   storage.remove(StorageKeys.REFRESH_TOKEN);
   storage.remove(StorageKeys.USER_PROFILE);
   storage.remove(StorageKeys.AVATAR_ID);
+  storage.remove(StorageKeys.NOTIFICATION_PREFS);
 };
 
 /**
